@@ -1,21 +1,18 @@
 package com.service.releasenote.domain.member.model;
 
 import com.service.releasenote.domain.model.BaseTimeEntity;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
+@Builder
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Member extends BaseTimeEntity {
-
     @Id
     @Column(name = "member_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,5 +30,5 @@ public class Member extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     protected MemberLoginType memberLoginType;
 
-    private boolean deleted = false;
+    private boolean isDeleted = false;
 }
