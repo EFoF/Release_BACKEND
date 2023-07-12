@@ -7,6 +7,8 @@ import lombok.*;
 
 import javax.persistence.*;
 
+import static javax.persistence.FetchType.*;
+
 @Entity
 @Getter
 @ToString
@@ -23,10 +25,10 @@ public class Category extends BaseEntity {
 
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "project_id")
     private Project project;
 
-    @OneToOne(mappedBy = "category", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "category", fetch = LAZY)
     private Detail detail;
 }

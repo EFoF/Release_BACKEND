@@ -9,6 +9,8 @@ import lombok.ToString;
 
 import javax.persistence.*;
 
+import static javax.persistence.FetchType.*;
+
 @Entity
 @Getter
 @ToString
@@ -27,7 +29,7 @@ public class Project extends BaseTimeEntity {
 
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "company_id")
     private Company company;
 }
