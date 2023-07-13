@@ -9,7 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @Slf4j
 public class SecurityUtil {
     // 인증된 멤버의 pk 값을 확인하는 메서드
-    public static Long getCurrentUserId() {
+    public static Long getCurrentMemberId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 //        log.info("authentication:{}", authentication);
@@ -23,8 +23,8 @@ public class SecurityUtil {
         }
 
         String name = authentication.getName();
-        Long userId = Long.valueOf(name);
+        Long memberId = Long.valueOf(name);
 
-        return userId;
+        return memberId;
     }
 }
