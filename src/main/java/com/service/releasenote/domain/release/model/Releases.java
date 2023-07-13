@@ -14,7 +14,6 @@ import static javax.persistence.FetchType.*;
 
 @Entity
 @Getter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class Releases extends BaseEntity {

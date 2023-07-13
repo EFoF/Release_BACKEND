@@ -11,7 +11,6 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberProject {

@@ -11,7 +11,6 @@ import static javax.persistence.FetchType.*;
 
 @Entity
 @Getter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

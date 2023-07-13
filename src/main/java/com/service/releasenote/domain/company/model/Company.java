@@ -10,7 +10,6 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class Company extends BaseTimeEntity {
