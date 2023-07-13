@@ -1,11 +1,13 @@
 package com.service.releasenote.domain.member.application;
 
 import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.model.Authority;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.global.jwt.JwtFilter;
 import com.service.releasenote.global.jwt.TokenProvider;
+import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -41,10 +43,11 @@ public class AuthService {
 
     @Transactional
     // 회원가입 로직
-    public Member signup(SignUpRequest signUpRequest) {
+    public ResponseEntity<?> signup(SignUpRequest signUpRequest) {
         // 이미 DB 안에 있는지 검사
         if (memberRepository.findOneWithAuthorityByEmail(signUpRequest.getEmail()).orElse(null) != null) {
-            throw new RuntimeException("이미 가입되어 있는 유저입니다.");
+            return new ResponseEntity<>("이미 가입되어 있는 유저입니다.", HttpStatus.BAD_REQUEST);
+//            throw new RuntimeException("이미 가입되어 있는 유저입니다.");
         }
 
         // 유저 생성
@@ -58,7 +61,9 @@ public class AuthService {
 
         log.info("회원가입");
 
-        return memberRepository.save(member);
+        Member save = memberRepository.save(member);
+
+        return new ResponseEntity<>(save, HttpStatus.CREATED);
     }
 
     @Transactional(readOnly = true)
@@ -122,6 +127,7 @@ public class AuthService {
         return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
     }
 
+    @Transactional
     public ResponseEntity<?> reissue(HttpServletRequest request) {
         String accessToken = jwtFilter.resolveToken(request);
 
@@ -155,5 +161,29 @@ public class AuthService {
 
         log.info("reissue!");
         return new ResponseEntity<>(tokenInfoDTO, HttpStatus.OK);
+    }
+
+    @Transactional
+    // 회원 탈퇴
+    public ResponseEntity<?> withdrawal(HttpServletRequest request, String inputPassword){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
+
+        String password = member.getPassword();
+
+        boolean matches = passwordEncoder.matches(inputPassword, password);
+
+        if (matches) { // 입력한 비밀번호가 맞았을 경우
+            logout(request); // 로그아웃 진행
+            member.setDeleted(true); // isDeleted 필드 True 로 전환.
+
+            log.info("회원 탈퇴");
+
+            return new ResponseEntity<>("회원 탈퇴 처리되었습니다.", HttpStatus.OK);
+        }
+        else { // 입력한 비밀번호가 틀렸을 경우
+            return new ResponseEntity<>("비밀번호가 틀렸습니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 }
