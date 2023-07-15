@@ -52,4 +52,7 @@ public class ProjectDto {
                     .build();
         }
     }
+
+    public static class FindMyProjectResponseDto {
+    }
 }
