@@ -1,23 +1,42 @@
 package com.service.releasenote.domain.release.api;
 
+import com.service.releasenote.domain.release.application.ReleaseService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@Api(value = "태그 지정 시 무시됨", tags = {"swagger", "v1", "api"})
+import static com.service.releasenote.domain.release.dto.ReleaseDto.ReleaseInfoDto;
+import static com.service.releasenote.domain.release.dto.ReleaseDto.SaveReleaseRequest;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Api(tags = {"release"})
 public class ReleaseController {
 
-    @ApiOperation(value="this is a test!", notes = "this is a note")
-    @GetMapping("/test/swagger")
-    public ResponseEntity<String> swaggerTest() {
-        return new ResponseEntity<>("ok", HttpStatus.OK);
+    private final ReleaseService releaseService;
+
+    @ApiOperation(value="api for save release")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    @PostMapping("/company/{companyId}/project/{projectId}/category/{categoryId}/release")
+    public void saveRelease(
+            @PathVariable(name = "companyId") Long companyId,
+            @PathVariable(name = "projectId") Long projectId,
+            @PathVariable(name = "categoryId") Long categoryId,
+            @RequestBody SaveReleaseRequest saveReleaseRequest
+    ) {
+        releaseService.saveRelease(saveReleaseRequest);
+    }
+
+    @GetMapping("/company/{companyId}/project/{projectId}/category/{categoryId}/release")
+    public ReleaseInfoDto getReleaseByProject(
+            @PathVariable(name = "companyId") Long companyId,
+            @PathVariable(name = "projectId") Long projectId,
+            @PathVariable(name = "categoryId") Long categoryId
+    ) {
+        return releaseService.findReleasesByCategoryId(categoryId);
     }
 }
