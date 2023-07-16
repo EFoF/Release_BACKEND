@@ -32,7 +32,7 @@ public class ReleaseController {
     }
 
     @GetMapping("/company/{companyId}/project/{projectId}/category/{categoryId}/release")
-    public ReleaseInfoDto getReleaseByProject(
+    public ReleaseInfoDto getReleaseByCategory(
             @PathVariable(name = "companyId") Long companyId,
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "categoryId") Long categoryId
