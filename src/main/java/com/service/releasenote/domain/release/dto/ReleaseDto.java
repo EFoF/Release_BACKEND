@@ -16,6 +16,8 @@ public class ReleaseDto {
         private Tag tag;
         private String title;
         private String content;
+
+
     }
 
     @Getter
