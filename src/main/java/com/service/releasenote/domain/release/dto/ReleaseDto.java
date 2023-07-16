@@ -26,7 +26,6 @@ public class ReleaseDto {
     @AllArgsConstructor
     public static class ReleaseDtoEach {
         private LocalDateTime lastModifiedTime;
-        private String authorName;
         private String content;
         private String version;
         private Tag tag;
