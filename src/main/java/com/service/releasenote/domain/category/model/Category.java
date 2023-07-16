@@ -28,6 +28,6 @@ public class Category extends BaseEntity {
     @JoinColumn(name = "project_id")
     private Project project;
 
-    @OneToOne(mappedBy = "category", fetch = LAZY)
+    @OneToOne(fetch = LAZY, mappedBy = "category", cascade = CascadeType.ALL)
     private Detail detail;
 }
