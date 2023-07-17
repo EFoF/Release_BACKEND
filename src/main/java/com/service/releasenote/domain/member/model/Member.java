@@ -7,7 +7,6 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +17,7 @@ public class Member extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     private String password;
 
     private String email;
@@ -30,5 +30,6 @@ public class Member extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     protected MemberLoginType memberLoginType;
 
+    @Setter
     private boolean isDeleted = false;
 }

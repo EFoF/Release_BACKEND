@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) {
         log.info("Load By Username : " + username);
-        return memberRepository.findOneWithAuthorityByEmail(username)
+        return memberRepository.findByEmail(username)
                 .map(member -> createUser(member))
                 .orElseThrow(() -> new UsernameNotFoundException(username + " -> 존재하지 않는 사용자입니다."));
     }

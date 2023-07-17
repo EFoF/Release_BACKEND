@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 public class MemberDTO {
@@ -61,4 +59,18 @@ public class MemberDTO {
         private String inputPassword;
     }
 
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UpdatePasswordRequest {
+        @NotBlank(message = "비밀번호를 입력해주세요.")
+        // 대문자 혹은 소문자 영어 1개 이상, 특수문자 1개 이상, 길이 8 이상
+        @Pattern(regexp = "^\\s*$|^(?=.*[a-zA-Z])(?=.*[\\W])(?=.*[0-9]).{8,}$", message = "비밀번호가 조건에 부합하지 않습니다.")
+        private String inputNewPassword;
+
+        private String inputOldPassword;
+
+        private String inputEmail;
+    }
 }

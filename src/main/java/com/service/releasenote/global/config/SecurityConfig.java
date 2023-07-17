@@ -59,9 +59,9 @@ public class SecurityConfig {
                 .antMatchers("/auth/signin").permitAll() // 로그인을 위한 api
                 .antMatchers("/auth/reissue").permitAll() // reissue 를 위한 api
                 .antMatchers("/auth/getMemberId").permitAll() // getCurrentId 를 위한 api
-                .antMatchers("/swagger-ui/index.html").permitAll()
-//                .anyRequest().authenticated() // 나머지 요청들은 모두 인증을 받아야 함
-                .anyRequest().permitAll() // 나머지 요청들은 모두 인증을 받아야 함
+                .antMatchers("/auth/update/password/anonymous").permitAll() // 비로그인 유저를 위한 api
+                .antMatchers("/swagger-ui/index.html").permitAll() // swagger를 위한 주소
+                .anyRequest().authenticated() // 나머지 요청들은 모두 인증을 받아야 함
 
                 /** JwtSecurityConfig 적용 */
                 .and()
