@@ -1,13 +1,15 @@
 package com.service.releasenote.domain.category.model;
 
-import com.service.releasenote.domain.detail.model.Detail;
 import com.service.releasenote.domain.model.BaseEntity;
 import com.service.releasenote.domain.project.model.Project;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-import static javax.persistence.FetchType.*;
+import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
@@ -28,6 +30,5 @@ public class Category extends BaseEntity {
     @JoinColumn(name = "project_id")
     private Project project;
 
-    @OneToOne(fetch = LAZY, mappedBy = "category", cascade = CascadeType.ALL)
-    private Detail detail;
+    private String detail;
 }
