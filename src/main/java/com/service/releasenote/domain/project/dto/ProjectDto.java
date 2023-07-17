@@ -53,6 +53,47 @@ public class ProjectDto {
         }
     }
 
-    public static class FindMyProjectResponseDto {
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateProjectRequestDto {
+        // 프로젝트 정보 수정 요청 dto
+        private String title;
+        private String description;
+        private boolean scope;
+
+        public Project toEntity(Project project) {
+            return Project.builder()
+                    .title(project.getTitle())
+                    .description(project.getDescription())
+                    .scope(project.isScope())
+                    .build();
+        }
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateProjectResponseDto {
+        // 프로젝트 정보 수정 응답 dto
+        private Long id;
+        private String title;
+        private String description;
+        private boolean scope;
+        private LocalDateTime modified_date;
+//        private Long last_modifier;
+
+        public UpdateProjectResponseDto toResponseDto(Project project) {
+            return UpdateProjectResponseDto.builder()
+                    .id(project.getId())
+                    .title(project.getTitle())
+                    .description(project.getDescription())
+                    .scope(project.isScope())
+                    .modified_date(project.getModifiedDate())
+                    .build();
+        }
+    }
+
 }

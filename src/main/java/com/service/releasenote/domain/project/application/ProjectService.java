@@ -12,10 +12,7 @@ import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
-import com.service.releasenote.domain.project.exception.exceptions.CompanyNotFoundException;
-import com.service.releasenote.domain.project.exception.exceptions.DuplicatedProjectTitleException;
-import com.service.releasenote.domain.project.exception.exceptions.NotOwnerProjectException;
-import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
+import com.service.releasenote.domain.project.exception.exceptions.*;
 import com.service.releasenote.domain.project.model.Project;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +33,6 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final CompanyRepository companyRepository;
-    private final CategoryRepository categoryRepository;
     private final MemberProjectRepository memberProjectRepository;
     private final MemberRepository memberRepository;
 
@@ -74,6 +70,35 @@ public class ProjectService {
         memberProjectRepository.save(memberProject);    // 멤버 프로젝트에 role 저장
 
         return new CreateProjectResponseDto().toResponseDto(saveProject);
+    }
+
+    @Transactional
+    public UpdateProjectResponseDto updateProject
+            (UpdateProjectRequestDto updateProjectRequestDto, Long project_id, Long currentMemberId) {
+
+        // 로그인 하지 않은 경우 예외 처리
+        Member member = memberRepository.findById(currentMemberId)
+                .orElseThrow(UserNotFoundException::new);
+        log.info("member: " + member.getId());
+
+        // 프로젝트가 없는 경우 예외 처리
+        Project project = projectRepository.findById(project_id)
+                .orElseThrow(ProjectNotFoundException::new);
+        log.info("project: " + project_id);
+
+        // 프로젝트 정보를 수정할 권한이 없으면 예외 처리
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberListByProjectId(project_id);
+        if(!memberListByProjectId.contains(currentMemberId)) {
+            throw new ProjectPermissionDeniedException();
+        }
+        log.info("project member list: " + memberListByProjectId.toString());
+
+        // 정보 수정
+        project.setTitle(updateProjectRequestDto.getTitle());
+        project.setScope(updateProjectRequestDto.isScope());
+        project.setDescription(updateProjectRequestDto.getDescription());
+
+        return new UpdateProjectResponseDto().toResponseDto(project);
     }
 
     @Transactional
