@@ -5,10 +5,10 @@ import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.service.releasenote.domain.project.dto.ProjectDto.*;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -19,14 +19,33 @@ public class ProjectController {
      * 프로젝트 생성
      */
     @PostMapping("/company/{company_id}/project")
-    public ResponseEntity<CreateProjectResponseDto> createProject
-    (@RequestBody CreateProjectRequestDto createProjectRequestDto,
-     @PathVariable Long company_id) {
+    public ResponseEntity<CreateProjectResponseDto> createProject(
+            @RequestBody CreateProjectRequestDto createProjectRequestDto,
+            @PathVariable Long company_id) {
+
         // 현재 멤버의 아이디를 가져옴
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
         CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id, currentMemberId);
         return new ResponseEntity<>(project, HttpStatus.CREATED);
+    }
+
+    /**
+     * 프로젝트 수정
+     * */
+    @PutMapping(value = "/company/{company_id}/project/{project_id}/update")
+    public ResponseEntity updateProject(
+            @PathVariable Long company_id,
+            @PathVariable Long project_id,
+            @RequestBody UpdateProjectRequestDto updateProjectRequestDto
+    ) {
+
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        projectService.updateProject(updateProjectRequestDto, project_id, currentMemberId);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -43,5 +62,17 @@ public class ProjectController {
         projectService.deleteProject(company_id, project_id, currentMemberId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /**
+     * 내가 속한 프로젝트 조회
+     * */
+//    @GetMapping(value = "/company/{company_id}/myproject")
+//    public ResponseEntity<MyProjectListDto> getMyProjectList(@PathVariable Long company_id) {
+//        // 현재 멤버의 아이디를 가져옴
+//        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+//
+////        projectService.getMyProjectList(currentMemberId);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
 }

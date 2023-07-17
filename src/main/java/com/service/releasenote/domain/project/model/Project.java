@@ -20,10 +20,13 @@ public class Project extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     private boolean scope;
 
+    @Setter
     private String title;
 
+    @Setter
     private String description;
 
     @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
