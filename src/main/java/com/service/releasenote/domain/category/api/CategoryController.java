@@ -20,20 +20,38 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "api for save category")
+    @ApiOperation("api for save category")
     @PostMapping("/company/{company_id}/project/{project_id}/category")
-    public void saveCategory(
+    public String saveCategory(
             @PathVariable(name = "company_id") Long companyId,
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody SaveCategoryRequest saveCategoryRequest
             ) {
-        categoryService.saveCategory(saveCategoryRequest, projectId);
+        return categoryService.saveCategory(saveCategoryRequest, projectId);
     }
 
     @ApiOperation("api for get categories by project id")
     @GetMapping("/company/{company_id}/project/{project_id}/category")
-    public CategoryInfoDto getCategoryByProject(Long projectId) {
+    public CategoryInfoDto getCategoryByProject(
+            @PathVariable(name = "company_id") Long companyId,
+            @PathVariable(name = "project_id") Long projectId
+    ) {
         return categoryService.findCategoryByProjectId(projectId);
     }
 
+    @ApiOperation("api for get specific category by combination of companyId, projectId, categoryId")
+    @GetMapping("/company/{company_id}/project/{project_id}/category/{category_id}")
+    public CategoryResponseDto getCategoryByIds (
+            @PathVariable(name = "company_id") Long companyId,
+            @PathVariable(name = "project_id") Long projectId,
+            @PathVariable(name = "category_id") Long categoryId
+    ) {
+        return categoryService.findCategoryByIds(companyId, projectId, categoryId);
+    }
+
+    @ApiOperation("api for get specific category by category id only")
+    @GetMapping("/category/{category_id}")
+    public CategoryResponseDto getCategoryByCategoryId (@PathVariable(name = "category_id") Long categoryId) {
+        return categoryService.findCategoryByCategoryId(categoryId);
+    }
 }
