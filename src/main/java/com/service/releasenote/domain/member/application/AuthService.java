@@ -45,7 +45,7 @@ public class AuthService {
     // 회원가입 로직
     public ResponseEntity<?> signup(SignUpRequest signUpRequest) {
         // 이미 DB 안에 있는지 검사
-        if (memberRepository.findOneWithAuthorityByEmail(signUpRequest.getEmail()).orElse(null) != null) {
+        if (memberRepository.findByEmail(signUpRequest.getEmail()).orElse(null) != null) {
             return new ResponseEntity<>("이미 가입되어 있는 유저입니다.", HttpStatus.BAD_REQUEST);
 //            throw new RuntimeException("이미 가입되어 있는 유저입니다.");
         }
