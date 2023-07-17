@@ -22,6 +22,7 @@ import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProjectService {
 
     private final ProjectRepository projectRepository;

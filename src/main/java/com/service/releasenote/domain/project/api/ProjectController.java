@@ -1,13 +1,14 @@
 package com.service.releasenote.domain.project.api;
 
 import com.service.releasenote.domain.project.application.ProjectService;
-import com.service.releasenote.domain.project.dto.ProjectDto;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import com.service.releasenote.domain.project.dto.ProjectDto.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,11 +19,11 @@ public class ProjectController {
      * 프로젝트 생성
      */
     @PostMapping("/company/{company_id}/project")
-    public ResponseEntity<ProjectDto.CreateProjectResponseDto> createProject
-    (@Validated @RequestBody ProjectDto.CreateProjectRequestDto createProjectRequestDto,
+    public ResponseEntity<CreateProjectResponseDto> createProject
+    (@RequestBody CreateProjectRequestDto createProjectRequestDto,
      @PathVariable Long company_id) {
 
-        ProjectDto.CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id);
+        CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id);
         return new ResponseEntity<>(project, HttpStatus.CREATED);
     }
 
