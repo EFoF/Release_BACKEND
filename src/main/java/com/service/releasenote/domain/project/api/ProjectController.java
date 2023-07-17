@@ -22,8 +22,10 @@ public class ProjectController {
     public ResponseEntity<CreateProjectResponseDto> createProject
     (@RequestBody CreateProjectRequestDto createProjectRequestDto,
      @PathVariable Long company_id) {
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
-        CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id);
+        CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id, currentMemberId);
         return new ResponseEntity<>(project, HttpStatus.CREATED);
     }
 

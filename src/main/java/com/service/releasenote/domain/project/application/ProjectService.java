@@ -5,6 +5,10 @@ import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
+import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.dto.MemberProjectDTO;
+import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
+import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
@@ -22,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
+import static com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
 
 @Slf4j
 @Service
@@ -33,28 +38,40 @@ public class ProjectService {
     private final CompanyRepository companyRepository;
     private final CategoryRepository categoryRepository;
     private final MemberProjectRepository memberProjectRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public CreateProjectResponseDto createProject
-            (CreateProjectRequestDto createProjectRequestDto, Long company_id) {
+            (CreateProjectRequestDto createProjectRequestDto, Long company_id, Long currentMemberId) {
 
         // 회사가 존재하지 않는 경우 예외 처리
         Company company = companyRepository.findById(company_id)
                 .orElseThrow(CompanyNotFoundException::new);
 
+        // 로그인 하지 않은 경우 예외 처리
+        Member member = memberRepository.findById(currentMemberId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 프로젝트 객체 생성
         Project newProject = createProjectRequestDto.toEntity(company);
 
         // 해당 회사 프로젝트들 중 프로젝트의 이름이 이미 존재하는 경우 예외 처리
-        // equal 메소드에서 NullPointerException이 발생하는 것을 막기 위해
-        // A.equals(B) 에서 A는 반드시 null 값이 아닌 것으로 넣어주는 것이 좋다!! (NPE를 다룰 게 아니라면)
         List<String> TitleByCompanyId = projectRepository.findTitleByCompanyId(company_id);
         for (String s : TitleByCompanyId) {
             if(s.equals(newProject.getTitle())){
+                // equal 메소드에서 NullPointerException이 발생하는 것을 막기 위해
+                // A.equals(B) 에서 A는 반드시 null 값이 아닌 것으로 넣어주는 것이 좋다!! (NPE를 다룰 게 아니라면)
                 throw new DuplicatedProjectTitleException();
             }
         }
 
+        // 프로젝트 저장
         Project saveProject = projectRepository.save(newProject);
+
+        // member_project에 OWNER 지정
+        RoleDto roleDto = new RoleDto();
+        MemberProject memberProject = roleDto.toEntity(member, newProject, Role.OWNER);
+        memberProjectRepository.save(memberProject);    // 멤버 프로젝트에 role 저장
 
         return new CreateProjectResponseDto().toResponseDto(saveProject);
     }
