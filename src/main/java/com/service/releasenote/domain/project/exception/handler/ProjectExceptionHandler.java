@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import static com.service.releasenote.domain.project.exception.response.ProjectErrorResponse.NOT_OWNER_PROJECT;
 
 @Slf4j
 @RestControllerAdvice

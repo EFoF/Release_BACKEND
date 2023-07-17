@@ -1,7 +1,11 @@
 package com.service.releasenote.domain.project.application;
 
+import com.service.releasenote.domain.category.dao.CategoryRepository;
+import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
 import com.service.releasenote.domain.company.model.Company;
+import com.service.releasenote.domain.member.dao.MemberProjectRepository;
+import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.CompanyNotFoundException;
@@ -27,6 +31,8 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final CompanyRepository companyRepository;
+    private final CategoryRepository categoryRepository;
+    private final MemberProjectRepository memberProjectRepository;
 
     @Transactional
     public CreateProjectResponseDto createProject
@@ -61,6 +67,7 @@ public class ProjectService {
 
         // member_project 테이블에서 currentMemberId와 companyId를 이용해서 role 찾기
         Role roleByMemberIdAndProjectId = projectRepository.findRoleByMemberIdAndProjectId(projectId, currentMemberId);
+//        log.info(roleByMemberIdAndProjectId.toString());    // OWNER
 
         // OWNER가 아닐 경우 예외 처리 (프로젝트를 삭제할 권한이 없습니다)
         if (!roleByMemberIdAndProjectId.equals(Role.OWNER)) {
@@ -72,6 +79,21 @@ public class ProjectService {
         // 2. 내가 속한 프로젝트 리스트에서 삭제 되어야 한다.
         // 3. member_project에서 삭제 되어야 하나?
         // 4. 프로젝트의 하위 카테고리도 (자동으로? cascade 어쩌구..) 삭제되어야 한다.
+        // 5. 프로젝트 삭제
+
+        // 3
+        List<MemberProject> memberProjectByProjectId = projectRepository.findMemberProjectByProjectId(projectId);
+        for (MemberProject memberProject : memberProjectByProjectId) {
+            memberProjectRepository.delete(memberProject);
+        }
+
+        // 4
+//        List<Category> categoryIdByProjectId = projectRepository.findCategoryByProjectId(projectId);
+//        for (Category category : categoryIdByProjectId) {
+//            categoryRepository.delete(category);
+//        }
+
+        // 프로젝트 삭제
         projectRepository.delete(project);
 
     }
