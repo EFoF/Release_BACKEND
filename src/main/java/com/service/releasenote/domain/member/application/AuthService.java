@@ -59,11 +59,11 @@ public class AuthService {
                 .memberLoginType(MemberLoginType.RELEASE_LOGIN)
                 .build();
 
-        log.info("회원가입");
+        log.info("회원 가입");
 
-        Member save = memberRepository.save(member);
+        memberRepository.save(member);
 
-        return new ResponseEntity<>(save, HttpStatus.CREATED);
+        return new ResponseEntity<>("회원 가입에 성공했습니다.", HttpStatus.OK);
     }
 
     @Transactional(readOnly = true)
@@ -92,7 +92,8 @@ public class AuthService {
 
             log.info("로그인");
 
-            return new ResponseEntity<>(tokenInfoDTO, httpHeaders, HttpStatus.OK);
+//            return new ResponseEntity<>(tokenInfoDTO, httpHeaders, HttpStatus.OK);
+            return new ResponseEntity<>(httpHeaders, HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>("아이디 또는 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
@@ -184,6 +185,54 @@ public class AuthService {
         }
         else { // 입력한 비밀번호가 틀렸을 경우
             return new ResponseEntity<>("비밀번호가 틀렸습니다.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Transactional
+    // 로그인 되어 있는 유저의 비밀번호 변경
+    public ResponseEntity<?> updatePasswordByLoggedInUser(String inputOldPassword, String inputNewPassword) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
+
+        String password = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        boolean matches = passwordEncoder.matches(inputOldPassword, password);
+        boolean matches2 = passwordEncoder.matches(inputNewPassword, password);
+
+        if (matches) { // 입력한 비밀번호가 맞았을 경우
+            // 변경할 비밀번호가 기존 비밀번호와 일치한다면 예외 발생
+            if (matches2){
+                return new ResponseEntity<>("기존과 동일한 비밀번호로 변경할 수 없습니다.", HttpStatus.BAD_REQUEST);
+            }
+            member.setPassword(passwordEncoder.encode(inputNewPassword));
+
+            log.info("비밀번호 변경 - 로그인 유저");
+
+            return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
+        } else { // 입력한 비밀번호가 틀렸을 경우
+            return new ResponseEntity<>("비밀번호가 틀렸습니다.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Transactional
+    // 로그인 되어 있는 않은 유저의 비밀번호 변경
+    public ResponseEntity<?> updatePasswordByAnonymousUser(String inputEmail, String inputNewPassword) {
+        Member member = memberRepository.findByEmail(inputEmail).orElseThrow(UserNotFoundException::new);
+
+        String password = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        boolean matches = passwordEncoder.matches(inputNewPassword, password);
+
+        // 변경할 비밀번호가 기존 비밀번호와 일치한다면 예외 발생
+        if (matches) {
+            return new ResponseEntity<>("기존과 동일한 비밀번호로 변경할 수 없습니다.", HttpStatus.BAD_REQUEST);
+        } else {
+            member.setPassword(passwordEncoder.encode(inputNewPassword));
+
+            log.info("비밀번호 변경 - 비로그인 유저");
+
+            return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
         }
     }
 }
