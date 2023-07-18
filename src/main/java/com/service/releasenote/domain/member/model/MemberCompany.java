@@ -1,16 +1,14 @@
 package com.service.releasenote.domain.member.model;
 
 import com.service.releasenote.domain.company.model.Company;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
 import static javax.persistence.FetchType.*;
 
 @Entity
+@Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
