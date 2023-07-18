@@ -18,11 +18,11 @@ public class MemberCompany {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "company_id")
     private Company company;
 

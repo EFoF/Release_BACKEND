@@ -7,6 +7,7 @@ import com.service.releasenote.global.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -60,6 +61,7 @@ public class SecurityConfig {
                 .antMatchers("/auth/reissue").permitAll() // reissue 를 위한 api
                 .antMatchers("/auth/getMemberId").permitAll() // getCurrentId 를 위한 api
                 .antMatchers("/auth/update/password/anonymous").permitAll() // 비로그인 유저를 위한 api
+                .antMatchers(HttpMethod.GET, "/company/**").permitAll() // company로 시작하는 GET 방식만 허용
                 .antMatchers("/swagger-ui/index.html").permitAll() // swagger를 위한 주소
                 .anyRequest().authenticated() // 나머지 요청들은 모두 인증을 받아야 함
 
