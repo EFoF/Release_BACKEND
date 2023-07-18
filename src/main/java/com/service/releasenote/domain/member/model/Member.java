@@ -32,4 +32,10 @@ public class Member extends BaseTimeEntity {
 
     @Setter
     private boolean isDeleted = false;
+
+    public Member updateUsername(String userName) {
+        this.userName = userName;
+        return this;
+    }
+
 }
