@@ -26,7 +26,7 @@ public class CategoryController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("api for save category")
-    @PostMapping("/company/project/{project_id}/category")
+    @PostMapping("/companies/projects/{project_id}/categories")
     public String categoryAdd(
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody SaveCategoryRequest saveCategoryRequest
@@ -40,7 +40,7 @@ public class CategoryController {
      * @return CategoryInfoDto
      */
     @ApiOperation("api for get categories by project id")
-    @GetMapping("/company/project/{project_id}/category")
+    @GetMapping("/companies/projects/{project_id}/categories")
     public CategoryInfoDto categoryList(
             @PathVariable(name = "project_id") Long projectId
     ) {
@@ -55,7 +55,7 @@ public class CategoryController {
      * @return CategoryResponseDto
      */
     @ApiOperation("api for get specific category by combination of companyId, projectId, categoryId")
-    @GetMapping("/company/{company_id}/project/{project_id}/category/{category_id}")
+    @GetMapping("/companies/{company_id}/projects/{project_id}/categories/{category_id}")
     public CategoryResponseDto categoryDetailsWithCondition (
             @PathVariable(name = "company_id") Long companyId,
             @PathVariable(name = "project_id") Long projectId,
@@ -70,7 +70,7 @@ public class CategoryController {
      * @return CategoryResponseDto
      */
     @ApiOperation("api for get specific category by category id only")
-    @GetMapping("/category/{category_id}")
+    @GetMapping("/categories/{category_id}")
     public CategoryResponseDto categoryDetails (@PathVariable(name = "category_id") Long categoryId) {
         return categoryService.findCategoryByCategoryId(categoryId);
     }
@@ -82,7 +82,7 @@ public class CategoryController {
      * @return String
      */
     @ApiOperation("api for delete category and releases under category")
-    @DeleteMapping("/company/project/{project_id}/category/{category_id}")
+    @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}")
     public String categoryRemove(
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId
@@ -98,7 +98,7 @@ public class CategoryController {
      * @return CategoryModifyResponseDto
      */
     @ApiOperation("api for update category")
-    @PutMapping("/company/project/{project_id}/category/{category_id}")
+    @PutMapping("/companies/projects/{project_id}/categories/{category_id}")
     public CategoryModifyResponseDto categoryModify(
             @PathVariable(name = "project_id")Long projectId,
             @PathVariable(name = "category_id")Long categoryId,
