@@ -1,10 +1,6 @@
 package com.service.releasenote.domain.company.dto;
-
 import com.service.releasenote.domain.company.model.Company;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 public class CompanyDTO {
 
