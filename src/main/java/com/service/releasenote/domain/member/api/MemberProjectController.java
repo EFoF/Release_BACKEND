@@ -25,7 +25,7 @@ public class MemberProjectController {
     /**
      * 프로젝트 멤버 추가
      */
-    @PostMapping(value = "/project/{project_id}/member")
+    @PostMapping(value = "company/project/{project_id}/member")
     public ResponseEntity<MemberProjectDTO.AddProjectMemberResponseDto> addMemberProject(
             @RequestBody MemberProjectDTO.AddProjectMemberRequestDto addProjectMemberRequestDto,
             @PathVariable Long project_id) {
@@ -43,7 +43,7 @@ public class MemberProjectController {
     /**
      * 프로젝트 멤버 삭제
      * */
-    @DeleteMapping(value = "/project/{project_id}/member")
+    @DeleteMapping(value = "company/project/{project_id}/member")
     public ResponseEntity deleteMemberProject(
             @PathVariable Long project_id,
             @RequestHeader("email") String memberEmail) {

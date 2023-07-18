@@ -29,7 +29,7 @@ public class Project extends BaseTimeEntity {
     @Setter
     private String description;
 
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "company_id")
     private Company company;
 }
