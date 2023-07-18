@@ -18,12 +18,4 @@ public class CompanyDTO {
                     .build();
         }
     }
-
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MyProjectListByCompanyDto {
-
-    }
 }

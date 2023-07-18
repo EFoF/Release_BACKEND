@@ -65,16 +65,6 @@ public class ProjectController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    /**
-     * 내가 속한 프로젝트 조회
-     * */
-    @GetMapping(value = "company/myproject")
-    public ResponseEntity<List<CompanyDTO.MyProjectListByCompanyDto>> getMyProjectList() {
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
-        projectService.getMyProjectList();
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
 }
