@@ -2,8 +2,6 @@ package com.service.releasenote.domain.company.api;
 
 import com.service.releasenote.domain.company.application.CompanyService;
 import com.service.releasenote.domain.company.dto.CompanyDTO;
-import com.service.releasenote.domain.company.model.Company;
-import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,11 +18,10 @@ public class CompanyController {
 
     private final CompanyService companyService;
 
-    @PostMapping("/newCompany")
+    @PostMapping("/company")
     public ResponseEntity<Long> createCompany(@RequestBody CompanyDTO.CreateCompanyRequestDTO createCompanyRequestDTO) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        Company company = companyService.createCompany(createCompanyRequestDTO, currentMemberId);
+        Long companyId = companyService.createCompany(createCompanyRequestDTO);
 
-        return new ResponseEntity<>(company.getId(), HttpStatus.CREATED);
+        return new ResponseEntity<>(companyId, HttpStatus.CREATED);  // TODO: 반환 데이터 협의
     }
 }

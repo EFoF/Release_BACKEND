@@ -8,6 +8,7 @@ import com.service.releasenote.domain.member.error.exception.UserNotFoundExcepti
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberCompany;
 import com.service.releasenote.domain.member.model.Role;
+import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CompanyService {
 
@@ -27,7 +29,8 @@ public class CompanyService {
     private final MemberCompanyRepository memberCompanyRepository;
 
     @Transactional
-    public Company createCompany(CreateCompanyRequestDTO createCompanyRequestDTO, long currentMemberId) {
+    public Long createCompany(CreateCompanyRequestDTO createCompanyRequestDTO) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Member member = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);  // TODO: exception 추가 후 수정
         Company company = companyRepository.save(createCompanyRequestDTO.toEntity());
         MemberCompany memberCompany = MemberCompany.builder()
@@ -36,7 +39,7 @@ public class CompanyService {
                 .member(member)
                 .build();
         memberCompanyRepository.save(memberCompany);
-        return company;
+        return company.getId();
     }
 
 }
