@@ -1,7 +1,6 @@
 package com.service.releasenote.domain.category.application;
 
 import com.service.releasenote.domain.category.dao.CategoryRepository;
-import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
@@ -114,7 +113,7 @@ public class CategoryService {
      * @return String
      */
     @Transactional
-    public String deleteCategoryById(Long categoryId, Long projectId) {
+    public String deleteCategory(Long categoryId, Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         List<Long> members = memberProjectRepository.findMemberListByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
@@ -125,6 +124,33 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         categoryRepository.delete(category);
         return "deleted";
+    }
+
+
+    @Transactional
+    public void modifyCategory(CategoryModifyRequestDto modifyRequestDto, Long categoryId, Long projectId) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        List<Long> members = memberProjectRepository.findMemberListByProjectId(projectId);
+        if(!members.contains(currentMemberId)) {
+            throw new ProjectPermissionDeniedException();
+        }
+        Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
+        category.setTitle(modifyRequestDto.getTitle());
+        category.setDescription(modifyRequestDto.getDescription());
+        category.setDetail(modifyRequestDto.getDetail());
+        // 커맨드와 쿼리를 분리
+    }
+
+    public CategoryModifyResponseDto findCategoryAndConvert(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
+        Member modifier = memberRepository.findById(category.getModifierId()).orElseThrow(UserNotFoundException::new);
+        return CategoryModifyResponseDto.builder()
+                .lastModifiedTime(category.getModifiedDate())
+                .lastModifierName(modifier.getUserName())
+                .description(category.getDescription())
+                .detail(category.getDetail())
+                .title(category.getTitle())
+                .build();
     }
 
     private CategoryEachDto mapCategoryEntityToCategoryEachDto(Category category) {

@@ -87,6 +87,24 @@ public class CategoryController {
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId
     ) {
-        return categoryService.deleteCategoryById(categoryId, projectId);
+        return categoryService.deleteCategory(categoryId, projectId);
+    }
+
+    /**
+     * 카테고리 수정 api
+     * @param projectId
+     * @param categoryId
+     * @param modifyRequestDto
+     * @return CategoryModifyResponseDto
+     */
+    @ApiOperation("api for update category")
+    @PutMapping("/company/project/{project_id}/category/{category_id}")
+    public CategoryModifyResponseDto categoryModify(
+            @PathVariable(name = "project_id")Long projectId,
+            @PathVariable(name = "category_id")Long categoryId,
+            @RequestBody CategoryModifyRequestDto modifyRequestDto
+    ) {
+        categoryService.modifyCategory(modifyRequestDto, categoryId, projectId);
+        return categoryService.findCategoryAndConvert(categoryId);
     }
 }
