@@ -1,7 +1,6 @@
 package com.service.releasenote.domain.category.api;
 
 import com.service.releasenote.domain.category.application.CategoryService;
-import com.service.releasenote.domain.category.dto.CategoryDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -19,29 +18,45 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    /**
+     * 카테고리 생성 api
+     * @param projectId
+     * @param saveCategoryRequest
+     * @return String
+     */
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("api for save category")
-    @PostMapping("/company/{company_id}/project/{project_id}/category")
-    public String saveCategory(
-            @PathVariable(name = "company_id") Long companyId,
+    @PostMapping("/company/project/{project_id}/category")
+    public String categoryAdd(
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody SaveCategoryRequest saveCategoryRequest
             ) {
         return categoryService.saveCategory(saveCategoryRequest, projectId);
     }
 
+    /**
+     * 특정 프로젝트 하위의 카테고리를 모두 조회하는 api
+     * @param projectId
+     * @return CategoryInfoDto
+     */
     @ApiOperation("api for get categories by project id")
-    @GetMapping("/company/{company_id}/project/{project_id}/category")
-    public CategoryInfoDto getCategoryByProject(
-            @PathVariable(name = "company_id") Long companyId,
+    @GetMapping("/company/project/{project_id}/category")
+    public CategoryInfoDto categoryList(
             @PathVariable(name = "project_id") Long projectId
     ) {
         return categoryService.findCategoryByProjectId(projectId);
     }
 
+    /**
+     * 회사, 프로젝트, 카테고리 3개의 아이디를 모두 고려하여 카테고리 세부 데이터를 조회하는 api
+     * @param companyId
+     * @param projectId
+     * @param categoryId
+     * @return CategoryResponseDto
+     */
     @ApiOperation("api for get specific category by combination of companyId, projectId, categoryId")
     @GetMapping("/company/{company_id}/project/{project_id}/category/{category_id}")
-    public CategoryResponseDto getCategoryByIds (
+    public CategoryResponseDto categoryDetailsWithCondition (
             @PathVariable(name = "company_id") Long companyId,
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId
@@ -49,9 +64,29 @@ public class CategoryController {
         return categoryService.findCategoryByIds(companyId, projectId, categoryId);
     }
 
+    /**
+     * 카테고리 아이디만을 고려하여 카테고리 세부 데이터를 조회하는 api
+     * @param categoryId
+     * @return CategoryResponseDto
+     */
     @ApiOperation("api for get specific category by category id only")
     @GetMapping("/category/{category_id}")
-    public CategoryResponseDto getCategoryByCategoryId (@PathVariable(name = "category_id") Long categoryId) {
+    public CategoryResponseDto categoryDetails (@PathVariable(name = "category_id") Long categoryId) {
         return categoryService.findCategoryByCategoryId(categoryId);
+    }
+
+    /**
+     * 카테고리 삭제 api
+     * @param projectId
+     * @param categoryId
+     * @return String
+     */
+    @ApiOperation("api for delete category and releases under category")
+    @DeleteMapping("/company/project/{project_id}/category/{category_id}")
+    public String categoryRemove(
+            @PathVariable(name = "project_id") Long projectId,
+            @PathVariable(name = "category_id") Long categoryId
+    ) {
+        return categoryService.deleteCategoryById(categoryId, projectId);
     }
 }
