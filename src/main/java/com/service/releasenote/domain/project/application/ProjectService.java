@@ -14,6 +14,7 @@ import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.*;
 import com.service.releasenote.domain.project.model.Project;
+import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -70,6 +71,13 @@ public class ProjectService {
         memberProjectRepository.save(memberProject);    // 멤버 프로젝트에 role 저장
 
         return new CreateProjectResponseDto().toResponseDto(saveProject);
+    }
+
+    public FindMyProjectListByCompanyResponseDto getMyProjectList() {
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        return new FindMyProjectListByCompanyResponseDto().toResponseDto();
     }
 
     @Transactional
@@ -139,4 +147,6 @@ public class ProjectService {
         projectRepository.delete(project);
 
     }
+
+
 }
