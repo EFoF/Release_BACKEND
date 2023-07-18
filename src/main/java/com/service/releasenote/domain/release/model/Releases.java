@@ -2,10 +2,7 @@ package com.service.releasenote.domain.release.model;
 
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.model.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -14,6 +11,7 @@ import static javax.persistence.FetchType.*;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Releases extends BaseEntity {
@@ -27,7 +25,7 @@ public class Releases extends BaseEntity {
 
     private String version;
 
-    private LocalDateTime release_date;
+    private LocalDateTime releaseDate;
 
     private String message;
 

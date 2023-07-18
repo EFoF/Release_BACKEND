@@ -21,20 +21,17 @@ public class ReleaseController {
 
     @ApiOperation(value="api for save release")
     @ResponseStatus(value = HttpStatus.CREATED)
-    @PostMapping("/company/{companyId}/project/{projectId}/category/{categoryId}/release")
-    public void saveRelease(
-            @PathVariable(name = "companyId") Long companyId,
+    @PostMapping("/companies/projects/{projectId}/categories/{categoryId}/releases")
+    public Long saveRelease(
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "categoryId") Long categoryId,
             @RequestBody SaveReleaseRequest saveReleaseRequest
     ) {
-        releaseService.saveRelease(saveReleaseRequest);
+        return releaseService.saveRelease(saveReleaseRequest, projectId, categoryId);
     }
 
-    @GetMapping("/company/{companyId}/project/{projectId}/category/{categoryId}/release")
+    @GetMapping("/companies/projects/categories/{categoryId}/releases")
     public ReleaseInfoDto getReleaseByProject(
-            @PathVariable(name = "companyId") Long companyId,
-            @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "categoryId") Long categoryId
     ) {
         return releaseService.findReleasesByCategoryId(categoryId);
