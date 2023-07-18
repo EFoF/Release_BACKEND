@@ -73,13 +73,6 @@ public class ProjectService {
         return new CreateProjectResponseDto().toResponseDto(saveProject);
     }
 
-    public FindMyProjectListByCompanyResponseDto getMyProjectList() {
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
-        return new FindMyProjectListByCompanyResponseDto().toResponseDto();
-    }
-
     @Transactional
     public UpdateProjectResponseDto updateProject
             (UpdateProjectRequestDto updateProjectRequestDto, Long project_id, Long currentMemberId) {
