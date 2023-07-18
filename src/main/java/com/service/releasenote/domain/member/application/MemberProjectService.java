@@ -5,7 +5,9 @@ import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
+import com.service.releasenote.domain.member.error.exception.DuplicatedProjectMemberException;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
+import com.service.releasenote.domain.member.error.exception.UserPermissionDeniedException;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
@@ -52,23 +54,22 @@ public class MemberProjectService {
         Optional<Member> memberByEmail = memberRepository.findByEmail(email);
 
         // memberId가 존재하지 않으면 예외 처리
-        if(!memberByEmail.isEmpty()){
-            log.info("memberId가 존재하지 않음");
-            throw new UserNotFoundException();
-        }
+        Member member = memberByEmail.orElseThrow(NullPointerException::new);
 
-        // memberByEmail가 projectId의 회사에 속해있지 않으면 예외 처리
+        // member가 projectId의 회사에 속해있지 않으면 예외 처리
         Company company = project.getCompany();
         List<Long> memberListByCompanyId = memberCompanyRepository.findMemberListByCompanyId(company.getId());
-        if(!memberListByCompanyId.contains(memberByEmail.get().getId())) {
-            throw new UserNotFoundException();
+        if(!memberListByCompanyId.contains(member.getId())) {
+            throw new UserPermissionDeniedException();
         }
 
-        // 이미 프로젝트의 멤버이면 예외 처리
-
+        // member가 이미 프로젝트의 멤버이면 예외 처리
+        if(memberListByProjectId.contains(member.getId())) {
+            throw new DuplicatedProjectMemberException();
+        }
 
         // member_project에 저장 (role은 MEMBER)
-        MemberProject newMemberProject = addProjectMemberRequestDto.toEntity(project, memberByEmail.get());
+        MemberProject newMemberProject = addProjectMemberRequestDto.toEntity(project, member);
 
         MemberProject saveMemberProject = memberProjectRepository.save(newMemberProject);
 
