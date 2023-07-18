@@ -30,19 +30,23 @@ public class ReleaseService {
     }
 
     public ReleaseInfoDto findReleasesByCategoryId(Long categoryId) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        // TODO RuntimeExpcetion 말고 사용자 정의 예외로 바꾸어야 함
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(RuntimeException::new);
         List<Releases> releasesList = releaseRepository.findByCategoryId(categoryId);
         List<ReleaseDtoEach> dtoList = releasesList.stream()
-                .map(r -> mapReleaseToDto(r))
+                .map(r -> mapReleaseToDto(r, member.getUserName()))
                 .collect(Collectors.toList());
         return ReleaseInfoDto.builder().releaseDtoList(dtoList).build();
     }
 
-    private ReleaseDtoEach mapReleaseToDto(Releases releases) {
+    private ReleaseDtoEach mapReleaseToDto(Releases releases, String memberName) {
         return ReleaseDtoEach.builder()
                 .lastModifiedTime(releases.getModifiedDate())
                 .version(releases.getVersion())
                 .content(releases.getMessage())
                 .tag(releases.getTag())
+                .authorName(memberName)
                 .build();
     }
 
