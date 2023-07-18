@@ -36,9 +36,8 @@ public class ProjectController {
     /**
      * 프로젝트 수정
      * */
-    @PutMapping(value = "/company/{company_id}/project/{project_id}")
+    @PutMapping(value = "/company/project/{project_id}")
     public ResponseEntity updateProject(
-            @PathVariable Long company_id,
             @PathVariable Long project_id,
             @RequestBody UpdateProjectRequestDto updateProjectRequestDto
     ) {
