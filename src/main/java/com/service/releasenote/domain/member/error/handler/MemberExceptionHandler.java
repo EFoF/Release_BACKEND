@@ -1,5 +1,6 @@
 package com.service.releasenote.domain.member.error.handler;
 
+import com.service.releasenote.domain.member.error.exception.DeleteMemberPermissionDeniedException;
 import com.service.releasenote.domain.member.error.exception.DuplicatedProjectMemberException;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.error.exception.UserPermissionDeniedException;
@@ -23,6 +24,11 @@ public class MemberExceptionHandler {
 
     @ExceptionHandler(DuplicatedProjectMemberException.class)
     public final ResponseEntity<String> handleUserPermissionDeniedException(DuplicatedProjectMemberException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(DeleteMemberPermissionDeniedException.class)
+    public final ResponseEntity<String> handleDeleteMemberPermissionDeniedException(DeleteMemberPermissionDeniedException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

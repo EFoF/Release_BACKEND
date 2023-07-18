@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MemberProjectRepository extends JpaRepository<MemberProject, Long> {
 
@@ -14,4 +15,10 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
 
     @Query(value = "SELECT mp.member_id FROM member_project mp WHERE mp.project_id = :project_id", nativeQuery = true)
     List<Long> findMemberListByProjectId(@Param("project_id")Long project_id);
+
+    @Query(value = "SELECT * FROM member_project mp WHERE mp.project_id=:project_id AND mp.member_id=:member_id", nativeQuery = true)
+    MemberProject findByMemberAndProject(@Param("member_id") Long memberId, @Param("project_id") Long projectId);
+
+    @Query(value = "SELECT * FROM member_project mp WHERE mp.member_id =:currentMemberId", nativeQuery = true)
+    Optional<MemberProject> findByMemberId(Long currentMemberId);
 }

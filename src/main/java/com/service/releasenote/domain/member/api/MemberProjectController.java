@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
 
+import java.nio.file.Path;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class MemberProjectController {
     /**
      * 프로젝트 멤버 추가
      */
-    @PostMapping("/project/{project_id}/member")
+    @PostMapping(value = "/project/{project_id}/member")
     public ResponseEntity<MemberProjectDTO.AddProjectMemberResponseDto> addMemberProject(
             @RequestBody MemberProjectDTO.AddProjectMemberRequestDto addProjectMemberRequestDto,
             @PathVariable Long project_id) {
@@ -36,8 +38,18 @@ public class MemberProjectController {
         AddProjectMemberResponseDto addProjectMember = memberProjectService.addProjectMember(addProjectMemberRequestDto, project_id, currentMemberId);
 
         return new ResponseEntity<>(addProjectMember, HttpStatus.CREATED);
-
-//        ProjectDto.CreateProjectResponseDto project = projectService.createProject(addProjectMemberRequestDto, company_id, currentMemberId);
-//        return new ResponseEntity<>(project, HttpStatus.CREATED);
     }
+
+    /**
+     * 프로젝트 멤버 삭제
+     * */
+    @DeleteMapping(value = "/project/{project_id}/member")
+    public ResponseEntity deleteMemberProject(
+            @PathVariable Long project_id,
+            @RequestHeader("email") String memberEmail) {
+
+        memberProjectService.deleteProjectMember(project_id, memberEmail);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }
