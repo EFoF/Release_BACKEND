@@ -5,15 +5,18 @@ import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
+import com.service.releasenote.domain.member.error.exception.DeleteMemberPermissionDeniedException;
 import com.service.releasenote.domain.member.error.exception.DuplicatedProjectMemberException;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.error.exception.UserPermissionDeniedException;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberProject;
+import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
 import com.service.releasenote.domain.project.model.Project;
+import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -74,5 +77,36 @@ public class MemberProjectService {
         MemberProject saveMemberProject = memberProjectRepository.save(newMemberProject);
 
         return new AddProjectMemberResponseDto().toResponseDto(saveMemberProject);
+    }
+
+    @Transactional
+    public void deleteProjectMember(Long projectId, String memberEmail) {
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        // projectId가 존재하지 않으면 예외 처리
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // currentMemberId가 삭제할 권한이 없으면(프로젝트의 OWNER이 아니면) 예외 처리
+        Optional<MemberProject> currentMemberOptional = memberProjectRepository.findByMemberId(currentMemberId);
+        MemberProject currentMember = currentMemberOptional.orElseThrow(NullPointerException::new);
+
+        if(!currentMember.getRole().equals(Role.OWNER)){
+            throw new DeleteMemberPermissionDeniedException();
+        }
+
+        // memberEmail을 가진 member의 id가 memberproject에 없으면 예외 처리
+        Optional<Member> MemberByEmail = memberRepository.findByEmail(memberEmail);
+        Member member = MemberByEmail.orElseThrow(NullPointerException::new);
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberListByProjectId(projectId);
+        if(!memberListByProjectId.contains(member.getId())){
+            throw new UserNotFoundException();
+        }
+
+        // member를 member_project에서 삭제
+        MemberProject deletedMember = memberProjectRepository.findByMemberAndProject(member.getId(), projectId);
+        memberProjectRepository.delete(deletedMember);
+
     }
 }
