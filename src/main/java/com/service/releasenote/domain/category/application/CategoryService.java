@@ -4,11 +4,13 @@ import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
+import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
+import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +29,17 @@ import static com.service.releasenote.domain.category.dto.CategoryDto.*;
 @Transactional(readOnly = true)
 public class CategoryService {
 
+    private final MemberProjectRepository memberProjectRepository;
     private final CategoryRepository categoryRepository;
     private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
     @Transactional
     public String saveCategory(SaveCategoryRequest saveCategoryRequest, Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        Member member = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberListByProjectId(projectId);
+        if(!memberListByProjectId.contains(currentMemberId)) {
+            throw new ProjectPermissionDeniedException();
+        }
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
         Category category = saveCategoryRequest.toEntity(project);
         categoryRepository.save(category);
@@ -43,7 +49,7 @@ public class CategoryService {
     public CategoryInfoDto findCategoryByProjectId(Long projectId) {
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
 //        List<Category> categoryList = categoryRepository.findByProjectId(projectId);
-        List<Category> categoryList = categoryRepository.findByProject(projectId);
+        List<Category> categoryList = categoryRepository.findByProject(project.getId());
         List<CategoryEachDto> categoryEachDtoList = categoryList.stream()
                 .map(c -> mapCategoryEntityToCategoryEachDto(c))
                 .collect(Collectors.toList());
