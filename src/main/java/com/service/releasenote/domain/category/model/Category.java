@@ -26,7 +26,7 @@ public class Category extends BaseEntity {
 
     private String description;
 
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
 
