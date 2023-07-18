@@ -33,11 +33,11 @@ public class ProjectController {
     /**
      * 프로젝트 수정
      * */
-    @PutMapping(value = "/company/{company_id}/project/{project_id}/update")
+    @PutMapping(value = "/company/{company_id}/project/{project_id}")
     public ResponseEntity updateProject(
             @PathVariable Long company_id,
             @PathVariable Long project_id,
-            @RequestBody UpdateProjectRequestDto updateProjectRequestDto
+            @RequestBody UpdateProjectRequestDto updateProjectReques@PutMapping(value = "/company/{company_id}/project/{project_id}/update")tDto
     ) {
 
         // 현재 멤버의 아이디를 가져옴
