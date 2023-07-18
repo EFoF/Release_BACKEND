@@ -59,4 +59,26 @@ public class CategoryDto {
     public static class CategoryInfoDto {
         List<CategoryEachDto> categoryEachDtoList;
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CategoryModifyRequestDto {
+        private String title;
+        private String description;
+        private String detail;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CategoryModifyResponseDto {
+        private String title;
+        private String description;
+        private String detail;
+        private String lastModifierName;
+        private LocalDateTime lastModifiedTime;
+    }
 }
