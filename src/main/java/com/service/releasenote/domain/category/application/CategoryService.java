@@ -77,11 +77,10 @@ public class CategoryService {
      */
     public CategoryResponseDto findCategoryByCategoryId(Long categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
-        Member member = memberRepository.findById(category.getModifierId()).orElseThrow(UserNotFoundException::new);
         return CategoryResponseDto.builder()
                 .lastModifiedTime(category.getModifiedDate())
+                .lastModifierName(category.getModifierName())
                 .description(category.getDescription())
-                .lastModifierName(member.getUserName())
                 .detail(category.getDetail())
                 .title(category.getTitle())
                 .build();
@@ -96,11 +95,10 @@ public class CategoryService {
      */
     public CategoryResponseDto findCategoryByIds(Long companyId, Long projectId, Long categoryId) {
         Category category = categoryRepository.findByIntersectionId(companyId, projectId, categoryId).orElseThrow(CategoryNotFoundException::new);
-        Member member = memberRepository.findById(category.getModifierId()).orElseThrow(UserNotFoundException::new);
         return CategoryResponseDto.builder()
                 .lastModifiedTime(category.getModifiedDate())
+                .lastModifierName(category.getModifierName())
                 .description(category.getDescription())
-                .lastModifierName(member.getUserName())
                 .detail(category.getDetail())
                 .title(category.getTitle())
                 .build();
@@ -143,10 +141,9 @@ public class CategoryService {
 
     public CategoryModifyResponseDto findCategoryAndConvert(Long categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
-        Member modifier = memberRepository.findById(category.getModifierId()).orElseThrow(UserNotFoundException::new);
         return CategoryModifyResponseDto.builder()
                 .lastModifiedTime(category.getModifiedDate())
-                .lastModifierName(modifier.getUserName())
+                .lastModifierName(category.getModifierName())
                 .description(category.getDescription())
                 .detail(category.getDetail())
                 .title(category.getTitle())
