@@ -19,8 +19,7 @@ public class AuditorAwareImpl implements AuditorAware<Long> {
         if(authentication.getPrincipal().equals("anonymousUser")) { // 로그인 하지 않은 경우
             throw new NotSignInException();
         }
-        String name = authentication.getName();
-        Long memberId = Long.valueOf(name);
+        Long memberId = Long.valueOf(authentication.getName());
         return Optional.ofNullable(memberId);
     }
 }
