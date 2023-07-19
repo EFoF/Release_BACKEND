@@ -70,4 +70,28 @@ public class ReleaseDto {
         List<ProjectReleasesDtoEach> projectReleasesDto;
     }
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReleaseModifyRequestDto {
+        private LocalDateTime releaseDate;
+        private String version;
+        private String message;
+        private Tag tag;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReleaseModifyResponseDto {
+        private LocalDateTime lastModifiedTime;
+        private LocalDateTime releaseDate;
+        private String lastModifierName;
+        private String version;
+        private String message;
+        private Tag tag;
+    }
+
 }

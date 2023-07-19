@@ -13,6 +13,7 @@ import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFou
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
+import com.service.releasenote.domain.release.exception.ReleasesNotFoundException;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +90,77 @@ public class ReleaseService {
         List<Long> categoryIdList = categoryList.stream().map(c -> c.getId()).collect(Collectors.toList());
         List<Releases> releasesList = releaseRepository.findByCategoryIdIn(categoryIdList);
         return mapProjectReleaseToDto(categoryList, releasesList);
+    }
+
+    /**
+     * 릴리즈 수정 api 서비스 로직 일부
+     * CQS - Query
+     * @param requestDto
+     * @param projectId
+     * @param categoryId
+     * @param releaseId
+     */
+    @Transactional
+    public void modifyReleases(ReleaseModifyRequestDto requestDto, Long projectId,
+                                                   Long categoryId, Long releaseId) {
+        if(!categoryRepository.existsByProjectId(projectId)) {
+            throw new CategoryNotFoundException();
+        }
+
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        List<Long> members = memberProjectRepository.findMemberListByProjectId(projectId);
+        if(!members.contains(currentMemberId)) {
+            throw new ProjectPermissionDeniedException();
+        }
+        Releases releases = releaseRepository.findByCategoryIdAndReleaseId(categoryId, releaseId)
+                .orElseThrow(() ->  new ReleasesNotFoundException("해당 카테고리에 속하는 릴리즈가 없습니다."));
+        releases.setReleaseDate(requestDto.getReleaseDate());
+        releases.setVersion(requestDto.getVersion());
+        releases.setMessage(requestDto.getMessage());
+        releases.setTag(requestDto.getTag());
+        // CQS
+    }
+
+    /**
+     * 릴리즈 수정 api 서비스 로직 일부
+     * CQS - Query
+     * @param categoryId
+     * @return ReleaseModifyResponseDto
+     */
+    public ReleaseModifyResponseDto findReleaseAndConvert(Long categoryId) {
+        Releases releases = releaseRepository.findById(categoryId).orElseThrow(ReleasesNotFoundException::new);
+        return ReleaseModifyResponseDto.builder()
+                .lastModifiedTime(releases.getModifiedDate())
+                .lastModifierName(releases.getModifierName())
+                .releaseDate(releases.getReleaseDate())
+                .version(releases.getVersion())
+                .message(releases.getMessage())
+                .tag(releases.getTag())
+                .build();
+    }
+
+    /**
+     * 릴리즈 삭제 api 서비스 로직
+     * @param projectId
+     * @param categoryId
+     * @param releaseId
+     * @return String
+     */
+    @Transactional
+    public String deleteRelease(Long projectId, Long categoryId, Long releaseId) {
+        if(!categoryRepository.existsByProjectId(projectId)) {
+            throw new CategoryNotFoundException();
+        }
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        List<Long> memberList = memberProjectRepository.findMemberListByProjectId(projectId);
+        if(!memberList.contains(currentMemberId)) {
+            throw new ProjectPermissionDeniedException();
+        }
+        Releases releases = releaseRepository.findByCategoryIdAndReleaseId(categoryId, releaseId)
+                .orElseThrow(() ->  new ReleasesNotFoundException("해당 카테고리에 속하는 릴리즈가 없습니다."));
+
+        releaseRepository.delete(releases);
+        return "deleted";
     }
 
     private ReleaseDtoEach mapReleaseToDto(Releases releases) {

@@ -12,6 +12,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, Categ
     @EntityGraph(attributePaths = {"project"})
     List<Category> findByProjectId(Long projectId);
 
+    Boolean existsByProjectId(Long projectId);
     @EntityGraph(attributePaths = {"project"})
     Optional<Category> findById(Long id);
 }

@@ -9,6 +9,5 @@ import java.util.Optional;
 public interface CategoryCustomRepository {
 
     List<Category> findByProject(Long projectId);
-
     Optional<Category> findByIntersectionId(Long companyId, Long projectId, Long categoryId);
 }
