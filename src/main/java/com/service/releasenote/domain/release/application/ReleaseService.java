@@ -92,6 +92,14 @@ public class ReleaseService {
         return mapProjectReleaseToDto(categoryList, releasesList);
     }
 
+    /**
+     * 릴리즈 수정 api 서비스 로직 일부
+     * CQS - Query
+     * @param requestDto
+     * @param projectId
+     * @param categoryId
+     * @param releaseId
+     */
     @Transactional
     public void modifyReleases(ReleaseModifyRequestDto requestDto, Long projectId,
                                                    Long categoryId, Long releaseId) {
@@ -105,7 +113,7 @@ public class ReleaseService {
             throw new ProjectPermissionDeniedException();
         }
         Releases releases = releaseRepository.findByCategoryIdAndReleaseId(categoryId, releaseId)
-                .orElseThrow(ReleasesNotFoundException::new);
+                .orElseThrow(() ->  new ReleasesNotFoundException("해당 카테고리에 속하는 릴리즈가 없습니다."));
         releases.setReleaseDate(requestDto.getReleaseDate());
         releases.setVersion(requestDto.getVersion());
         releases.setMessage(requestDto.getMessage());
@@ -113,6 +121,12 @@ public class ReleaseService {
         // CQS
     }
 
+    /**
+     * 릴리즈 수정 api 서비스 로직 일부
+     * CQS - Query
+     * @param categoryId
+     * @return ReleaseModifyResponseDto
+     */
     public ReleaseModifyResponseDto findReleaseAndConvert(Long categoryId) {
         Releases releases = releaseRepository.findById(categoryId).orElseThrow(ReleasesNotFoundException::new);
         return ReleaseModifyResponseDto.builder()
@@ -123,6 +137,30 @@ public class ReleaseService {
                 .message(releases.getMessage())
                 .tag(releases.getTag())
                 .build();
+    }
+
+    /**
+     * 릴리즈 삭제 api 서비스 로직
+     * @param projectId
+     * @param categoryId
+     * @param releaseId
+     * @return String
+     */
+    @Transactional
+    public String deleteRelease(Long projectId, Long categoryId, Long releaseId) {
+        if(!categoryRepository.existsByProjectId(projectId)) {
+            throw new CategoryNotFoundException();
+        }
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        List<Long> memberList = memberProjectRepository.findMemberListByProjectId(projectId);
+        if(!memberList.contains(currentMemberId)) {
+            throw new ProjectPermissionDeniedException();
+        }
+        Releases releases = releaseRepository.findByCategoryIdAndReleaseId(categoryId, releaseId)
+                .orElseThrow(() ->  new ReleasesNotFoundException("해당 카테고리에 속하는 릴리즈가 없습니다."));
+
+        releaseRepository.delete(releases);
+        return "deleted";
     }
 
     private ReleaseDtoEach mapReleaseToDto(Releases releases) {

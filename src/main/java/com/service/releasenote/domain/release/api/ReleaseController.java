@@ -1,7 +1,6 @@
 package com.service.releasenote.domain.release.api;
 
 import com.service.releasenote.domain.release.application.ReleaseService;
-import com.service.releasenote.domain.release.dto.ReleaseDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
-import static com.service.releasenote.domain.release.dto.ReleaseDto.ReleaseInfoDto;
-import static com.service.releasenote.domain.release.dto.ReleaseDto.SaveReleaseRequest;
 
 @Slf4j
 @RestController
@@ -75,5 +72,15 @@ public class ReleaseController {
     ) {
         releaseService.modifyReleases(releaseModifyRequestDto, projectId, categoryId, releaseId);
         return releaseService.findReleaseAndConvert(releaseId);
+    }
+
+    @ApiOperation("api for delete releases")
+    @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
+    public String ReleaseDelete(
+            @PathVariable(name = "project_id") Long projectId,
+            @PathVariable(name = "category_id") Long categoryId,
+            @PathVariable(name = "release_id") Long releaseId
+    ) {
+        return releaseService.deleteRelease(projectId, categoryId, releaseId);
     }
 }
