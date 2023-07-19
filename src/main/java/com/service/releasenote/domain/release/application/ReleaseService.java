@@ -73,7 +73,7 @@ public class ReleaseService {
         memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
         List<Releases> releasesList = releaseRepository.findByCategoryId(categoryId);
         List<ReleaseDtoEach> dtoList = releasesList.stream()
-                .map(r -> mapReleaseToDto(r, r.getModifierId()))
+                .map(r -> mapReleaseToDto(r))
                 .collect(Collectors.toList());
         return ReleaseInfoDto.builder().releaseDtoList(dtoList).build();
     }
@@ -91,12 +91,10 @@ public class ReleaseService {
         return mapProjectReleaseToDto(categoryList, releasesList);
     }
 
-    private ReleaseDtoEach mapReleaseToDto(Releases releases, Long lastModifierId) {
-        // TODO N+1 발생, 마지막 수정자를 문자열로 받을 수는 없을까
-        Member member = memberRepository.findById(lastModifierId).orElseThrow(UserNotFoundException::new);
+    private ReleaseDtoEach mapReleaseToDto(Releases releases) {
         return ReleaseDtoEach.builder()
                 .lastModifiedTime(releases.getModifiedDate())
-                .lastModifierName(member.getUserName())
+                .lastModifierName(releases.getModifierName())
                 .version(releases.getVersion())
                 .content(releases.getMessage())
                 .tag(releases.getTag())
@@ -122,7 +120,7 @@ public class ReleaseService {
                     .description(category.getDescription())
                     .build();
             List<ReleaseDtoEach> releaseDtoEachList = release.stream()
-                    .map(r -> mapReleaseToDto(r, r.getModifierId())).collect(Collectors.toList());
+                    .map(r -> mapReleaseToDto(r)).collect(Collectors.toList());
             ProjectReleasesDtoEach resultEach = ProjectReleasesDtoEach.builder()
                     .categoryResponseDto(categoryResponseDto)
                     .releaseDtoList(releaseDtoEachList)
