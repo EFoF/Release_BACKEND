@@ -13,6 +13,7 @@ import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFou
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
+import com.service.releasenote.domain.release.exception.ReleasesNotFoundException;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +90,39 @@ public class ReleaseService {
         List<Long> categoryIdList = categoryList.stream().map(c -> c.getId()).collect(Collectors.toList());
         List<Releases> releasesList = releaseRepository.findByCategoryIdIn(categoryIdList);
         return mapProjectReleaseToDto(categoryList, releasesList);
+    }
+
+    @Transactional
+    public void modifyReleases(ReleaseModifyRequestDto requestDto, Long projectId,
+                                                   Long categoryId, Long releaseId) {
+        if(!categoryRepository.existsByProjectId(projectId)) {
+            throw new CategoryNotFoundException();
+        }
+
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        List<Long> members = memberProjectRepository.findMemberListByProjectId(projectId);
+        if(!members.contains(currentMemberId)) {
+            throw new ProjectPermissionDeniedException();
+        }
+        Releases releases = releaseRepository.findByCategoryIdAndReleaseId(categoryId, releaseId)
+                .orElseThrow(ReleasesNotFoundException::new);
+        releases.setReleaseDate(requestDto.getReleaseDate());
+        releases.setVersion(requestDto.getVersion());
+        releases.setMessage(requestDto.getMessage());
+        releases.setTag(requestDto.getTag());
+        // CQS
+    }
+
+    public ReleaseModifyResponseDto findReleaseAndConvert(Long categoryId) {
+        Releases releases = releaseRepository.findById(categoryId).orElseThrow(ReleasesNotFoundException::new);
+        return ReleaseModifyResponseDto.builder()
+                .lastModifiedTime(releases.getModifiedDate())
+                .lastModifierName(releases.getModifierName())
+                .releaseDate(releases.getReleaseDate())
+                .version(releases.getVersion())
+                .message(releases.getMessage())
+                .tag(releases.getTag())
+                .build();
     }
 
     private ReleaseDtoEach mapReleaseToDto(Releases releases) {

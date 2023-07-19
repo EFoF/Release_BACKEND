@@ -20,13 +20,17 @@ public class Releases extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     private Tag tag;
 
+    @Setter
     private String version;
 
+    @Setter
     private LocalDateTime releaseDate;
 
+    @Setter
     private String message;
 
     @ManyToOne(fetch = LAZY)

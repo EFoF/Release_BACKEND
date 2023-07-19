@@ -28,8 +28,8 @@ public class ReleaseController {
      * @param saveReleaseRequest
      * @return Long
      */
-    @ApiOperation("api for save release")
     @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation("api for save release")
     @PostMapping("/companies/projects/{projectId}/categories/{categoryId}/releases")
     public Long releaseAdd(
             @PathVariable(name = "projectId") Long projectId,
@@ -63,5 +63,17 @@ public class ReleaseController {
             @PathVariable(name = "project_id") Long projectId
     ) {
         return releaseService.findReleasesByProjectId(projectId);
+    }
+
+    @ApiOperation("api for modify releases")
+    @PutMapping("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
+    public ReleaseModifyResponseDto releaseModify(
+            @PathVariable(name = "project_id") Long projectId,
+            @PathVariable(name = "category_id") Long categoryId,
+            @PathVariable(name = "release_id") Long releaseId,
+            @RequestBody ReleaseModifyRequestDto releaseModifyRequestDto
+    ) {
+        releaseService.modifyReleases(releaseModifyRequestDto, projectId, categoryId, releaseId);
+        return releaseService.findReleaseAndConvert(releaseId);
     }
 }
