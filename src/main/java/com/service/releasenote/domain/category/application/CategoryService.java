@@ -49,8 +49,8 @@ public class CategoryService {
         }
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
         Category category = categorySaveRequest.toEntity(project);
-        categoryRepository.save(category);
-        return category.getId();
+        Category savedCategory = categoryRepository.save(category);
+        return savedCategory.getId();
     }
 
     /**
@@ -60,7 +60,6 @@ public class CategoryService {
      */
     public CategoryInfoDto findCategoryByProjectId(Long projectId) {
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
-//        List<Category> categoryList = categoryRepository.findByProjectId(projectId);
         List<Category> categoryList = categoryRepository.findByProject(project.getId());
         List<CategoryEachDto> categoryEachDtoList = categoryList.stream()
                 .map(c -> mapCategoryEntityToCategoryEachDto(c))
