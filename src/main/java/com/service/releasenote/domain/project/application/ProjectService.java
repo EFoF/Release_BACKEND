@@ -136,7 +136,7 @@ public class ProjectService {
         // 3
         List<MemberProject> memberProjectByProjectId = memberProjectRepository.findMemberProjectByProjectId(projectId);
         if(memberProjectByProjectId.isEmpty()){
-
+            throw new UserNotFoundException();
         } else {
             for (MemberProject memberProject : memberProjectByProjectId) {
                 memberProjectRepository.delete(memberProject);
