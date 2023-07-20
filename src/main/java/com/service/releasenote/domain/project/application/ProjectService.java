@@ -1,5 +1,6 @@
 package com.service.releasenote.domain.project.application;
 
+import com.service.releasenote.domain.category.application.CategoryService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
@@ -36,6 +37,8 @@ public class ProjectService {
     private final CompanyRepository companyRepository;
     private final MemberProjectRepository memberProjectRepository;
     private final MemberRepository memberRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
     @Transactional
     public CreateProjectResponseDto createProject
@@ -124,22 +127,24 @@ public class ProjectService {
         // 4. 프로젝트의 하위 카테고리도 (자동으로? cascade 어쩌구..) 삭제되어야 한다.
         // 5. 프로젝트 삭제
 
-        // 3
-        List<MemberProject> memberProjectByProjectId = projectRepository.findMemberProjectByProjectId(projectId);
-        for (MemberProject memberProject : memberProjectByProjectId) {
-            memberProjectRepository.delete(memberProject);
+        // 4
+        List<Category> categoryIdByProjectId = categoryRepository.findCategoryByProjectId(projectId);
+        for (Category category : categoryIdByProjectId) {
+            categoryService.deleteCategory(category.getId(), projectId);
         }
 
-        // 4
-//        List<Category> categoryIdByProjectId = projectRepository.findCategoryByProjectId(projectId);
-//        for (Category category : categoryIdByProjectId) {
-//            categoryRepository.delete(category);
-//        }
+        // 3
+        List<MemberProject> memberProjectByProjectId = memberProjectRepository.findMemberProjectByProjectId(projectId);
+        if(memberProjectByProjectId.isEmpty()){
+
+        } else {
+            for (MemberProject memberProject : memberProjectByProjectId) {
+                memberProjectRepository.delete(memberProject);
+            }
+        }
 
         // 프로젝트 삭제
         projectRepository.delete(project);
 
     }
-
-
 }
