@@ -57,6 +57,32 @@ public class ProjectDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class FindProjectListResponseDto {
+        // 프로젝트 생성 응답 dto
+        private Long project_id;
+        private String title;
+        private String description;
+        private boolean scope;
+        private LocalDateTime create_date;
+        private LocalDateTime modified_date;
+
+        public FindProjectListResponseDto toResponseDto(Project project) {
+            return FindProjectListResponseDto.builder()
+                    .project_id(project.getId())
+                    .title(project.getTitle())
+                    .description(project.getDescription())
+                    .scope(project.isScope())
+                    .create_date(project.getCreateDate())
+                    .modified_date(project.getModifiedDate())
+                    .build();
+        }
+    }
+
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class UpdateProjectRequestDto {
         // 프로젝트 정보 수정 요청 dto
         private String title;

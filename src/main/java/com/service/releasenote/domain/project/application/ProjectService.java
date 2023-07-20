@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
@@ -74,6 +75,24 @@ public class ProjectService {
         memberProjectRepository.save(memberProject);    // 멤버 프로젝트에 role 저장
 
         return new CreateProjectResponseDto().toResponseDto(saveProject);
+    }
+
+    public List<FindProjectListResponseDto> findProjectListByCompany(Long companyId) {
+
+        // 회사가 없는 경우 예외 처리
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(CompanyNotFoundException::new);
+
+        // 회사의 프로젝트가 없는 경우 예외 처리
+        List<Project> projectList = projectRepository.findByCompany(company)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 프로젝트를 dto에 담아 리스트화
+        List<FindProjectListResponseDto> collect = projectList.stream()
+                .map(project -> new FindProjectListResponseDto().toResponseDto(project))
+                .collect(Collectors.toList());
+
+        return collect;
     }
 
     @Transactional
