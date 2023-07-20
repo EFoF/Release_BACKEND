@@ -5,8 +5,6 @@ import com.service.releasenote.domain.category.exception.CategoryNotFoundExcepti
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
-import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
-import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
@@ -38,21 +36,21 @@ public class CategoryService {
 
     /**
      * 카테고리 저장 서비스 로직
-     * @param saveCategoryRequest
+     * @param categorySaveRequest
      * @param projectId
      * @return String
      */
     @Transactional
-    public String saveCategory(SaveCategoryRequest saveCategoryRequest, Long projectId) {
+    public Long saveCategory(CategorySaveRequest categorySaveRequest, Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         List<Long> memberListByProjectId = memberProjectRepository.findMemberListByProjectId(projectId);
         if(!memberListByProjectId.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
-        Category category = saveCategoryRequest.toEntity(project);
+        Category category = categorySaveRequest.toEntity(project);
         categoryRepository.save(category);
-        return "saved";
+        return category.getId();
     }
 
     /**

@@ -21,17 +21,17 @@ public class CategoryController {
     /**
      * 카테고리 생성 api
      * @param projectId
-     * @param saveCategoryRequest
+     * @param categorySaveRequest
      * @return String
      */
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("api for save category")
     @PostMapping("/companies/projects/{project_id}/categories")
-    public String categoryAdd(
+    public Long categoryAdd(
             @PathVariable(name = "project_id") Long projectId,
-            @RequestBody SaveCategoryRequest saveCategoryRequest
+            @RequestBody CategorySaveRequest categorySaveRequest
             ) {
-        return categoryService.saveCategory(saveCategoryRequest, projectId);
+        return categoryService.saveCategory(categorySaveRequest, projectId);
     }
 
     /**

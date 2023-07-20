@@ -16,7 +16,7 @@ public class CategoryDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class SaveCategoryRequest {
+    public static class CategorySaveRequest {
         private String title;
         private String description;
         private String detail;
