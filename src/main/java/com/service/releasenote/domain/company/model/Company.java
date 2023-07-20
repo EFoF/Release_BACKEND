@@ -6,6 +6,7 @@ import lombok.*;
 import javax.persistence.*;
 
 @Entity
+@Getter
 @NoArgsConstructor
 public class Company extends BaseTimeEntity {
 
@@ -39,4 +40,5 @@ public class Company extends BaseTimeEntity {
     public void setName(String name) {
         this.name = name;
     }
+
 }

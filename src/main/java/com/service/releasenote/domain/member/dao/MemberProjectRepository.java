@@ -1,6 +1,8 @@
 package com.service.releasenote.domain.member.dao;
 
 import com.service.releasenote.domain.member.model.MemberProject;
+import com.service.releasenote.domain.project.model.Project;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,8 +22,14 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
     MemberProject findByMemberAndProject(@Param("member_id") Long memberId, @Param("project_id") Long projectId);
 
     @Query(value = "SELECT * FROM member_project mp WHERE mp.member_id =:currentMemberId", nativeQuery = true)
-    Optional<MemberProject> findByMemberId(Long currentMemberId);
+    Optional<MemberProject> findByMemberIdNative(Long currentMemberId);
 
     @Query(value = "SELECT * FROM member_project mp WHERE mp.project_id = :project_id", nativeQuery = true)
     List<MemberProject> findMemberProjectByProjectId(@Param("project_id")Long project_id);
+
+    @EntityGraph(attributePaths = {"project"})
+    Optional<MemberProject> findByMemberIdAndProjectId(Long memberId, Long projectId);
+
+    @EntityGraph(attributePaths = {"project"})
+    List<MemberProject> findByMemberId(Long currentMemberId);
 }
