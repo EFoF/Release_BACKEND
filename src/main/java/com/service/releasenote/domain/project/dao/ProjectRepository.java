@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.project.dao;
 
 import com.service.releasenote.domain.category.model.Category;
+import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.model.Project;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value = "SELECT p.title FROM project p WHERE p.company_id = :company_id", nativeQuery = true)
@@ -22,5 +24,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @Query(value = "SELECT * FROM member_project mp WHERE mp.project_id = :project_id", nativeQuery = true)
     List<MemberProject> findMemberProjectByProjectId(@Param("project_id")Long project_id);
+
+
+    Optional<List<Project>> findByCompany(Company company);
 
 }

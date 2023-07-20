@@ -2,6 +2,7 @@ package com.service.releasenote.domain.project.api;
 
 import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.project.application.ProjectService;
+import com.service.releasenote.domain.project.dto.ProjectDto;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,24 @@ public class ProjectController {
 
         CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id, currentMemberId);
         return new ResponseEntity<>(project, HttpStatus.CREATED);
+    }
+
+    /**
+     * 내가 속한 프로젝트 조회
+     * */
+//    @GetMapping(value = "/company/myProject")
+//    public ResponseEntity<> myProjectList() {
+//
+//    }
+
+
+    /**
+     * 회사의 프로젝트 조회
+     * */
+    @GetMapping(value = "/projectList/{company_id}")
+    public ResponseEntity<List<FindProjectListResponseDto>> projectListByCompany(@PathVariable Long company_id) {
+        List<FindProjectListResponseDto> projectListByCompany = projectService.findProjectListByCompany(company_id);
+        return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
     }
 
     /**
