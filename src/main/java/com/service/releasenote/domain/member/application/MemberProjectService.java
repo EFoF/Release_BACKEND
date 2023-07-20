@@ -89,7 +89,7 @@ public class MemberProjectService {
                 .orElseThrow(ProjectNotFoundException::new);
 
         // currentMemberId가 삭제할 권한이 없으면(프로젝트의 OWNER이 아니면) 예외 처리
-        Optional<MemberProject> currentMemberOptional = memberProjectRepository.findByMemberId(currentMemberId);
+        Optional<MemberProject> currentMemberOptional = memberProjectRepository.findByMemberIdNative(currentMemberId);
         MemberProject currentMember = currentMemberOptional.orElseThrow(NullPointerException::new);
 
         if(!currentMember.getRole().equals(Role.OWNER)){

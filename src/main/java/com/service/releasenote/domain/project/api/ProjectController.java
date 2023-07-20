@@ -37,11 +37,10 @@ public class ProjectController {
     /**
      * 내가 속한 프로젝트 조회
      * */
-//    @GetMapping(value = "/company/myProject")
-//    public ResponseEntity<> myProjectList() {
-//
-//    }
-
+    @GetMapping(value = "/company/myProject")
+    public MyProjectByCompanyDto myProjectList() {
+        return projectService.findMyProjectListByCompany();
+    }
 
     /**
      * 회사의 프로젝트 조회

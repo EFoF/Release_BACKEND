@@ -5,14 +5,17 @@ import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
 import com.service.releasenote.domain.company.model.Company;
+import com.service.releasenote.domain.member.dao.MemberCompanyRepository;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.model.Member;
+import com.service.releasenote.domain.member.model.MemberCompany;
 import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
+import com.service.releasenote.domain.project.dto.ProjectDto;
 import com.service.releasenote.domain.project.exception.exceptions.*;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.global.util.SecurityUtil;
@@ -21,9 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
@@ -39,6 +45,7 @@ public class ProjectService {
     private final MemberProjectRepository memberProjectRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
+    private final MemberCompanyRepository memberCompanyRepository;
     private final CategoryService categoryService;
 
     @Transactional
@@ -93,6 +100,63 @@ public class ProjectService {
                 .collect(Collectors.toList());
 
         return collect;
+    }
+
+    public MyProjectByCompanyDto findMyProjectListByCompany() {
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        // 내가 속한 회사 리스트 (없으면 예외 처리)
+        List<MemberCompany> memberCompanyList = memberCompanyRepository.findByMemberId(currentMemberId);
+        List<Company> companyList = memberCompanyList.stream()
+                .map(mc -> mc.getCompany())
+                .collect(Collectors.toList());
+
+        // 내가 속한 프로젝트 리스트 (전체)
+        List<MemberProject> memberProjectList = memberProjectRepository.findByMemberId(currentMemberId);
+        List<Project> projectList = memberProjectList.stream()
+                .map(mp -> mp.getProject())
+                .collect(Collectors.toList());
+
+        return mapMyProjectByCompanyToDto(companyList, projectList);
+    }
+
+    private ProjectDtoEach mapProjectToDto(Project project) {
+        return ProjectDtoEach.builder()
+                .project_id(project.getId())
+                .title(project.getTitle())
+                .build();
+    }
+
+    private MyProjectByCompanyDto mapMyProjectByCompanyToDto(List<Company> companyList, List<Project> projectList) {
+        // 회사 id로 project를 묶어서 정리
+        Map<Long, List<Project>> projectGroupByCompany = projectList.stream()
+                .collect(Collectors.groupingBy(p -> p.getCompany().getId()));
+
+        // ID로 회사 접근에 용이한 구조로 변경?
+        Map<Long, Company> companyMap = companyList.stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
+        List<MyProjectByCompanyDtoEach> result = new ArrayList<>();
+
+        projectGroupByCompany.forEach((companyId, project) -> {
+            Company company = companyMap.get(companyId);
+            CompanyResponseDto companyResponseDto = CompanyResponseDto.builder()
+                    .name(company.getName())
+                    .img_url(company.getImageURL())
+                    .build();
+
+            List<ProjectDtoEach> projectDtoEachList = project.stream()
+                    .map(p -> mapProjectToDto(p))
+                    .collect(Collectors.toList());
+
+            MyProjectByCompanyDtoEach resultEach = MyProjectByCompanyDtoEach.builder()
+                    .companyResponseDto(companyResponseDto)
+                    .projectDtoList(projectDtoEachList)
+                    .build();
+
+            result.add(resultEach);
+        });
+
+        return new MyProjectByCompanyDto(result);
     }
 
     @Transactional
@@ -166,4 +230,5 @@ public class ProjectService {
         projectRepository.delete(project);
 
     }
+
 }

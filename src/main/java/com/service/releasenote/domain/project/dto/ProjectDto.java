@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ProjectDto {
     @Getter
@@ -78,6 +79,41 @@ public class ProjectDto {
         }
     }
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MyProjectByCompanyDto {
+        List<MyProjectByCompanyDtoEach> projectByCompanyDto;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MyProjectByCompanyDtoEach {
+        CompanyResponseDto companyResponseDto;
+        List<ProjectDtoEach> projectDtoList;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CompanyResponseDto {
+        private String name;
+        private String img_url;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProjectDtoEach {
+        private Long project_id;
+        private String title;
+    }
+
 
     @Getter
     @Builder
@@ -121,4 +157,6 @@ public class ProjectDto {
                     .build();
         }
     }
+
+
 }
