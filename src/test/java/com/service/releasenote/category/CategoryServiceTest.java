@@ -2,6 +2,7 @@ package com.service.releasenote.category;
 
 import com.service.releasenote.domain.category.application.CategoryService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
+import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
@@ -24,8 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.service.releasenote.domain.category.dto.CategoryDto.CategoryInfoDto;
-import static com.service.releasenote.domain.category.dto.CategoryDto.CategorySaveRequest;
+import static com.service.releasenote.domain.category.dto.CategoryDto.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -65,7 +65,7 @@ public class CategoryServiceTest {
 
     public Category buildCategory(Project project, Long id) {
         return Category.builder()
-                .description("test category description")
+                .description("test category description " + id)
                 .detail("test category detail " + id)
                 .title("test category title " + id)
                 .project(project)
@@ -78,6 +78,14 @@ public class CategoryServiceTest {
                 .description("test category description")
                 .detail("test category detail")
                 .title("test category title")
+                .build();
+    }
+
+    public CategoryModifyRequestDto createCategoryModifyRequest() {
+        return CategoryModifyRequestDto.builder()
+                .description("modified category description")
+                .detail("modified category detail")
+                .title("modified category title")
                 .build();
     }
 
@@ -214,10 +222,18 @@ public class CategoryServiceTest {
     @DisplayName("성공 - 카테고리 구체 조회 테스트")
     public void getCategoryForSuccess() throws Exception {
         //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
 
         //when
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
 
         //then
+        CategoryResponseDto resultDto = categoryService.findCategoryByCategoryId(category.getId());
+        assertThat(resultDto.getTitle()).isEqualTo("test category title 1");
+        assertThat(resultDto.getDescription()).isEqualTo("test category description 1");
+        assertThat(resultDto.getDetail()).isEqualTo("test category detail 1");
 
     }
 
@@ -225,10 +241,16 @@ public class CategoryServiceTest {
     @DisplayName("실패 - 카테고리 구체 조회 테스트 - 존재하지 않는 카테고리")
     public void getCategoryForFailureByNotExistsCategory() throws Exception {
         //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
 
         //when
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.empty());
 
         //then
+        Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.findCategoryByCategoryId(category.getId()));
 
     }
 
@@ -236,43 +258,152 @@ public class CategoryServiceTest {
     @DisplayName("성공 - 카테고리 세부 조건 조회 테스트")
     public void getCategoryWithDetailConditionForSuccess() throws Exception {
         //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
 
         //when
+        when(categoryRepository.findByIntersectionId(company.getId(), project.getId(), category.getId()))
+                .thenReturn(Optional.ofNullable(category));
 
         //then
-
+        CategoryResponseDto resultDto = categoryService.findCategoryByIds(company.getId(), project.getId(), category.getId());
+        assertThat(resultDto.getTitle()).isEqualTo("test category title 1");
+        assertThat(resultDto.getDescription()).isEqualTo("test category description 1");
+        assertThat(resultDto.getDetail()).isEqualTo("test category detail 1");
     }
 
     @Test
-    @DisplayName("실패 - 카테고리 세부 조건 조회 테스트 - 존재하지 않는 회사")
+    @DisplayName("실패 - 카테고리 세부 조건 조회 테스트 - 존재하지 않는 회사, 프로젝트, 카테고리")
     public void getCategoryWithDetailConditionForFailureByNotExistsCompany() throws Exception {
         //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
 
         //when
+        when(categoryRepository.findByIntersectionId(company.getId(), project.getId(), category.getId()))
+                .thenReturn(Optional.empty());
 
         //then
+        Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.findCategoryByIds(company.getId(), project.getId(), category.getId()));
 
     }
 
     @Test
-    @DisplayName("실패 - 카테고리 세부 조건 조회 테스트 - 존재하지 않는 프로젝트")
-    public void getCategoryWithDetailConditionForFailureByNotExistsProject() throws Exception {
+    @DisplayName("실패 - 카테고리 수정 테스트 - 인증되지 않은 사용자")
+    public void updateCategoryForFailureByUnAuthorizedUser() throws Exception {
         //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
 
         //when
+        when(memberProjectRepository.findMemberListByProjectId(any())).thenReturn(new ArrayList<>());
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
 
         //then
+        Assertions.assertThrows(UnAuthorizedException.class,
+                () -> categoryService.modifyCategory(categoryModifyRequest, category.getId(), project.getId()));
+    }
+    
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 - 카테고리 수정 테스트 - 프로젝트에 속하지 않은 사용자")
+    public void updateCategoryForFailureByNonProjectMember() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
+
+        //when
+        when(memberProjectRepository.findMemberListByProjectId(any())).thenReturn(new ArrayList<>());
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
+        
+        //then
+        Assertions.assertThrows(ProjectPermissionDeniedException.class,
+                () -> categoryService.modifyCategory(categoryModifyRequest, category.getId(), project.getId()));
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 - 카테고리 수정 테스트 - 존재하지 않는 카테고리")
+    public void updateCategoryForFailureByNotExistsCategory() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
+
+        //when
+        when(memberProjectRepository.findMemberListByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.empty());
+
+        //then
+        Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.modifyCategory(categoryModifyRequest, category.getId(), project.getId()));
+    }
+
+    @Test
+    @DisplayName("실패 - 카테고리 삭제 테스트 - 인증되지 않은 사용자")
+    public void deleteCategoryForFailureByUnAuthorizedUser() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+
+        //when & then
+        Assertions.assertThrows(UnAuthorizedException.class,
+                () -> categoryService.deleteCategory(category.getId(), project.getId()));
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 - 카테고리 삭제 테스트 - 프로젝트에 속하지 않은 사용자")
+    public void deleteCategoryForFailureByNonProjectMember() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+
+        //when
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
+
+        //then
+        Assertions.assertThrows(ProjectPermissionDeniedException.class,
+                () -> categoryService.deleteCategory(category.getId(), project.getId()));
 
     }
 
     @Test
-    @DisplayName("실패 - 카테고리 세부 조건 조회 테스트 - 존재하지 않는 카테고리")
-    public void getCategoryWithDetailConditionForFailureByNotExistsCategory() throws Exception {
+    @WithMockCustomUser
+    @DisplayName("실패 - 카테고리 삭제 테스트 - 존재하지 않는 카테고리")
+    public void deleteCategoryForFailureByNotExistsCategory() throws Exception {
         //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
 
         //when
+        when(memberProjectRepository.findMemberListByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.empty());
 
         //then
+        Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.deleteCategory(category.getId(), project.getId()));
 
     }
+
 }
