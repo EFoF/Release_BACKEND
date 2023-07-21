@@ -406,8 +406,8 @@ public class ReleaseServiceTest {
 
     @Test
     @WithMockCustomUser
-    @DisplayName("실패 - 릴리즈 수정 테스트 - 존재하지 않는 프로젝트")
-    public void modifyReleaseForFailureByNotExistsProject() throws Exception {
+    @DisplayName("실패 - 릴리즈 수정 테스트 - 존재하지 않는 카테고리")
+    public void modifyReleaseForFailureByNotExistsCategory() throws Exception {
         //given
         Long currentMemberId = 1L;
         List<Long> preparedMemberList = new ArrayList<>();
@@ -457,6 +457,107 @@ public class ReleaseServiceTest {
     }
 
 
+    @Test
+    @DisplayName("실패 - 릴리즈 삭제 테스트 - 인증되지 않은 사용자")
+    public void deletReleaseForFailureByUnAuthorizedUesr() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
 
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+
+        //when
+        when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
+        when(memberProjectRepository.findMemberListByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
+                .thenReturn(Optional.ofNullable(releases));
+
+        //then
+        Assertions.assertThrows(UnAuthorizedException.class,
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 - 릴리즈 삭제 테스트 - 프로젝트에 속하지 않은 사용자")
+    public void deletReleaseForFailureByNonProjectMember() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+
+        //when
+        when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
+        when(memberProjectRepository.findMemberListByProjectId(currentMemberId)).thenReturn(new ArrayList<>());
+        when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
+                .thenReturn(Optional.ofNullable(releases));
+
+        //then
+        Assertions.assertThrows(ProjectPermissionDeniedException.class,
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 - 릴리즈 삭제 테스트 - 존재하지 않는 카테고리")
+    public void deletReleaseForFailureByNotExistsCategory() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+
+        //when
+        when(categoryRepository.existsByProjectId(project.getId())).thenReturn(false);
+        when(memberProjectRepository.findMemberListByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
+                .thenReturn(Optional.ofNullable(releases));
+
+        //then
+        Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 - 릴리즈 삭제 테스트 - 존재하지 않는 릴리즈")
+    public void deletReleaseForFailureByNotExistsRelease() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+
+        //when
+        when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
+        when(memberProjectRepository.findMemberListByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
+                .thenReturn(Optional.empty());
+
+        //then
+        Assertions.assertThrows(ReleasesNotFoundException.class,
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+
+    }
 
 }
