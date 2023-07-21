@@ -60,8 +60,8 @@ public class ReleaseService {
         }
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         Releases releases = saveReleaseRequest.toEntity(category);
-        releaseRepository.save(releases);
-        return releases.getId();
+        Releases save = releaseRepository.save(releases);
+        return save.getId();
     }
 
     /**
