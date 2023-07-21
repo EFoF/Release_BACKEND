@@ -39,7 +39,6 @@ public class ReleaseService {
     private final CategoryRepository categoryRepository;
     private final ReleaseRepository releaseRepository;
     private final ProjectRepository projectRepository;
-    private final MemberRepository memberRepository;
 
     /**
      * release 저장 서비스 로직
@@ -70,8 +69,6 @@ public class ReleaseService {
      * @return ReleaseInfoDto
      */
     public ReleaseInfoDto findReleasesByCategoryId(Long categoryId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
         List<Releases> releasesList = releaseRepository.findByCategoryId(categoryId);
         List<ReleaseDtoEach> dtoList = releasesList.stream()
                 .map(r -> mapReleaseToDto(r))

@@ -1,6 +1,7 @@
 package com.service.releasenote.releases;
 
 import com.service.releasenote.domain.category.dao.CategoryRepository;
+import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.model.Company;
@@ -12,6 +13,7 @@ import com.service.releasenote.domain.project.exception.exceptions.ProjectPermis
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
+import com.service.releasenote.domain.release.dto.ReleaseDto;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
 import com.service.releasenote.global.annotations.WithMockCustomUser;
@@ -30,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.service.releasenote.domain.category.dto.CategoryDto.*;
+import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
 import static com.service.releasenote.domain.release.dto.ReleaseDto.SaveReleaseRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -101,6 +105,15 @@ public class ReleaseServiceTest {
                 .message("test release message")
                 .version("1.0.0")
                 .tag(Tag.NEW)
+                .build();
+    }
+
+    public ReleaseModifyRequestDto createModifyRequest() {
+        return ReleaseModifyRequestDto.builder()
+                .message("changed release message")
+                .releaseDate(LocalDateTime.now())
+                .tag(Tag.UPDATED)
+                .version("1.0.1")
                 .build();
     }
 
@@ -237,5 +250,107 @@ public class ReleaseServiceTest {
                 () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
 
     }
+
+    @Test
+    @DisplayName("성공 - 카테고리 하위 릴리즈 모두 조회")
+    public void getReleasesWithCategoryForSuccess() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+        List<Releases> releaseList = new ArrayList<>();
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases1 = buildReleases(category, 1L);
+        Releases releases2 = buildReleases(category, 2L);
+        Releases releases3 = buildReleases(category, 3L);
+        releaseList.add(releases1);
+        releaseList.add(releases2);
+        releaseList.add(releases3);
+        SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
+
+        //when
+        when(projectRepository.existsById(project.getId())).thenReturn(true);
+        when(memberProjectRepository.findMemberListByProjectId(project.getId())).thenReturn(preparedMemberList);
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
+        when(releaseRepository.findByCategoryId(category.getId())).thenReturn(releaseList);
+
+        //then
+        ReleaseInfoDto resultDto = releaseService.findReleasesByCategoryId(category.getId());
+        assertThat(resultDto.getReleaseDtoList()).extracting("content")
+                .contains("test release message 1", "test release message 2", "test release message 3");
+
+    }
+    
+    @Test
+    @DisplayName("성공 - 프로젝트 하위 릴리즈 조회")
+    public void getReleasesWithProjectForSuccess() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+        List<Releases> releaseList = new ArrayList<>();
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category1 = buildCategory(project, 1L);
+        Category category2 = buildCategory(project, 2L);
+        Releases releases1 = buildReleases(category1, 1L);
+        Releases releases2 = buildReleases(category1, 2L);
+        Releases releases3 = buildReleases(category1, 3L);
+        Releases releases4 = buildReleases(category2, 4L);
+        Releases releases5 = buildReleases(category2, 5L);
+        Releases releases6 = buildReleases(category2, 6L);
+        releaseList.add(releases1);
+        releaseList.add(releases2);
+        releaseList.add(releases3);
+        releaseList.add(releases4);
+        releaseList.add(releases5);
+        releaseList.add(releases6);
+
+        //when
+        when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
+        
+        //then
+        ProjectReleasesDto resultDto = releaseService.findReleasesByProjectId(project.getId());
+        List<ProjectReleasesDtoEach> resultEach = resultDto.getProjectReleasesDto();
+        int iter = 0, iterEach;
+        for (ProjectReleasesDtoEach each : resultEach) {
+            iterEach = iter;
+            CategoryResponseDto categoryResponseDto = each.getCategoryResponseDto();
+            assertThat(categoryResponseDto).extracting("test category title " + (iter+1));
+            List<ReleaseDtoEach> releaseDtoList = each.getReleaseDtoList();
+            assertThat(releaseDtoList).extracting("content")
+                    .contains("test release message " + (iterEach * 3) + 1,
+                            "test release message " + (iterEach * 3) + 2,
+                            "test release message " + (iterEach * 3) + 3);
+            iter++;
+        }
+    }
+
+    @Test
+    @DisplayName("실패 - 프로젝트 하위 릴리즈 조회 - 존재하지 않는 프로젝트")
+    public void getReleasesWithProjectForFailureBy() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+
+        //when
+        when(projectRepository.findById(project.getId())).thenReturn(Optional.empty());
+
+        //then
+        Assertions.assertThrows(ProjectNotFoundException.class,
+                () -> releaseService.findReleasesByProjectId(project.getId()));
+
+    }
+
 
 }
