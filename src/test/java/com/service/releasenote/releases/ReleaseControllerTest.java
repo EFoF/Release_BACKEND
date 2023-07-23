@@ -1,6 +1,7 @@
 package com.service.releasenote.releases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.project.model.Project;
@@ -28,10 +29,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.service.releasenote.domain.category.dto.CategoryDto.*;
 import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.SharedHttpSessionConfigurer.sharedHttpSession;
@@ -136,6 +137,53 @@ public class ReleaseControllerTest {
                 .build();
     }
 
+    public ProjectReleasesDtoEach createProjectReleaseDtoEach(int number, int each) {
+        CategoryResponseDto categoryResponseDto = CategoryResponseDto.builder()
+                .description("test category description " + number)
+                .title("test category title " + number)
+                .detail("## test category detail " + number)
+                .lastModifiedTime(LocalDateTime.now())
+                .lastModifierName("tester")
+                .build();
+        List<ReleaseDtoEach> list = new ArrayList<>();
+        for(int i=1; i<=each; i++) {
+            ReleaseDtoEach releaseDtoEach = createReleaseDtoEach(i);
+            list.add(releaseDtoEach);
+        }
+        return ProjectReleasesDtoEach.builder()
+                .categoryResponseDto(categoryResponseDto)
+                .releaseDtoList(list)
+                .build();
+    }
+
+    public ProjectReleasesDto createProjectReleaseDto(int number, int each) {
+        List<ProjectReleasesDtoEach> list = new ArrayList<>();
+        for (int i=1; i<=number; i++) {
+            list.add(createProjectReleaseDtoEach(i, each));
+        }
+        return new ProjectReleasesDto(list);
+    }
+
+    public ReleaseModifyRequestDto createReleaseModifyRequestDto() {
+        return ReleaseModifyRequestDto.builder()
+                .releaseDate(LocalDateTime.now())
+                .message("modified release")
+                .version("1.0.1")
+                .tag(Tag.UPDATED)
+                .build();
+    }
+
+    public ReleaseModifyResponseDto createReleaseModifyResponseDto(ReleaseModifyRequestDto requestDto, Releases releases) {
+        return ReleaseModifyResponseDto.builder()
+                .lastModifierName(releases.getModifierName())
+                .lastModifiedTime(releases.getModifiedDate())
+                .releaseDate(releases.getReleaseDate())
+                .message(requestDto.getMessage())
+                .version(requestDto.getVersion())
+                .tag(releases.getTag())
+                .build();
+    }
+
     @Test
     @DisplayName("성공 - 릴리즈 생성 테스트")
     public void saveReleaseForSuccess() throws Exception {
@@ -181,8 +229,75 @@ public class ReleaseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.releaseDtoList[0].content")
                         .value("test release 1"))
+                .andExpect(jsonPath("$.releaseDtoList[1].content")
+                        .value("test release 2"))
+                .andExpect(jsonPath("$.releaseDtoList[2].content")
+                        .value("test release 3"))
                 .andDo(print());
 
+    }
+
+    @Test
+    @DisplayName("성공 - 프로젝트 하위 릴리즈 모두 조회 테스트")
+    public void getReleasesWithProjectForSuccess() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+        // 프로젝트 하위에 3개의 카테고리가 있고, 각각 4개의 릴리즈가 있다고 가정
+        ProjectReleasesDto projectReleaseDto = createProjectReleaseDto(3, 4);
+
+        //when
+        when(releaseService.findReleasesByProjectId(project.getId())).thenReturn(projectReleaseDto);
+
+        //then
+        mockMvc.perform(get("/companies/projects/{project_id}/categories/releases", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.projectReleasesDto[0].categoryResponseDto.title")
+                        .value("test category title 1"))
+                .andExpect(jsonPath("$.projectReleasesDto[0].releaseDtoList[0].content")
+                        .value("test release 1"))
+                .andExpect(jsonPath("$.projectReleasesDto[0].releaseDtoList[1].content")
+                        .value("test release 2"))
+                .andExpect(jsonPath("$.projectReleasesDto[0].releaseDtoList[2].content")
+                        .value("test release 3"))
+                .andExpect(jsonPath("$.projectReleasesDto[0].releaseDtoList[3].content")
+                        .value("test release 4"))
+                .andExpect(jsonPath("$.projectReleasesDto[1].categoryResponseDto.title")
+                        .value("test category title 2"))
+                .andExpect(jsonPath("$.projectReleasesDto[2].categoryResponseDto.title")
+                        .value("test category title 3"))
+                .andDo(print());
+
+    }
+
+    @Test
+    @DisplayName("성공 - 릴리즈 수정 테스트")
+    public void modifyReleaseForSuccess() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+        ReleaseModifyRequestDto requestDto = createReleaseModifyRequestDto();
+        ReleaseModifyResponseDto responseDto = createReleaseModifyResponseDto(requestDto, releases);
+
+        //when
+        when(releaseService.findReleaseAndConvert(category.getId())).thenReturn(responseDto);
+
+        //then
+        mockMvc.perform(put("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
+                1L, 1L,1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("modified release"))
+                .andExpect(jsonPath("$.version").value("1.0.1"))
+                .andDo(print());
     }
 
 }
