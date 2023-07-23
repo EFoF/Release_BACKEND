@@ -300,4 +300,28 @@ public class ReleaseControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("성공 - 릴리즈 삭제 테스트")
+    public void deleteReleaseForSuccess() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+
+        //when
+        when(releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()))
+                .thenReturn("deleted");
+
+        //then
+        mockMvc.perform(delete("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
+                1L,1L,1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("deleted"))
+                .andDo(print());
+
+    }
+
 }
