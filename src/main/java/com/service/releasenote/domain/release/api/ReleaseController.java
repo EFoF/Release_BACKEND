@@ -62,6 +62,14 @@ public class ReleaseController {
         return releaseService.findReleasesByProjectId(projectId);
     }
 
+    /**
+     * 릴리즈 수정
+     * @param projectId
+     * @param categoryId
+     * @param releaseId
+     * @param releaseModifyRequestDto
+     * @return ReleaseModifyResponseDto
+     */
     @ApiOperation("api for modify releases")
     @PutMapping("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
     public ReleaseModifyResponseDto releaseModify(
@@ -74,6 +82,13 @@ public class ReleaseController {
         return releaseService.findReleaseAndConvert(releaseId);
     }
 
+    /**
+     * 릴리즈 삭제
+     * @param projectId
+     * @param categoryId
+     * @param releaseId
+     * @return String
+     */
     @ApiOperation("api for delete releases")
     @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
     public String ReleaseDelete(
