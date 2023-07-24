@@ -16,6 +16,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         // 유효한 자격 증명을 제공하지 않고 접근하려 할때 401
         // HTTP 응답 헤더에 401 Unauthorized 오류 코드를 설정
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("text/plain; charset=utf-8");
+        response.getWriter().write("로그인이 필요합니다.");
     }
 }
