@@ -1,7 +1,6 @@
 package com.service.releasenote.domain.member.api;
 
 import com.service.releasenote.domain.member.application.AuthService;
-import com.service.releasenote.domain.member.dto.MemberDTO;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,22 +43,19 @@ public class AuthController {
     // 회원 탈퇴
     @PostMapping("/withdrawal")
     public ResponseEntity<?> withdrawal(HttpServletRequest request, @RequestBody WithDrawalDTO withDrawalDTO) {
-        return ResponseEntity.ok(authService.withdrawal(request, withDrawalDTO.getInputPassword()));
+        return ResponseEntity.ok(authService.withdrawal(request, withDrawalDTO));
     }
 
     // 로그인 되어 있는 유저의 비밀번호 변경
     @PostMapping("/update/password")
     public ResponseEntity<?> updatePasswordByLoggedInUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
-        return ResponseEntity.ok(authService.updatePasswordByLoggedInUser(
-                updatePasswordRequest.getInputOldPassword(), updatePasswordRequest.getInputNewPassword()));
+        return ResponseEntity.ok(authService.updatePasswordByLoggedInUser(updatePasswordRequest));
     }
 
     // 로그인 되어 있는 않은 유저의 비밀번호 변경
     @PostMapping("/update/password/anonymous")
     public ResponseEntity<?> updatePasswordByAnonymousUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
-        return ResponseEntity.ok(authService.updatePasswordByAnonymousUser(
-                updatePasswordRequest.getInputEmail(), updatePasswordRequest.getInputNewPassword())
-        );
+        return ResponseEntity.ok(authService.updatePasswordByAnonymousUser(updatePasswordRequest));
     }
 
     // 현재 로그인 된 멤버의 pk값
