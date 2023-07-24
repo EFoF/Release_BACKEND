@@ -38,6 +38,16 @@ public class CompanyController {
         return companyList;
     }
 
+    // TODO: API 수정
+    @GetMapping(value = "/companies/member/companies")
+    public Page<CompanyResponseDTO> findCompanyByMemberId(Pageable pageable) {
+        // TODO: MemberCompany 고려
+        Page<CompanyResponseDTO> companyList = companyService.findCompaniesByMemberId(pageable);
+
+        // TODO: 반환 데이터
+        return companyList;
+    }
+
     @PutMapping("/companies/{company_id}")
     public UpdateCompanyResponseDTO updateCompany(@PathVariable Long company_id, @RequestBody UpdateCompanyRequestDTO updateCompanyRequestDTO){
         UpdateCompanyResponseDTO updateCompany = companyService.updateCompany(company_id, updateCompanyRequestDTO);

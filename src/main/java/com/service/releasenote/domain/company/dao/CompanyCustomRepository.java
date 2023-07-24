@@ -6,4 +6,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface CompanyCustomRepository {
     Page<Company> findCompaniesByName(String name, Pageable pageable);
+
+    Page<Company> findCompaniesByMemberId(Long memberId, Pageable pageable);
 }

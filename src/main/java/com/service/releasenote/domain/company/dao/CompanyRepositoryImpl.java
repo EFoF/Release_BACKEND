@@ -12,6 +12,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import java.util.List;
 
 import static com.service.releasenote.domain.company.model.QCompany.company;
+import static com.service.releasenote.domain.member.model.QMemberCompany.memberCompany;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -42,6 +43,31 @@ public class CompanyRepositoryImpl implements CompanyCustomRepository {
 
         return results;
 
+    }
+
+    @Override
+    public Page<Company> findCompaniesByMemberId(Long memberId, Pageable pageable) {
+        List<Company> results = findCompaniesByMemberIdQuery(memberId, pageable);
+
+        JPAQuery<Long> countQuery = jpaQueryFactory
+                .select(company.count())
+                .from(company)
+                .innerJoin(company, memberCompany.company).fetchJoin()
+                .where(memberCompany.member.id.eq(memberId));
+
+        return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
+    }
+
+    public List<Company> findCompaniesByMemberIdQuery(Long memberId, Pageable pageable) {
+        List<Company> companyList = jpaQueryFactory
+                .selectFrom(company)
+                .innerJoin(company, memberCompany.company).fetchJoin()
+                .where(memberCompany.member.id.eq(memberId))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        return companyList;
     }
 
 }
