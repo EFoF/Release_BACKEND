@@ -217,7 +217,7 @@ public class ProjectService {
                 .orElseThrow(ProjectNotFoundException::new);
 
         // 프로젝트 정보를 수정할 권한이 없으면 예외 처리
-        List<Long> memberListByProjectId = memberProjectRepository.findMembersByProjectId(project_id);
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(project_id);
         if(!memberListByProjectId.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
@@ -244,12 +244,10 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        // 해당 프로젝트가 회사 내에 속하지 않을 경우 예외 처리
-        Company company = projectRepository.findCompanyById(projectId)
-                .orElseThrow(CompanyNotFoundException::new);
+        Company company = project.getCompany();
 
         // 속한 회사가 다를 경우 예외 처리
-        if(companyId.equals(company.getId())){
+        if(!companyId.equals(company.getId())){
             throw new CompanyNotFoundException();
         }
 
@@ -266,11 +264,11 @@ public class ProjectService {
         }
 
         // member_project 테이블에서 currentMemberId와 companyId를 이용해서 role 찾기
-        Role roleByMemberIdAndProjectId =
-                memberProjectRepository.findRoleByMemberIdAndProjectId(projectId, currentMemberId);
+        MemberProject memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
+                .orElseThrow(UserNotFoundException::new);
 
         // OWNER가 아닐 경우 예외 처리 (프로젝트를 삭제할 권한이 없습니다)
-        if (!roleByMemberIdAndProjectId.equals(Role.OWNER)) {
+        if (!memberProject.getRole().equals(Role.OWNER)) {
             throw new NotOwnerProjectException();
         }
 
@@ -287,8 +285,8 @@ public class ProjectService {
         if(memberProjectByProjectId.isEmpty()){
             throw new UserNotFoundException();
         } else {
-            for (MemberProject memberProject : memberProjectByProjectId) {
-                memberProjectRepository.delete(memberProject);
+            for (MemberProject memberProject1 : memberProjectByProjectId) {
+                memberProjectRepository.delete(memberProject1);
             }
         }
 

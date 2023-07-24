@@ -43,7 +43,8 @@ public class CategoryService {
     @Transactional
     public Long saveCategory(CategorySaveRequest categorySaveRequest, Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        List<Long> memberListByProjectId = memberProjectRepository.findMembersByProjectId(projectId);
+//        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(projectId);
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(projectId);
         if(!memberListByProjectId.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
@@ -110,7 +111,8 @@ public class CategoryService {
     @Transactional
     public String deleteCategory(Long categoryId, Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        List<Long> members = memberProjectRepository.findMembersByProjectId(projectId);
+//        List<Long> members = memberProjectRepository.findMemberIdsByProjectId(projectId);
+        List<Long> members = memberProjectRepository.findMemberIdsByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
@@ -125,7 +127,8 @@ public class CategoryService {
     @Transactional
     public void modifyCategory(CategoryModifyRequestDto modifyRequestDto, Long categoryId, Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        List<Long> members = memberProjectRepository.findMembersByProjectId(projectId);
+//        List<Long> members = memberProjectRepository.findMemberIdsByProjectId(projectId);
+        List<Long> members = memberProjectRepository.findMemberIdsByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
