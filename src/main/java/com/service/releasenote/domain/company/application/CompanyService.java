@@ -50,8 +50,16 @@ public class CompanyService {
         return company.getId();
     }
 
-    public Page<Company> findCompaniesByName(String name, Pageable pageable) {
-        return companyRepositoryImpl.findCompaniesByName(name, pageable);
+    public Page<CompanyResponseDTO> findCompaniesByName(String name, Pageable pageable) {
+        Page<Company> companyList = companyRepositoryImpl.findCompaniesByName(name, pageable);
+        Page<CompanyResponseDTO> collect = companyList.map(company -> {
+            CompanyResponseDTO companyListDTO = new CompanyResponseDTO();
+            companyListDTO.setId(company.getId());
+            companyListDTO.setName(company.getName());
+            companyListDTO.setImageUrl(company.getImageURL());
+            return companyListDTO;
+        });
+        return collect;
     }
 
 }
