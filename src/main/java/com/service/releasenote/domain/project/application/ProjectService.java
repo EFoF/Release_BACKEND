@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
-import static com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
+import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
 
 @Slf4j
 @Service
@@ -95,25 +95,43 @@ public class ProjectService {
 
     /**
      * 특정 회사의 프로젝트 리스트 조회 서비스 로직
+     * -> 변경 후: 회사 단위로 내가 속한 프로젝트 리스트 조회 서비스 로직
      * @param companyId
      * @return List<FindProjectListResponseDto>
      * */
-    public List<FindProjectListResponseDto> findProjectListByCompany(Long companyId) {
+    public FindProjectListByCompanyResponseDto findProjectListByCompany(Long companyId) {
 
-        // 회사가 없는 경우 예외 처리
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        // company가 없으면 예외 처리
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(CompanyNotFoundException::new);
 
-        // 회사의 프로젝트가 없는 경우 예외 처리
-        List<Project> projectList = projectRepository.findByCompany(company)
-                .orElseThrow(ProjectNotFoundException::new);
+        // company에 currentMemberId가 속해 있지 않으면 예외 처리
+        MemberCompany memberCompany = memberCompanyRepository.findByMemberIdAndCompanyId(currentMemberId, company.getId())
+                .orElseThrow(UserNotFoundException::new);
+
+        // 1. companyId에 속한 프로젝트를 모두 가져온다.
+        // 2. 해당 project에 currentMemberId가 속해 있다면 리스트에 포함한다.
+
+        List<Project> projectsByCompany = projectRepository.findByCompanyId(companyId);
+
+        List<Project> myProjectList = new ArrayList<>();
+        for (Project project : projectsByCompany) {
+            Optional<MemberProject> memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, project.getId());
+            if(memberProject.isPresent()) {
+                Project project1 = memberProject.get().getProject();
+                myProjectList.add(project1);
+            }
+        }
 
         // 프로젝트를 dto에 담아 리스트화
-        List<FindProjectListResponseDto> collect = projectList.stream()
+        List<FindProjectListResponseDto> findProjectListResponseDtos = myProjectList.stream()
                 .map(project -> new FindProjectListResponseDto().toResponseDto(project))
                 .collect(Collectors.toList());
 
-        return collect;
+        return new FindProjectListByCompanyResponseDto().toResponseDto(company, findProjectListResponseDtos);
     }
 
     /**
@@ -175,6 +193,7 @@ public class ProjectService {
         });
 
         return new MyProjectByCompanyDto(result);
+
     }
 
     /**
@@ -234,6 +253,18 @@ public class ProjectService {
             throw new CompanyNotFoundException();
         }
 
+        // member_project에 currentMemberId가 없을 경우 예외 처리
+        List<MemberProject> memberProjectsByMember = memberProjectRepository.findByMemberId(currentMemberId);
+        if(memberProjectsByMember.isEmpty()){
+            throw new UserNotFoundException();
+        }
+
+        // member_project에 project가 없을 경우 예외 처리
+        List<MemberProject> memberProjectsByProject = memberProjectRepository.findByProjectId(projectId);
+        if(memberProjectsByProject.isEmpty()){
+            throw new ProjectNotFoundException();
+        }
+
         // member_project 테이블에서 currentMemberId와 companyId를 이용해서 role 찾기
         Role roleByMemberIdAndProjectId =
                 memberProjectRepository.findRoleByMemberIdAndProjectId(projectId, currentMemberId);
@@ -263,6 +294,5 @@ public class ProjectService {
 
         // 프로젝트 삭제
         projectRepository.delete(project);
-
     }
 }

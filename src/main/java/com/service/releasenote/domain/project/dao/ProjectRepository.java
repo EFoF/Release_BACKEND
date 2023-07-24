@@ -18,7 +18,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 //    List<Category> findCategoryByProjectId(@Param("project_id")Long project_id);
 
   
-    Optional<List<Project>> findByCompany(Company company);
+    List<Project> findByCompany(Company company);
 
     Optional<Company> findCompanyById(Long projectId);
 

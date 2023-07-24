@@ -30,5 +30,7 @@ public interface MemberCompanyRepository extends JpaRepository<MemberCompany, Lo
     @Query(value = "SELECT * FROM member_company mc WHERE mc.company_id = :company_id", nativeQuery = true)
     List<MemberCompany> findMemberCompanyByCompanyId(Long company_id);
 
+    Optional<MemberCompany> findByMemberIdAndCompanyId(Long currentMemberId, Long id);
+
 //    Optional<List<Long>> findCompanyIdByMember(Member member);
 }

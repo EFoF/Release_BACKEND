@@ -1,6 +1,10 @@
 package com.service.releasenote.domain.company.dto;
 import com.service.releasenote.domain.company.model.Company;
+import com.service.releasenote.domain.project.dto.ProjectDto;
+import com.service.releasenote.domain.project.dto.ProjectDto.FindProjectListResponseDto;
 import lombok.*;
+
+import java.util.List;
 
 public class CompanyDTO {
 
@@ -67,5 +71,26 @@ public class CompanyDTO {
                     .build();
         }
     }
+
+//    ProjectDto.FindProjectListResponseDto
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class FindProjectListByCompanyResponseDto {
+        private Long company_id;
+        private String name;
+        private String img_url;
+        private List<ProjectDto.FindProjectListResponseDto> findProjectListResponseDtos;
+
+        public FindProjectListByCompanyResponseDto toResponseDto(Company company, List<ProjectDto.FindProjectListResponseDto> findProjectListResponseDtos) {
+            return FindProjectListByCompanyResponseDto.builder()
+                    .company_id(company.getId())
+                    .name(company.getName())
+                    .img_url(company.getImageURL())
+                    .findProjectListResponseDtos(findProjectListResponseDtos)
+                    .build();
+        }
+}
 
 }
