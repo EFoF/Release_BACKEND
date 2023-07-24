@@ -27,7 +27,8 @@ public class AuditorAwareImpl implements AuditorAware<String> {
             throw new UnAuthorizedException();
         }
         if(authentication.getPrincipal().equals("anonymousUser")) { // 로그인 하지 않은 경우
-            throw new NotSignInException();
+//            throw new NotSignInException();
+            return Optional.ofNullable("anonymousUser");
         }
         Long memberId = Long.valueOf(authentication.getName());
         Member member = memberRepository.findById(memberId).orElseThrow(RuntimeException::new);
