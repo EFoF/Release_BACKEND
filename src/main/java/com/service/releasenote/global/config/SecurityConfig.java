@@ -68,7 +68,7 @@ public class SecurityConfig {
                 .antMatchers("/auth/reissue").permitAll() // reissue 를 위한 api
                 .antMatchers("/auth/getMemberId").permitAll() // getCurrentId 를 위한 api
                 .antMatchers("/auth/update/password/anonymous").permitAll() // 비로그인 유저를 위한 api
-                .antMatchers(HttpMethod.GET, "/company/**").permitAll() // company로 시작하는 GET 방식만 허용
+                .antMatchers(HttpMethod.GET, "/companies/**").permitAll() // company로 시작하는 GET 방식만 허용
                 .antMatchers("/swagger-ui/index.html").permitAll() // swagger를 위한 주소
                 .anyRequest().authenticated() // 나머지 요청들은 모두 인증을 받아야 함
 

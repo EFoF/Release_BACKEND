@@ -41,4 +41,31 @@ public class CompanyDTO {
         }
     }
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateCompanyRequestDTO {
+        private String name;
+        private String imageUrl;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateCompanyResponseDTO {
+        private Long id;
+        private String name;
+        private String imageUrl;
+
+        public UpdateCompanyResponseDTO toResponseDTO(Company company) {
+            return UpdateCompanyResponseDTO.builder()
+                    .id(company.getId())
+                    .name(company.getName())
+                    .imageUrl(company.getImageURL())
+                    .build();
+        }
+    }
+
 }
