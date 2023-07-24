@@ -8,14 +8,12 @@ import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberCompanyRepository;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
-import com.service.releasenote.domain.member.dto.MemberProjectDTO;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberCompany;
 import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
-import com.service.releasenote.domain.project.dto.ProjectDto;
 import com.service.releasenote.domain.project.exception.exceptions.*;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.global.util.SecurityUtil;
@@ -29,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
@@ -48,9 +45,18 @@ public class ProjectService {
     private final MemberCompanyRepository memberCompanyRepository;
     private final CategoryService categoryService;
 
+    /**
+     * 프로젝트 저장 서비스 로직
+     * @param createProjectRequestDto
+     * @param company_id
+     * @return CreateProjectResponseDto
+     * */
     @Transactional
     public CreateProjectResponseDto createProject
-            (CreateProjectRequestDto createProjectRequestDto, Long company_id, Long currentMemberId) {
+            (CreateProjectRequestDto createProjectRequestDto, Long company_id) {
+
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
         // 회사가 존재하지 않는 경우 예외 처리
         Company company = companyRepository.findById(company_id)
@@ -77,13 +83,21 @@ public class ProjectService {
         Project saveProject = projectRepository.save(newProject);
 
         // member_project에 OWNER 지정
-        RoleDto roleDto = new RoleDto();
-        MemberProject memberProject = roleDto.toEntity(member, newProject, Role.OWNER);
-        memberProjectRepository.save(memberProject);    // 멤버 프로젝트에 role 저장
+        MemberProject memberProject = MemberProject.builder()
+                .member(member)
+                .project(newProject)
+                .role(Role.OWNER)
+                .build();
+        memberProjectRepository.save(memberProject);
 
-        return new CreateProjectResponseDto().toResponseDto(saveProject);
+        return new CreateProjectResponseDto().toResponseDto(saveProject, company);
     }
 
+    /**
+     * 특정 회사의 프로젝트 리스트 조회 서비스 로직
+     * @param companyId
+     * @return List<FindProjectListResponseDto>
+     * */
     public List<FindProjectListResponseDto> findProjectListByCompany(Long companyId) {
 
         // 회사가 없는 경우 예외 처리
@@ -91,8 +105,7 @@ public class ProjectService {
                 .orElseThrow(CompanyNotFoundException::new);
 
         // 회사의 프로젝트가 없는 경우 예외 처리
-        List<Project> projectList = projectRepository.findByCompany(company)
-                .orElseThrow(ProjectNotFoundException::new);
+        List<Project> projectList = projectRepository.findByCompany(company);
 
         // 프로젝트를 dto에 담아 리스트화
         List<FindProjectListResponseDto> collect = projectList.stream()
@@ -102,6 +115,10 @@ public class ProjectService {
         return collect;
     }
 
+    /**
+     * 회사에 따라 내가 속한 프로젝트를 모두 조회 서비스 로직
+     * @return MyProjectByCompanyDto
+     * */
     public MyProjectByCompanyDto findMyProjectListByCompany() {
         // 현재 멤버의 아이디를 가져옴
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
@@ -159,26 +176,31 @@ public class ProjectService {
         return new MyProjectByCompanyDto(result);
     }
 
+    /**
+     * 프로젝트 수정 서비스 로직
+     * @param updateProjectRequestDto
+     * @param project_id
+     * @return UpdateProjectResponseDto
+     * */
     @Transactional
     public UpdateProjectResponseDto updateProject
-            (UpdateProjectRequestDto updateProjectRequestDto, Long project_id, Long currentMemberId) {
+            (UpdateProjectRequestDto updateProjectRequestDto, Long project_id) {
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
         // 로그인 하지 않은 경우 예외 처리
         Member member = memberRepository.findById(currentMemberId)
                 .orElseThrow(UserNotFoundException::new);
-        log.info("member: " + member.getId());
 
         // 프로젝트가 없는 경우 예외 처리
         Project project = projectRepository.findById(project_id)
                 .orElseThrow(ProjectNotFoundException::new);
-        log.info("project: " + project_id);
 
         // 프로젝트 정보를 수정할 권한이 없으면 예외 처리
         List<Long> memberListByProjectId = memberProjectRepository.findMemberListByProjectId(project_id);
         if(!memberListByProjectId.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
-        log.info("project member list: " + memberListByProjectId.toString());
 
         // 정보 수정
         project.setTitle(updateProjectRequestDto.getTitle());
@@ -188,36 +210,48 @@ public class ProjectService {
         return new UpdateProjectResponseDto().toResponseDto(project);
     }
 
+    /**
+     * 프로젝트 삭제 서비스 로직
+     * @param companyId
+     * @param projectId
+     * */
     @Transactional
-    public void deleteProject(Long companyId, Long projectId, Long currentMemberId) {
+    public void deleteProject(Long companyId, Long projectId) {
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
         // 프로젝트가 존재하지 않는 경우 예외 처리
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
+        // 해당 프로젝트가 회사 내에 속하지 않을 경우 예외 처리
+        Company company = projectRepository.findCompanyById(projectId)
+                .orElseThrow(CompanyNotFoundException::new);
+
+        // 속한 회사가 다를 경우 예외 처리
+        if(companyId.equals(company.getId())){
+            throw new CompanyNotFoundException();
+        }
+
         // member_project 테이블에서 currentMemberId와 companyId를 이용해서 role 찾기
-        Role roleByMemberIdAndProjectId = projectRepository.findRoleByMemberIdAndProjectId(projectId, currentMemberId);
-//        log.info(roleByMemberIdAndProjectId.toString());    // OWNER
+        Role roleByMemberIdAndProjectId =
+                projectRepository.findRoleByMemberIdAndProjectId(projectId, currentMemberId);
 
         // OWNER가 아닐 경우 예외 처리 (프로젝트를 삭제할 권한이 없습니다)
         if (!roleByMemberIdAndProjectId.equals(Role.OWNER)) {
             throw new NotOwnerProjectException();
         }
 
-        // OWNER일 경우 프로젝트 삭제
-        // 1. 회사의 프로젝트 리스트에서 삭제 되어야 한다.
-        // 2. 내가 속한 프로젝트 리스트에서 삭제 되어야 한다.
-        // 3. member_project에서 삭제 되어야 하나?
-        // 4. 프로젝트의 하위 카테고리도 (자동으로? cascade 어쩌구..) 삭제되어야 한다.
-        // 5. 프로젝트 삭제
-
-        // 4
+        // 프로젝트에 속한 하위 카테고리 삭제
         List<Category> categoryIdByProjectId = categoryRepository.findCategoryByProjectId(projectId);
         for (Category category : categoryIdByProjectId) {
             categoryService.deleteCategory(category.getId(), projectId);
         }
 
-        // 3
-        List<MemberProject> memberProjectByProjectId = memberProjectRepository.findMemberProjectByProjectId(projectId);
+        // member_project에서 삭제
+        List<MemberProject> memberProjectByProjectId
+                = memberProjectRepository.findMemberProjectByProjectId(projectId);
+
         if(memberProjectByProjectId.isEmpty()){
             throw new UserNotFoundException();
         } else {

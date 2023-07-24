@@ -42,14 +42,15 @@ public class ProjectDto {
         private String description;
         private boolean scope;
         private LocalDateTime create_date;
-//        LocalDateTime modified_date;    // 생성이라 필요없을 듯
+        private Company company;
 
-        public CreateProjectResponseDto toResponseDto(Project project) {
+        public CreateProjectResponseDto toResponseDto(Project project, Company company) {
             return CreateProjectResponseDto.builder()
                     .title(project.getTitle())
                     .description(project.getDescription())
                     .scope(project.isScope())
                     .create_date(project.getCreateDate())
+                    .company(company)
                     .build();
         }
     }
