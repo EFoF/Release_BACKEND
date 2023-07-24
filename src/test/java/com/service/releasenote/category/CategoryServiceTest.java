@@ -104,7 +104,7 @@ public class CategoryServiceTest {
         CategorySaveRequest categorySaveRequest = createCategorySaveRequest();
 
         //when
-        when(memberProjectRepository.findMemberListByProjectId(any())).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMembersByProjectId(any())).thenReturn(preparedMemberList);
         when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
         when(categoryRepository.save(any())).thenReturn(category);
 
@@ -143,7 +143,7 @@ public class CategoryServiceTest {
         CategorySaveRequest categorySaveRequest = createCategorySaveRequest();
 
         //when
-        when(memberProjectRepository.findMemberListByProjectId(any())).thenReturn(new ArrayList<>());
+        when(memberProjectRepository.findMembersByProjectId(any())).thenReturn(new ArrayList<>());
         when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
         when(categoryRepository.save(any())).thenReturn(category);
 
@@ -168,7 +168,7 @@ public class CategoryServiceTest {
         CategorySaveRequest categorySaveRequest = createCategorySaveRequest();
 
         //when
-        when(memberProjectRepository.findMemberListByProjectId(any())).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMembersByProjectId(any())).thenReturn(preparedMemberList);
         when(projectRepository.findById(project.getId())).thenReturn(Optional.empty());
         when(categoryRepository.save(any())).thenReturn(category);
 
@@ -301,7 +301,7 @@ public class CategoryServiceTest {
         CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
 
         //when
-        when(memberProjectRepository.findMemberListByProjectId(any())).thenReturn(new ArrayList<>());
+        when(memberProjectRepository.findMembersByProjectId(any())).thenReturn(new ArrayList<>());
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
 
         //then
@@ -320,7 +320,7 @@ public class CategoryServiceTest {
         CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
 
         //when
-        when(memberProjectRepository.findMemberListByProjectId(any())).thenReturn(new ArrayList<>());
+        when(memberProjectRepository.findMembersByProjectId(any())).thenReturn(new ArrayList<>());
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
         
         //then
@@ -343,7 +343,7 @@ public class CategoryServiceTest {
         CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
 
         //when
-        when(memberProjectRepository.findMemberListByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMembersByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.empty());
 
         //then
@@ -397,7 +397,7 @@ public class CategoryServiceTest {
         CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
 
         //when
-        when(memberProjectRepository.findMemberListByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMembersByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.empty());
 
         //then
