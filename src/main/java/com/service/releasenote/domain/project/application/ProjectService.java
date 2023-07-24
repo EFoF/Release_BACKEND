@@ -105,7 +105,8 @@ public class ProjectService {
                 .orElseThrow(CompanyNotFoundException::new);
 
         // 회사의 프로젝트가 없는 경우 예외 처리
-        List<Project> projectList = projectRepository.findByCompany(company);
+        List<Project> projectList = projectRepository.findByCompany(company)
+                .orElseThrow(ProjectNotFoundException::new);
 
         // 프로젝트를 dto에 담아 리스트화
         List<FindProjectListResponseDto> collect = projectList.stream()
