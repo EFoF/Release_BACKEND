@@ -1,8 +1,6 @@
 package com.service.releasenote.domain.project.dao;
 
-import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.model.Company;
-import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.model.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,9 +20,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 //    @Query(value = "SELECT ")
 //    List<Category> findCategoryByProjectId(@Param("project_id")Long project_id);
 
-
-
     Optional<List<Project>> findByCompany(Company company);
 
+    List<Project> findByCompanyId(Long companyId);
 
 }

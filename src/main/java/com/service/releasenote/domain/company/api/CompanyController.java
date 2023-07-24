@@ -45,4 +45,12 @@ public class CompanyController {
         // TODO: 반환 데이터 협의
         return updateCompany;
     }
+
+    @DeleteMapping("/companies/{company_id}")
+    public Long deleteCompany(@PathVariable Long company_id) {
+        Long deleteCompanyId = companyService.deleteCompany(company_id);
+
+        // TODO: 반환 데이터 협의
+        return deleteCompanyId;
+    }
 }
