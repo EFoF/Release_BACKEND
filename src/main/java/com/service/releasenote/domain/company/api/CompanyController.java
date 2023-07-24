@@ -21,7 +21,7 @@ public class CompanyController {
 
     private final CompanyService companyService;
 
-    @PostMapping("/company")
+    @PostMapping("/companies")
     public ResponseEntity<Long> createCompany(@RequestBody CreateCompanyRequestDTO createCompanyRequestDTO) {
         Long companyId = companyService.createCompany(createCompanyRequestDTO);
 
@@ -29,7 +29,7 @@ public class CompanyController {
         return new ResponseEntity<>(companyId, HttpStatus.CREATED);
     }
 
-    @GetMapping("/company")
+    @GetMapping("/companies")
     public ResponseEntity<Page<CompanyResponseDTO>> searchCompany(@RequestParam(value = "search", required = false, defaultValue = "") String name, Pageable pageable) {
         // 회사 이름이 비어있는 경우는 고려하지 않음
         Page<CompanyResponseDTO> companyList = companyService.findCompaniesByName(name, pageable);
