@@ -1,88 +1,86 @@
 package com.service.releasenote.domain.project.api;
 
-import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.project.application.ProjectService;
-import com.service.releasenote.domain.project.dto.ProjectDto;
-import com.service.releasenote.global.util.SecurityUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.service.releasenote.domain.project.dto.ProjectDto.*;
-
 import java.util.List;
 
 
 @RestController
 @RequiredArgsConstructor
+@Api(tags = {"project"})
 public class ProjectController {
     private final ProjectService projectService;
 
     /**
-     * 프로젝트 생성
+     * 프로젝트 생성 Api
+     * @param company_id
+     * @return ResponseEntity<CreateProjectResponseDto>
      */
-    @PostMapping("/company/{company_id}/project")
+    @ApiOperation("API for project creation")
+    @PostMapping("/companies/{company_id}/projects")
     public ResponseEntity<CreateProjectResponseDto> createProject(
             @RequestBody CreateProjectRequestDto createProjectRequestDto,
             @PathVariable Long company_id) {
 
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
-        CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id, currentMemberId);
+        CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id);
         return new ResponseEntity<>(project, HttpStatus.CREATED);
     }
 
     /**
-     * 내가 속한 프로젝트 조회
+     * 내가 속한 프로젝트 조회 Api
+     * @return MyProjectByCompanyDto
      * */
-    @GetMapping(value = "/company/myProject")
+    @ApiOperation("API for looking up the project I belong to")
+    @GetMapping(value = "/companies/myProjects")
     public MyProjectByCompanyDto myProjectList() {
         return projectService.findMyProjectListByCompany();
     }
 
     /**
-     * 회사의 프로젝트 조회
+     * 특정 회사의 프로젝트 조회 Api
+     * @param company_id
+     * @return ResponseEntity<List<FindProjectListResponseDto>>
      * */
-    @GetMapping(value = "/projectList/{company_id}")
+    @ApiOperation("API for project inquiry of specific company")
+    @GetMapping(value = "/companies/{company_id}/projects")
     public ResponseEntity<List<FindProjectListResponseDto>> projectListByCompany(@PathVariable Long company_id) {
         List<FindProjectListResponseDto> projectListByCompany = projectService.findProjectListByCompany(company_id);
         return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
     }
 
     /**
-     * 프로젝트 수정
+     * 프로젝트 수정 Api
+     * @param project_id
+     * @return ResponseEntity
      * */
-    @PutMapping(value = "/company/project/{project_id}")
+    @ApiOperation("API for project modification")
+    @PutMapping(value = "/companies/projects/{project_id}")
     public ResponseEntity updateProject(
             @PathVariable Long project_id,
             @RequestBody UpdateProjectRequestDto updateProjectRequestDto
     ) {
-
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
-        projectService.updateProject(updateProjectRequestDto, project_id, currentMemberId);
-
+        projectService.updateProject(updateProjectRequestDto, project_id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
-     * 프로젝트 삭제
+     * 프로젝트 삭제 Api
+     * @param company_id
+     * @param project_id
+     * @return ResponseEntity
      * */
-    @DeleteMapping(value = "/company/{company_id}/project/{project_id}")
+    @ApiOperation("API for deleting projects")
+    @DeleteMapping(value = "/companies/{company_id}/projects/{project_id}")
     public ResponseEntity deleteProject(
             @PathVariable Long company_id, @PathVariable Long project_id) {
-
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
         // 서비스 로직에서 프로젝트 삭제
-        projectService.deleteProject(company_id, project_id, currentMemberId);
+        projectService.deleteProject(company_id, project_id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
-
-
 }

@@ -15,21 +15,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class MemberProjectDTO {
-    @Getter
-    @AllArgsConstructor
-//    @NoArgsConstructor    // 왜 오류나지?
-    public static class RoleDto {
-        // 프로젝트 생성시 member_project 데이터 추가 dto
-//        private Role role;
-
-        public MemberProject toEntity(Member member, Project project, Role role) {
-            return MemberProject.builder()
-                    .role(role)
-                    .member(member)
-                    .project(project)
-                    .build();
-        }
-    }
 
     @Getter
     @NoArgsConstructor
