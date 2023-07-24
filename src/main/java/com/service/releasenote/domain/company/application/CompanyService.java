@@ -66,6 +66,8 @@ public class CompanyService {
                 .member(member)
                 .build();
         memberCompanyRepository.save(memberCompany);
+
+        // TODO: 반환 협의
         return company.getId();
     }
 
@@ -78,6 +80,29 @@ public class CompanyService {
             companyListDTO.setImageUrl(company.getImageURL());
             return companyListDTO;
         });
+
+        // TODO: 반환 협의
+        return collect;
+    }
+
+    public Page<CompanyResponseDTO> findCompaniesByMemberId(Pageable pageable) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        // 로그인 되지 않은 경우
+        // TODO: exception 추가 후 수정
+        memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
+
+        // TODO: exception 추가
+        Page<Company> memberCompanyList = companyRepositoryImpl.findCompaniesByMemberId(currentMemberId, pageable);
+        Page<CompanyResponseDTO> collect = memberCompanyList.map(company -> {
+            CompanyResponseDTO memberCompanyListDTO = new CompanyResponseDTO();
+            memberCompanyListDTO.setId(company.getId());
+            memberCompanyListDTO.setName(company.getName());
+            memberCompanyListDTO.setImageUrl(company.getImageURL());
+            return memberCompanyListDTO;
+        });
+
+        // TODO: 반환 협의
         return collect;
     }
 

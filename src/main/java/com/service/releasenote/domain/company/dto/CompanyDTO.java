@@ -1,7 +1,6 @@
 package com.service.releasenote.domain.company.dto;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.project.dto.ProjectDto;
-import com.service.releasenote.domain.project.dto.ProjectDto.FindProjectListResponseDto;
 import lombok.*;
 
 import java.util.List;
@@ -15,6 +14,7 @@ public class CompanyDTO {
     public static class CreateCompanyRequestDTO {
         private String name;
         private String imageUrl;
+
         public Company toEntity() {
             return Company.builder()
                     .name(this.name)
@@ -72,7 +72,7 @@ public class CompanyDTO {
         }
     }
 
-//    ProjectDto.FindProjectListResponseDto
+    //    ProjectDto.FindProjectListResponseDto
     @Getter
     @Builder
     @NoArgsConstructor
@@ -91,6 +91,15 @@ public class CompanyDTO {
                     .findProjectListResponseDtos(findProjectListResponseDtos)
                     .build();
         }
-}
+    }
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MemberCompanyListDTO {
+        private Long id;
+        private String name;
+        private String imageUrl;
+    }
 }
