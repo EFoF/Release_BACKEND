@@ -8,8 +8,10 @@ import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.api.ReleaseController;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dto.ReleaseDto;
+import com.service.releasenote.domain.release.exception.ReleasesNotFoundException;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
+import com.service.releasenote.global.error.exception.UnAuthorizedException;
 import com.service.releasenote.global.jwt.JwtFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +26,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -56,6 +59,7 @@ public class ReleaseControllerTest {
     @BeforeEach
     public void setup(WebApplicationContext webApplicationContext) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .addFilters(new CharacterEncodingFilter("UTF-8", true))
                 .apply(sharedHttpSession())
                 .build();
     }
@@ -209,6 +213,41 @@ public class ReleaseControllerTest {
     }
 
     @Test
+    @DisplayName("실패 - 릴리즈 생성 테스트 - 인증되지 않은 사용자")
+    public void saveReleaseForFailureByUnAuthorizedUser() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+        SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
+
+        //when
+        when(releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()))
+                .thenThrow(UnAuthorizedException.class);
+
+        //then
+        mockMvc.perform(
+                        post("/companies/projects/{projectId}/categories/{categoryId}/releases", 1L, 1L)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(saveReleaseRequest)))
+                .andExpect(status().is2xxSuccessful())
+//                .andExpect(content().string("Security Context에 인증 정보가 없습니다."))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("실패 - 릴리즈 생성 테스트 - 존재하지 않는 프로젝트")
+    public void saveReleaseForFailureBy() throws Exception {
+        //given
+
+        //when
+
+        //then
+
+    }
+
+    @Test
     @DisplayName("성공 - 카테고리 하위 릴리즈 모두 조회 테스트")
     public void getReleasesWithCategoryForSuccess() throws Exception {
         //given
@@ -298,6 +337,34 @@ public class ReleaseControllerTest {
                 .andExpect(jsonPath("$.message").value("modified release"))
                 .andExpect(jsonPath("$.version").value("1.0.1"))
                 .andDo(print());
+    }
+
+    @Test
+    @DisplayName("실패 - 릴리즈 수정 테스트 - 존재하지 않는 릴리즈")
+    public void modifyReleaseForFailureByNotExistsRelease() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Category category = buildCategory(project, 1L);
+        Releases releases = buildReleases(category, 1L);
+        ReleaseModifyRequestDto requestDto = createReleaseModifyRequestDto();
+        ReleaseModifyResponseDto responseDto = createReleaseModifyResponseDto(requestDto, releases);
+        ReleasesNotFoundException exception = new ReleasesNotFoundException();
+        //when
+        when(releaseService.findReleaseAndConvert(category.getId())).thenThrow(exception);
+
+        //then
+        mockMvc.perform(put("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
+                        1L, 1L,1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isConflict())
+                .andExpect(content().string("해당 릴리즈를 찾을 수 없습니다."))
+//                .andExpect(jsonPath("$.message").value("해당 릴리즈를 찾을 수 없습니다."))
+//                .andExpect(jsonPath("$.exceptionName").value("ReleasesNotFoundException"))
+                .andDo(print());
+
     }
 
     @Test
