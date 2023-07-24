@@ -4,6 +4,9 @@ import com.service.releasenote.global.jwt.JwtAccessDeniedHandler;
 import com.service.releasenote.global.jwt.JwtAuthenticationEntryPoint;
 import com.service.releasenote.global.jwt.JwtSecurityConfig;
 import com.service.releasenote.global.jwt.TokenProvider;
+import com.service.releasenote.global.oauth.CustomOAuth2UserService;
+import com.service.releasenote.global.oauth.handler.OAuth2FailureHandler;
+import com.service.releasenote.global.oauth.handler.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -24,11 +27,15 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final StringRedisTemplate stringRedisTemplate;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -54,7 +61,7 @@ public class SecurityConfig {
                 /** http 요청 접근 제한 */
                 .and()
                 .authorizeHttpRequests() // http 요청 접근 제한
-                .antMatchers("/error").permitAll() // 에러 코드 확인용
+                .antMatchers("/", "/error").permitAll() // 에러 코드 확인용
                 // 로그인, 회원 가입, reissue 는 토큰이 없는 상태로 요청이 들어오므로 permitAll
                 .antMatchers("/auth/signup").permitAll() // 회원 가입을 위한 api
                 .antMatchers("/auth/signin").permitAll() // 로그인을 위한 api
@@ -67,7 +74,15 @@ public class SecurityConfig {
 
                 /** JwtSecurityConfig 적용 */
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider, stringRedisTemplate));
+                .apply(new JwtSecurityConfig(tokenProvider, stringRedisTemplate))
+
+                /** OAuth2 설정 */
+                .and()
+                .oauth2Login()
+                .successHandler(oAuth2SuccessHandler) // 동의하고 계속하기를 눌렀을 때 Handler 설정
+                .failureHandler(oAuth2FailureHandler) // 소셜 로그인 실패 시 핸들러 설정
+                .userInfoEndpoint().userService(customOAuth2UserService); // customUserService 설정
+
 
         return http.build();
     }

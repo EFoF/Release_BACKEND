@@ -18,6 +18,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, Categ
     @EntityGraph(attributePaths = {"project"})
     Optional<Category> findById(Long id);
 
-    @Query(value = "SELECT * FROM category c WHERE c.project_id = :project_id", nativeQuery = true)
+//    @Query(value = "SELECT * FROM category c WHERE c.project_id = :project_id", nativeQuery = true)
     List<Category> findCategoryByProjectId(@Param("project_id") Long project_id);
 }

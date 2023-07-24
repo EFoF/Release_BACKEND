@@ -59,9 +59,9 @@ public class AuthService {
                 .memberLoginType(MemberLoginType.RELEASE_LOGIN)
                 .build();
 
-        log.info("회원 가입");
-
         memberRepository.save(member);
+
+        log.info("회원 가입");
 
         return new ResponseEntity<>("회원 가입에 성공했습니다.", HttpStatus.OK);
     }
@@ -166,12 +166,14 @@ public class AuthService {
 
     @Transactional
     // 회원 탈퇴
-    public ResponseEntity<?> withdrawal(HttpServletRequest request, String inputPassword){
+    public ResponseEntity<?> withdrawal(HttpServletRequest request, WithDrawalDTO withDrawalDTO){
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
 
         String password = member.getPassword();
+
+        String inputPassword = withDrawalDTO.getInputPassword();
 
         boolean matches = passwordEncoder.matches(inputPassword, password);
 
@@ -190,8 +192,11 @@ public class AuthService {
 
     @Transactional
     // 로그인 되어 있는 유저의 비밀번호 변경
-    public ResponseEntity<?> updatePasswordByLoggedInUser(String inputOldPassword, String inputNewPassword) {
+    public ResponseEntity<?> updatePasswordByLoggedInUser(UpdatePasswordRequest updatePasswordRequest) {
         Long memberId = SecurityUtil.getCurrentMemberId();
+
+        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
+        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
 
         Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
 
@@ -217,7 +222,10 @@ public class AuthService {
 
     @Transactional
     // 로그인 되어 있는 않은 유저의 비밀번호 변경
-    public ResponseEntity<?> updatePasswordByAnonymousUser(String inputEmail, String inputNewPassword) {
+    public ResponseEntity<?> updatePasswordByAnonymousUser(UpdatePasswordRequest updatePasswordRequest) {
+        String inputEmail = updatePasswordRequest.getInputEmail();
+        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
+
         Member member = memberRepository.findByEmail(inputEmail).orElseThrow(UserNotFoundException::new);
 
         String password = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호

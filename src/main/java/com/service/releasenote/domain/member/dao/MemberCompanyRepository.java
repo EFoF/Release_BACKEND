@@ -13,8 +13,8 @@ import java.util.Optional;
 
 public interface MemberCompanyRepository extends JpaRepository<MemberCompany, Long> {
 
-    @Query(value = "SELECT mc.member_id FROM member_company mc WHERE mc.company_id = :company_id", nativeQuery = true)
-    List<Long> findMemberListByCompanyId(@Param("company_id")Long company_id);
+//    @Query(value = "SELECT mc.member_id FROM member_company mc WHERE mc.company_id = :company_id", nativeQuery = true)
+    List<Long> findMembersByCompanyId(@Param("company_id")Long company_id);
 
 //    Optional<List<Company>> findByMemberId(Long memberId);
 
