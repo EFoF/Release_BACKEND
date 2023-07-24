@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.persistence.*;
 
+@ToString
 @Entity
 @Getter
 @Builder
@@ -32,4 +33,10 @@ public class Member extends BaseTimeEntity {
 
     @Setter
     private boolean isDeleted = false;
+
+    public Member updateUsername(String userName) {
+        this.userName = userName;
+        return this;
+    }
+
 }
