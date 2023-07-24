@@ -9,6 +9,7 @@ import com.service.releasenote.domain.member.error.exception.UserNotFoundExcepti
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberCompany;
 import com.service.releasenote.domain.member.model.Role;
+import com.service.releasenote.domain.project.exception.exceptions.CompanyNotFoundException;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
 
@@ -60,6 +63,29 @@ public class CompanyService {
             return companyListDTO;
         });
         return collect;
+    }
+
+    @Transactional
+    public UpdateCompanyResponseDTO updateCompany(Long company_id, UpdateCompanyRequestDTO updateCompanyRequestDTO) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        // 로그인 되지 않은 경우
+        // TODO: exception 추가 후 수정
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
+
+        // TODO: exception
+        Company company = companyRepository.findById(company_id).orElseThrow(CompanyNotFoundException::new);
+
+        // TODO: exception
+        List<Long> memberListByCompanyId = memberCompanyRepository.findMemberListByCompanyId(company_id);
+        if(!memberListByCompanyId.contains(currentMemberId)) {
+            throw new UserNotFoundException();
+        }
+
+        company.setName(updateCompanyRequestDTO.getName());
+        company.setImageUrl(updateCompanyRequestDTO.getImageUrl());
+
+        return new UpdateCompanyResponseDTO().toResponseDTO(company);
     }
 
 }

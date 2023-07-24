@@ -41,4 +41,7 @@ public class Company extends BaseTimeEntity {
         this.name = name;
     }
 
+    public void setImageUrl(String imageUrl) {
+        this.ImageURL = imageUrl;
+    }
 }
