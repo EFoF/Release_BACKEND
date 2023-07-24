@@ -3,6 +3,7 @@ package com.service.releasenote.domain.member.api;
 import com.service.releasenote.domain.member.application.MemberProjectService;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO;
 import com.service.releasenote.global.util.SecurityUtil;
+import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Api(tags = {"member_project"})
 public class MemberProjectController {
     private final MemberProjectService memberProjectService;
 

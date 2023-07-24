@@ -1,13 +1,17 @@
 package com.service.releasenote.domain.project.api;
 
+import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.project.application.ProjectService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.service.releasenote.domain.project.dto.ProjectDto.*;
+import com.service.releasenote.domain.company.dto.CompanyDTO.*;
 import java.util.List;
 
 
@@ -38,6 +42,7 @@ public class ProjectController {
      * */
     @ApiOperation("API for looking up the project I belong to")
     @GetMapping(value = "/companies/myProjects")
+//    @GetMapping(value = "/companies/projects/members")    // API를 바꾼다면 이렇게?
     public MyProjectByCompanyDto myProjectList() {
         return projectService.findMyProjectListByCompany();
     }
@@ -49,8 +54,9 @@ public class ProjectController {
      * */
     @ApiOperation("API for project inquiry of specific company")
     @GetMapping(value = "/companies/{company_id}/projects")
-    public ResponseEntity<List<FindProjectListResponseDto>> projectListByCompany(@PathVariable Long company_id) {
-        List<FindProjectListResponseDto> projectListByCompany = projectService.findProjectListByCompany(company_id);
+    public ResponseEntity<FindProjectListByCompanyResponseDto> projectListByCompany(@PathVariable Long company_id) {
+//        List<FindProjectListResponseDto> projectListByCompany = projectService.findProjectListByCompany(company_id);
+        FindProjectListByCompanyResponseDto projectListByCompany = projectService.findProjectListByCompany(company_id);
         return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
     }
 
