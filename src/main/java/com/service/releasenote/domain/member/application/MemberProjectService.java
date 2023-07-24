@@ -38,16 +38,17 @@ public class MemberProjectService {
 
     @Transactional
     public AddProjectMemberResponseDto addProjectMember
-            (AddProjectMemberRequestDto addProjectMemberRequestDto,
-             Long projectId,
-             Long currentMemberId) {
+            (AddProjectMemberRequestDto addProjectMemberRequestDto, Long projectId) {
+
+        // 현재 멤버의 아이디를 가져옴
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
         // 프로젝트가 없으면 예외 처리
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        // currentMemberId가 초대할 권한이 없으면 예외 처리 (프로젝트에 속해 있는지)
-        List<Long> memberListByProjectId = memberProjectRepository.findMemberListByProjectId(projectId);
+        // currentMemberId가 초대할 권한이 없으면 예외 처리 (프로젝트에 속해 있는지) (OWNER 아니어도 됨)
+        List<Long> memberListByProjectId = memberProjectRepository.findMembersByProjectId(projectId);
         if(!memberListByProjectId.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
@@ -61,7 +62,7 @@ public class MemberProjectService {
 
         // member가 projectId의 회사에 속해있지 않으면 예외 처리
         Company company = project.getCompany();
-        List<Long> memberListByCompanyId = memberCompanyRepository.findMemberListByCompanyId(company.getId());
+        List<Long> memberListByCompanyId = memberCompanyRepository.findMembersByCompanyId(company.getId());
         if(!memberListByCompanyId.contains(member.getId())) {
             throw new UserPermissionDeniedException();
         }
@@ -73,7 +74,6 @@ public class MemberProjectService {
 
         // member_project에 저장 (role은 MEMBER)
         MemberProject newMemberProject = addProjectMemberRequestDto.toEntity(project, member);
-
         MemberProject saveMemberProject = memberProjectRepository.save(newMemberProject);
 
         return new AddProjectMemberResponseDto().toResponseDto(saveMemberProject);
@@ -89,8 +89,9 @@ public class MemberProjectService {
                 .orElseThrow(ProjectNotFoundException::new);
 
         // currentMemberId가 삭제할 권한이 없으면(프로젝트의 OWNER이 아니면) 예외 처리
-        Optional<MemberProject> currentMemberOptional = memberProjectRepository.findByMemberIdNative(currentMemberId);
-        MemberProject currentMember = currentMemberOptional.orElseThrow(NullPointerException::new);
+        MemberProject currentMember = memberProjectRepository.findMemberProjectByMemberId(currentMemberId)
+                .orElseThrow(NullPointerException::new);
+//        MemberProject currentMember = currentMemberOptional.orElseThrow(NullPointerException::new);
 
         if(!currentMember.getRole().equals(Role.OWNER)){
             throw new DeleteMemberPermissionDeniedException();
@@ -99,7 +100,7 @@ public class MemberProjectService {
         // memberEmail을 가진 member의 id가 memberproject에 없으면 예외 처리
         Optional<Member> MemberByEmail = memberRepository.findByEmail(memberEmail);
         Member member = MemberByEmail.orElseThrow(NullPointerException::new);
-        List<Long> memberListByProjectId = memberProjectRepository.findMemberListByProjectId(projectId);
+        List<Long> memberListByProjectId = memberProjectRepository.findMembersByProjectId(projectId);
         if(!memberListByProjectId.contains(member.getId())){
             throw new UserNotFoundException();
         }

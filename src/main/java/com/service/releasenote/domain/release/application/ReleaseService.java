@@ -53,7 +53,7 @@ public class ReleaseService {
         if(!projectRepository.existsById(projectId)) {
             throw new ProjectNotFoundException();
         }
-        List<Long> members = memberProjectRepository.findMemberListByProjectId(projectId);
+        List<Long> members = memberProjectRepository.findMembersByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
@@ -105,7 +105,7 @@ public class ReleaseService {
         }
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        List<Long> members = memberProjectRepository.findMemberListByProjectId(projectId);
+        List<Long> members = memberProjectRepository.findMembersByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
@@ -149,7 +149,7 @@ public class ReleaseService {
             throw new CategoryNotFoundException();
         }
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        List<Long> memberList = memberProjectRepository.findMemberListByProjectId(projectId);
+        List<Long> memberList = memberProjectRepository.findMembersByProjectId(projectId);
         if(!memberList.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
