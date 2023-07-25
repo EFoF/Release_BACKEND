@@ -32,12 +32,4 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
 
     List<MemberProject> findByProjectId(Long projectId);
 
-//    @Query(value = "select p.* from member_project mp " +
-//            "join project p on p.project_id = mp.project_id " +
-//            "join company c on p.company_id = c.company_id " +
-//            "join member m on m.member_id = mp.member_id " +
-//            "where c.company_id = :company_id " +
-//            "and m.member_id = :member_id", nativeQuery = true)
-//    Slice<Project> findProjectsByCompanyIdAndMemberId(@Param("company_id") Long company_id, @Param("member_id") Long member_id, Pageable pageable);
-
 }

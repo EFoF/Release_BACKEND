@@ -47,7 +47,6 @@ public class ProjectService {
     private final MemberProjectRepository memberProjectRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
-    private final MemberCompanyRepository memberCompanyRepository;
     private final CategoryService categoryService;
 
     /**
@@ -99,9 +98,9 @@ public class ProjectService {
     }
 
     /**
-     * 특정 회사의 프로젝트 리스트 조회 서비스 로직
-     * -> 변경 후: 회사 단위로 내가 속한 프로젝트 리스트 조회 서비스 로직
+     * 회사 단위로 내가 속한 프로젝트 리스트 조회 서비스 로직
      * @param companyId
+     * @param pageable
      * @return FindProjectListByCompanyResponseDto
      * */
     public FindProjectListByCompanyResponseDto findProjectListByCompany(Long companyId, Pageable pageable) {
@@ -124,68 +123,6 @@ public class ProjectService {
                 .map(project -> new FindProjectListResponseDto().toResponseDto(project));
 
         return new FindProjectListByCompanyResponseDto().toResponseDto(company, map);
-    }
-
-    /**
-     * 회사에 따라 내가 속한 프로젝트를 모두 조회 서비스 로직
-     * @return MyProjectByCompanyDto
-     * */
-    public MyProjectByCompanyDto findMyProjectListByCompany() {
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
-        // 내가 속한 회사 리스트 (없으면 예외 처리)
-        List<MemberCompany> memberCompanyList = memberCompanyRepository.findByMemberId(currentMemberId);
-        List<Company> companyList = memberCompanyList.stream()
-                .map(mc -> mc.getCompany())
-                .collect(Collectors.toList());
-
-        // 내가 속한 프로젝트 리스트 (전체)
-        List<MemberProject> memberProjectList = memberProjectRepository.findByMemberId(currentMemberId);
-        List<Project> projectList = memberProjectList.stream()
-                .map(mp -> mp.getProject())
-                .collect(Collectors.toList());
-
-        return mapMyProjectByCompanyToDto(companyList, projectList);
-    }
-
-    private ProjectDtoEach mapProjectToDto(Project project) {
-        return ProjectDtoEach.builder()
-                .project_id(project.getId())
-                .title(project.getTitle())
-                .build();
-    }
-
-    private MyProjectByCompanyDto mapMyProjectByCompanyToDto(List<Company> companyList, List<Project> projectList) {
-        // 회사 id로 project를 묶어서 정리
-        Map<Long, List<Project>> projectGroupByCompany = projectList.stream()
-                .collect(Collectors.groupingBy(p -> p.getCompany().getId()));
-
-        // ID로 회사 접근에 용이한 구조로 변경?
-        Map<Long, Company> companyMap = companyList.stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
-        List<MyProjectByCompanyDtoEach> result = new ArrayList<>();
-
-        projectGroupByCompany.forEach((companyId, project) -> {
-            Company company = companyMap.get(companyId);
-            CompanyResponseDto companyResponseDto = CompanyResponseDto.builder()
-                    .name(company.getName())
-                    .img_url(company.getImageURL())
-                    .build();
-
-            List<ProjectDtoEach> projectDtoEachList = project.stream()
-                    .map(p -> mapProjectToDto(p))
-                    .collect(Collectors.toList());
-
-            MyProjectByCompanyDtoEach resultEach = MyProjectByCompanyDtoEach.builder()
-                    .companyResponseDto(companyResponseDto)
-                    .projectDtoList(projectDtoEachList)
-                    .build();
-
-            result.add(resultEach);
-        });
-
-        return new MyProjectByCompanyDto(result);
-
     }
 
     /**
