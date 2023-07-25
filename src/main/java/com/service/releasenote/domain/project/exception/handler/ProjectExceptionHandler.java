@@ -31,11 +31,11 @@ public class ProjectExceptionHandler {
 
     @ExceptionHandler(CompanyNotFoundException.class)
     public ResponseEntity<String> handleCompanyNotFoundException(CompanyNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.OK).body(ex.getMessage());
     }
 
     @ExceptionHandler(ProjectNotFoundException.class)
     public ResponseEntity<String> handleProjectNotFoundException(ProjectNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.OK).body(ex.getMessage());
     }
 }
