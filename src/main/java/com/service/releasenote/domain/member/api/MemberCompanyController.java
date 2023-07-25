@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Api(tags = {"release"})
+@Api(tags = {"member_company"})
 public class MemberCompanyController {
     private final MemberCompanyService memberCompanyService;
 

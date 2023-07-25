@@ -80,7 +80,7 @@ public class MemberCompanyService {
         Member member = memberRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 
         // TODO: exception
-        if(memberListByCompanyId.contains(member.getId())) {
+        if(!memberListByCompanyId.contains(member.getId())) {
             throw new UserNotFoundException();
         }
 
