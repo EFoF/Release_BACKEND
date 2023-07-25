@@ -1,5 +1,6 @@
 package com.service.releasenote.domain.member.dto;
 
+import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberProject;
@@ -10,6 +11,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Slice;
+
+import java.util.List;
 
 
 public class MemberProjectDTO {
@@ -49,5 +53,18 @@ public class MemberProjectDTO {
         }
     }
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class FindMemberListByProjectId {
+        private List<MemberDTO.MemberListDTO> memberListDTOS;
+
+        public FindMemberListByProjectId toResponseDto(List<MemberDTO.MemberListDTO> memberListDTOS) {
+            return FindMemberListByProjectId.builder()
+                    .memberListDTOS(memberListDTOS)
+                    .build();
+        }
+    }
 
 }

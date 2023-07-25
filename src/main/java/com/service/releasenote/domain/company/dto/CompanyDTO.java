@@ -74,22 +74,21 @@ public class CompanyDTO {
         }
     }
 
-    //    ProjectDto.FindProjectListResponseDto
     @Getter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class FindProjectListByCompanyResponseDto {
-        private Long company_id;
+        private Long companyId;
         private String name;
-        private String img_url;
+        private String imgURL;
         private Slice<ProjectDto.FindProjectListResponseDto> findProjectListResponseDtos;
 
         public FindProjectListByCompanyResponseDto toResponseDto(Company company, Slice<ProjectDto.FindProjectListResponseDto> findProjectListResponseDtos) {
             return FindProjectListByCompanyResponseDto.builder()
-                    .company_id(company.getId())
+                    .companyId(company.getId())
                     .name(company.getName())
-                    .img_url(company.getImageURL())
+                    .imgURL(company.getImageURL())
                     .findProjectListResponseDtos(findProjectListResponseDtos)
                     .build();
         }
