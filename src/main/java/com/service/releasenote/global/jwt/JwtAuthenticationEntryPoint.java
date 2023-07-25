@@ -18,6 +18,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         // HTTP 응답 헤더에 401 Unauthorized 오류 코드를 설정
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("text/plain; charset=utf-8");
-        response.getWriter().write("로그인이 필요합니다.");
+        response.getWriter().write("잘못된 요청입니다. 다시 로그인 해주세요.");
     }
 }
