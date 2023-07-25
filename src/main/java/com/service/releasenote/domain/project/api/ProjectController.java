@@ -54,9 +54,9 @@ public class ProjectController {
      * */
     @ApiOperation("API for project inquiry of specific company")
     @GetMapping(value = "/companies/{company_id}/projects")
-    public ResponseEntity<FindProjectListByCompanyResponseDto> projectListByCompany(@PathVariable Long company_id) {
+    public ResponseEntity<FindProjectListByCompanyResponseDto> projectListByCompany(@PathVariable Long company_id, Pageable pageable) {
 //        List<FindProjectListResponseDto> projectListByCompany = projectService.findProjectListByCompany(company_id);
-        FindProjectListByCompanyResponseDto projectListByCompany = projectService.findProjectListByCompany(company_id);
+        FindProjectListByCompanyResponseDto projectListByCompany = projectService.findProjectListByCompany(company_id, pageable);
         return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
     }
 
