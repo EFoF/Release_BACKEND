@@ -3,6 +3,8 @@ package com.service.releasenote.domain.category.api;
 import com.service.releasenote.domain.category.application.CategoryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,12 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("api for save category")
     @PostMapping("/companies/projects/{project_id}/categories")
+    @ApiResponses({
+            @ApiResponse(code=201, message="생성 성공"),
+            @ApiResponse(code=401, message = "인증되지 않은 사용자"),
+            @ApiResponse(code=404, message = "존재하지 않는 프로젝트"),
+            @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
+    })
     public Long categoryAdd(
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody CategorySaveRequest categorySaveRequest
@@ -41,6 +49,10 @@ public class CategoryController {
      */
     @ApiOperation("api for get categories by project id")
     @GetMapping("/companies/projects/{project_id}/categories")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "요청 성공"),
+            @ApiResponse(code = 404, message = "존재하지 않는 프로젝트")
+    })
     public CategoryInfoDto categoryList(
             @PathVariable(name = "project_id") Long projectId
     ) {
@@ -54,8 +66,12 @@ public class CategoryController {
      * @param categoryId
      * @return CategoryResponseDto
      */
-    @ApiOperation("api for get specific category by combination of companyId, projectId, categoryId")
     @GetMapping("/companies/{company_id}/projects/{project_id}/categories/{category_id}")
+    @ApiOperation("api for get specific category by combination of companyId, projectId, categoryId")
+    @ApiResponses({
+            @ApiResponse(code=200, message = "요청 성공"),
+            @ApiResponse(code=404, message = "존재하지 않는 카테고리")
+    })
     public CategoryResponseDto categoryDetailsWithCondition (
             @PathVariable(name = "company_id") Long companyId,
             @PathVariable(name = "project_id") Long projectId,
@@ -69,8 +85,12 @@ public class CategoryController {
      * @param categoryId
      * @return CategoryResponseDto
      */
-    @ApiOperation("api for get specific category by category id only")
     @GetMapping("/categories/{category_id}")
+    @ApiOperation("api for get specific category by category id only")
+    @ApiResponses({
+            @ApiResponse(code=200, message = "요청 성공"),
+            @ApiResponse(code=404, message = "존재하지 않는 카테고리")
+    })
     public CategoryResponseDto categoryDetails (@PathVariable(name = "category_id") Long categoryId) {
         return categoryService.findCategoryByCategoryId(categoryId);
     }
@@ -83,6 +103,12 @@ public class CategoryController {
      */
     @ApiOperation("api for delete category and releases under category")
     @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}")
+    @ApiResponses({
+            @ApiResponse(code=200, message = "요청 성공"),
+            @ApiResponse(code=401, message = "인증되지 않은 사용자"),
+            @ApiResponse(code=404, message = "존재하지 않는 카테고리"),
+            @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
+    })
     public String categoryRemove(
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId
@@ -99,6 +125,12 @@ public class CategoryController {
      */
     @ApiOperation("api for update category")
     @PutMapping("/companies/projects/{project_id}/categories/{category_id}")
+    @ApiResponses({
+            @ApiResponse(code=200, message = "요청 성공"),
+            @ApiResponse(code=401, message = "인증되지 않은 사용자"),
+            @ApiResponse(code=404, message = "존재하지 않는 카테고리"),
+            @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
+    })
     public CategoryModifyResponseDto categoryModify(
             @PathVariable(name = "project_id")Long projectId,
             @PathVariable(name = "category_id")Long categoryId,
