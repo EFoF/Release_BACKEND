@@ -15,7 +15,7 @@ import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Api(tags = {"release"})
+@Api(tags = {"company"})
 public class CompanyController {
 
     private final CompanyService companyService;

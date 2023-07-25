@@ -50,9 +50,8 @@ public class CompanyRepositoryImpl implements CompanyCustomRepository {
         List<Company> results = findCompaniesByMemberIdQuery(memberId, pageable);
 
         JPAQuery<Long> countQuery = jpaQueryFactory
-                .select(company.count())
-                .from(company)
-                .innerJoin(company, memberCompany.company).fetchJoin()
+                .select(memberCompany.company.count())
+                .from(memberCompany)
                 .where(memberCompany.member.id.eq(memberId));
 
         return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
@@ -60,8 +59,8 @@ public class CompanyRepositoryImpl implements CompanyCustomRepository {
 
     public List<Company> findCompaniesByMemberIdQuery(Long memberId, Pageable pageable) {
         List<Company> companyList = jpaQueryFactory
-                .selectFrom(company)
-                .innerJoin(company, memberCompany.company).fetchJoin()
+                .select(memberCompany.company)
+                .from(memberCompany)
                 .where(memberCompany.member.id.eq(memberId))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
