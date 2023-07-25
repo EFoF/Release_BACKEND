@@ -19,6 +19,10 @@ import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
@@ -97,9 +102,9 @@ public class ProjectService {
      * 특정 회사의 프로젝트 리스트 조회 서비스 로직
      * -> 변경 후: 회사 단위로 내가 속한 프로젝트 리스트 조회 서비스 로직
      * @param companyId
-     * @return List<FindProjectListResponseDto>
+     * @return FindProjectListByCompanyResponseDto
      * */
-    public FindProjectListByCompanyResponseDto findProjectListByCompany(Long companyId) {
+    public FindProjectListByCompanyResponseDto findProjectListByCompany(Long companyId, Pageable pageable) {
 
         // 현재 멤버의 아이디를 가져옴
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
@@ -108,30 +113,17 @@ public class ProjectService {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(CompanyNotFoundException::new);
 
-        // company에 currentMemberId가 속해 있지 않으면 예외 처리
-        MemberCompany memberCompany = memberCompanyRepository.findByMemberIdAndCompanyId(currentMemberId, company.getId())
-                .orElseThrow(UserNotFoundException::new);
+        Slice<Project> projectsByCompanyIdAndMemberId =
+                projectRepository.findProjectsByCompanyIdAndMemberId(companyId, currentMemberId, pageable);
 
         // 1. companyId에 속한 프로젝트를 모두 가져온다.
         // 2. 해당 project에 currentMemberId가 속해 있다면 리스트에 포함한다.
 
-        List<Project> projectsByCompany = projectRepository.findByCompanyId(companyId);
-
-        List<Project> myProjectList = new ArrayList<>();
-        for (Project project : projectsByCompany) {
-            Optional<MemberProject> memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, project.getId());
-            if(memberProject.isPresent()) {
-                Project project1 = memberProject.get().getProject();
-                myProjectList.add(project1);
-            }
-        }
-
         // 프로젝트를 dto에 담아 리스트화
-        List<FindProjectListResponseDto> findProjectListResponseDtos = myProjectList.stream()
-                .map(project -> new FindProjectListResponseDto().toResponseDto(project))
-                .collect(Collectors.toList());
+        Slice<FindProjectListResponseDto> map = projectsByCompanyIdAndMemberId
+                .map(project -> new FindProjectListResponseDto().toResponseDto(project));
 
-        return new FindProjectListByCompanyResponseDto().toResponseDto(company, findProjectListResponseDtos);
+        return new FindProjectListByCompanyResponseDto().toResponseDto(company, map);
     }
 
     /**
