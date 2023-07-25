@@ -1,7 +1,7 @@
 package com.service.releasenote.domain.member.application;
 
 import com.service.releasenote.domain.member.dao.MemberRepository;
-import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
+import com.service.releasenote.domain.member.error.exception.*;
 import com.service.releasenote.domain.member.model.Authority;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
@@ -25,6 +25,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static com.service.releasenote.domain.member.dto.MemberDTO.*;
@@ -44,14 +45,17 @@ public class AuthService {
     @Transactional
     // 회원가입 로직
     public ResponseEntity<?> signup(SignUpRequest signUpRequest) {
-        // 이미 DB 안에 있는지 검사
-        if (memberRepository.findByEmail(signUpRequest.getEmail()).orElse(null) != null) {
-            return new ResponseEntity<>("이미 가입되어 있는 유저입니다.", HttpStatus.BAD_REQUEST);
-//            throw new RuntimeException("이미 가입되어 있는 유저입니다.");
+        Optional<Member> member = memberRepository.findByEmail(signUpRequest.getEmail());
+
+        if (member.isPresent()) { // 이미 가입한 유저인지 검증
+            if (member.get().isDeleted()){ // 탈퇴한 유저인지 검증
+                throw new DeletedMemberException();
+            }
+            throw new MemberAlreadyExistsException();
         }
 
         // 유저 생성
-        Member member = Member.builder()
+        Member memberBuilder = Member.builder()
                 .userName(signUpRequest.getUsername())
                 .email(signUpRequest.getEmail())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
@@ -59,7 +63,7 @@ public class AuthService {
                 .memberLoginType(MemberLoginType.RELEASE_LOGIN)
                 .build();
 
-        memberRepository.save(member);
+        memberRepository.save(memberBuilder);
 
         log.info("회원 가입");
 
@@ -67,21 +71,27 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity<?> signin(@Valid LoginDTO loginDTO){
+    public ResponseEntity<?> signin(@Valid LoginDTO loginDTO) {
         // 로그인 정보로 AuthenticationToken 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
 
-        try{
+        try {
             // 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+            Member member = memberRepository.findById(Long.valueOf(authentication.getName())).orElseThrow(UserNotFoundException::new);
+
+            if (member.isDeleted()){ // 탈퇴한 유저인지 검증
+                throw new DeletedMemberException();
+            }
 
             // 인증 정보를 기반으로 JWT 토큰 생성
             TokenInfoDTO tokenInfoDTO = tokenProvider.createToken(authentication);
 
             // Refresh Token 을 Redis 에 저장 (expirationTime 설정을 통해 자동 삭제 처리)
             stringRedisTemplate.opsForValue().set("RT:" + authentication.getName(), tokenInfoDTO.getRefreshToken(),
-                            tokenInfoDTO.getRefreshTokenExpiresIn(), TimeUnit.MILLISECONDS);
+                    tokenInfoDTO.getRefreshTokenExpiresIn(), TimeUnit.MILLISECONDS);
 
             // Access Token 을 Header 에 추가
             String accessToken = tokenInfoDTO.getAccessToken();
@@ -92,22 +102,20 @@ public class AuthService {
 
             log.info("로그인");
 
-//            return new ResponseEntity<>(tokenInfoDTO, httpHeaders, HttpStatus.OK);
             return new ResponseEntity<>(httpHeaders, HttpStatus.OK);
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>("아이디 또는 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+            throw new InvalidCredentialsException();
         }
     }
 
     @Transactional
-    public ResponseEntity<?> logout(HttpServletRequest request){
+    public ResponseEntity<?> logout(HttpServletRequest request) {
         // Header 에서 Access Token 추출
         String accessToken = jwtFilter.resolveToken(request);
 
         // Access Token 검증
         if (!tokenProvider.validateToken(accessToken)) {
-            log.info("access token: {}",accessToken);
-            return new ResponseEntity<>("잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
+            throw new InvalidTokenException();
         }
 
         // Access Token 으로 Authentication 만듦
@@ -125,6 +133,7 @@ public class AuthService {
                 .set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
 
         log.info("로그아웃");
+
         return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
     }
 
@@ -138,13 +147,15 @@ public class AuthService {
         String refreshToken = stringRedisTemplate.opsForValue().get("RT:" + authentication.getName());
 
         // 로그아웃되어 Redis 에 Refresh Token 이 삭제되어 존재하지 않는 경우 처리
-        if(ObjectUtils.isEmpty(refreshToken)) {
-            return new ResponseEntity<>("Refresh Token 정보가 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+        if (ObjectUtils.isEmpty(refreshToken)) {
+            log.info("Refresh Token 정보가 존재하지 않습니다.");
+            throw new InvalidTokenException();
         }
 
         // Refresh Token 검증
         if (!tokenProvider.validateToken(refreshToken)) {
-            return new ResponseEntity<>("Refresh Token 정보가 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
+            log.info("Refresh Token 정보가 유효하지 않습니다.");
+            throw new InvalidTokenException();
         }
 
 //        // Refresh Token 이 존재하지만 동일하지 않을 경우 처리
@@ -166,28 +177,28 @@ public class AuthService {
 
     @Transactional
     // 회원 탈퇴
-    public ResponseEntity<?> withdrawal(HttpServletRequest request, WithDrawalDTO withDrawalDTO){
+    public ResponseEntity<?> withdrawal(HttpServletRequest request, WithDrawalDTO withDrawalDTO) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
 
-        String password = member.getPassword();
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
 
         String inputPassword = withDrawalDTO.getInputPassword();
 
-        boolean matches = passwordEncoder.matches(inputPassword, password);
+        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
 
-        if (matches) { // 입력한 비밀번호가 맞았을 경우
-            logout(request); // 로그아웃 진행
-            member.setDeleted(true); // isDeleted 필드 True 로 전환.
-
-            log.info("회원 탈퇴");
-
-            return new ResponseEntity<>("회원 탈퇴 처리되었습니다.", HttpStatus.OK);
+        if (!isPasswordMatch) { // 입력한 비밀번호가 틀렸을 경우
+            throw new InvalidPasswordException();
         }
-        else { // 입력한 비밀번호가 틀렸을 경우
-            return new ResponseEntity<>("비밀번호가 틀렸습니다.", HttpStatus.BAD_REQUEST);
-        }
+
+        logout(request); // 로그아웃 진행
+
+        member.setDeleted(true); // isDeleted 필드 True 로 전환.
+
+        log.info("회원 탈퇴");
+
+        return new ResponseEntity<>("회원 탈퇴 처리되었습니다.", HttpStatus.OK);
     }
 
     @Transactional
@@ -200,24 +211,24 @@ public class AuthService {
 
         Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
 
-        String password = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
 
-        boolean matches = passwordEncoder.matches(inputOldPassword, password);
-        boolean matches2 = passwordEncoder.matches(inputNewPassword, password);
+        boolean isPasswordMatch = passwordEncoder.matches(inputOldPassword, originPassword);
+        boolean isDuplicatedPassword = passwordEncoder.matches(inputNewPassword, originPassword);
 
-        if (matches) { // 입력한 비밀번호가 맞았을 경우
-            // 변경할 비밀번호가 기존 비밀번호와 일치한다면 예외 발생
-            if (matches2){
-                return new ResponseEntity<>("기존과 동일한 비밀번호로 변경할 수 없습니다.", HttpStatus.BAD_REQUEST);
-            }
-            member.setPassword(passwordEncoder.encode(inputNewPassword));
-
-            log.info("비밀번호 변경 - 로그인 유저");
-
-            return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
-        } else { // 입력한 비밀번호가 틀렸을 경우
-            return new ResponseEntity<>("비밀번호가 틀렸습니다.", HttpStatus.BAD_REQUEST);
+        if (!isPasswordMatch) { // 입력한 비밀번호가 틀렸을 경우
+            throw new InvalidPasswordException();
         }
+
+        if (isDuplicatedPassword) { // 변경할 비밀번호가 기존 비밀번호와 일치할 경우
+            throw new DuplicatedPasswordException();
+        }
+
+        member.setPassword(passwordEncoder.encode(inputNewPassword));
+
+        log.info("비밀번호 변경 - 로그인 유저");
+
+        return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
     }
 
     @Transactional
@@ -228,19 +239,18 @@ public class AuthService {
 
         Member member = memberRepository.findByEmail(inputEmail).orElseThrow(UserNotFoundException::new);
 
-        String password = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
 
-        boolean matches = passwordEncoder.matches(inputNewPassword, password);
+        boolean isDuplicatedPassword = passwordEncoder.matches(inputNewPassword, originPassword);
 
-        // 변경할 비밀번호가 기존 비밀번호와 일치한다면 예외 발생
-        if (matches) {
-            return new ResponseEntity<>("기존과 동일한 비밀번호로 변경할 수 없습니다.", HttpStatus.BAD_REQUEST);
-        } else {
-            member.setPassword(passwordEncoder.encode(inputNewPassword));
-
-            log.info("비밀번호 변경 - 비로그인 유저");
-
-            return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
+        if (isDuplicatedPassword) { // 변경할 비밀번호가 기존 비밀번호와 일치할 경우
+            throw new DuplicatedPasswordException();
         }
+
+        member.setPassword(passwordEncoder.encode(inputNewPassword));
+
+        log.info("비밀번호 변경 - 비로그인 유저");
+
+        return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
     }
 }
