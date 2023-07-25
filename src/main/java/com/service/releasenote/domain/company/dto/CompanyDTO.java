@@ -92,14 +92,4 @@ public class CompanyDTO {
                     .build();
         }
     }
-
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MemberCompanyListDTO {
-        private Long id;
-        private String name;
-        private String imageUrl;
-    }
 }
