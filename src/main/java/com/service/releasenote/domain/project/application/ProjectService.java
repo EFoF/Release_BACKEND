@@ -217,7 +217,7 @@ public class ProjectService {
                 .orElseThrow(ProjectNotFoundException::new);
 
         // 프로젝트 정보를 수정할 권한이 없으면 예외 처리
-        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(project_id);
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(project_id); // 수정 필요
         if(!memberListByProjectId.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }

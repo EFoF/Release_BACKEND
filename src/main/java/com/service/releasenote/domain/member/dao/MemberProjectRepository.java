@@ -20,8 +20,9 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
     List<String> findTitleByCompanyId(@Param("company_id")Long company_id);
 
     @Query(value = "SELECT mp.member_id FROM member_project mp WHERE mp.project_id = :project_id", nativeQuery = true)
-//    List<Long> findMemberIdsByProjectId(@Param("project_id")Long project_id);
-    List<Long> findMemberIdsByProjectId(@Param("project_id")Long project_id);
+    List<Long> findMemberIdByProjectId(@Param("project_id")Long project_id);
+
+    List<Member> findMemberByProjectId(Long project_id);
 
 //    @Query(value = "SELECT * FROM member_project mp WHERE mp.project_id=:project_id AND mp.member_id=:member_id", nativeQuery = true)
     MemberProject findByMemberAndProject(@Param("member_id") Long memberId, @Param("project_id") Long projectId);
