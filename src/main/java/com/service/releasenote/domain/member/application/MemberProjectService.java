@@ -85,22 +85,26 @@ public class MemberProjectService {
         // 현재 멤버의 아이디를 가져옴
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
+        Member currentMember = memberRepository.findById(currentMemberId)
+                .orElseThrow(UserNotFoundException::new);
+
         // projectId가 존재하지 않으면 예외 처리
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
         // currentMemberId가 삭제할 권한이 없으면(프로젝트의 OWNER이 아니면) 예외 처리
-        MemberProject currentMember = memberProjectRepository.findMemberProjectByMemberId(currentMemberId)
-                .orElseThrow(NullPointerException::new);
-//        MemberProject currentMember = currentMemberOptional.orElseThrow(NullPointerException::new);
+        // -> 변경 후: currentMemberId가 프로젝트의 멤버가 아니면 예외 처리
+        MemberProject currentMemberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
+                .orElseThrow(UserNotFoundException::new);
 
-        if(!currentMember.getRole().equals(Role.OWNER)){
-            throw new DeleteMemberPermissionDeniedException();
-        }
+//        if(!currentMember.getRole().equals(Role.OWNER)){
+//            throw new DeleteMemberPermissionDeniedException();
+//        }
 
         // memberEmail을 가진 member의 id가 memberproject에 없으면 예외 처리
         Optional<Member> MemberByEmail = memberRepository.findByEmail(memberEmail);
         Member member = MemberByEmail.orElseThrow(NullPointerException::new);
+
 //        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(projectId);
         List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!memberListByProjectId.contains(member.getId())){
@@ -108,7 +112,8 @@ public class MemberProjectService {
         }
 
         // member를 member_project에서 삭제
-        MemberProject deletedMember = memberProjectRepository.findByMemberAndProject(member.getId(), projectId);
+        MemberProject deletedMember = memberProjectRepository.findByMemberIdAndProjectId(member.getId(), projectId)
+                        .orElseThrow(UserNotFoundException::new);
         memberProjectRepository.delete(deletedMember);
 
     }
