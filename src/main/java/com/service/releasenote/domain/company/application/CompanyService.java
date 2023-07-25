@@ -120,7 +120,7 @@ public class CompanyService {
 
         // 멤버가 속한 회사가 아닌 경우
         // TODO: exception
-        List<Long> memberListByCompanyId = memberCompanyRepository.findMemberListByCompanyId(company_id);
+        List<Long> memberListByCompanyId = memberCompanyRepository.findMembersByCompanyId(company_id);
         if(!memberListByCompanyId.contains(currentMemberId)) {
             throw new UserNotFoundException();
         }

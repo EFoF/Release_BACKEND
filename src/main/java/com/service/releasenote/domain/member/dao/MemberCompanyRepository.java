@@ -16,9 +16,6 @@ public interface MemberCompanyRepository extends JpaRepository<MemberCompany, Lo
 //    @Query(value = "SELECT mc.member_id FROM member_company mc WHERE mc.company_id = :company_id", nativeQuery = true)
     List<Long> findMembersByCompanyId(@Param("company_id")Long company_id);
 
-    @Query(value = "SELECT mc.member_id FROM member_company mc WHERE mc.company_id = :company_id", nativeQuery = true)
-    List<Long> findMemberListByCompanyId(@Param("company_id")Long company_id);
-
 //    Optional<List<Company>> findByMemberId(Long memberId);
 
     @EntityGraph(attributePaths = {"company"})
@@ -36,4 +33,7 @@ public interface MemberCompanyRepository extends JpaRepository<MemberCompany, Lo
 
     @Query(value = "SELECT * FROM member_company mc WHERE mc.member_id = :member_id and mc.company_id = :company_id", nativeQuery=true)
     MemberCompany findByMemberAndCompany(@Param("company_id") Long company_id, @Param("member_id") Long member_id);
+
+    @EntityGraph(attributePaths = {"member"})
+    List<MemberCompany> findByCompanyId(Long id);
 }
