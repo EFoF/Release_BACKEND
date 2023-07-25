@@ -89,7 +89,7 @@ public class EmailVerificationService {
     }
 
     // 메일 발송
-    public String sendSimpleMessage(EmailCodeRequestDTO emailCodeRequestDTO) throws Exception {
+    public void sendSimpleMessage(EmailCodeRequestDTO emailCodeRequestDTO) throws Exception {
         String to = emailCodeRequestDTO.getEmail();
 
         verificationCode = createKey(); // 랜덤 인증 코드 생성
@@ -105,7 +105,7 @@ public class EmailVerificationService {
             throw new IllegalArgumentException(e.getMessage());
         }
 
-        return verificationCode;
+//        return verificationCode;
     }
 
     // 인증 코드 검증

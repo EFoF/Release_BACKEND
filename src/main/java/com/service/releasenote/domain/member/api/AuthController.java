@@ -64,9 +64,10 @@ public class AuthController {
     @PostMapping("/mail/sending")
     public ResponseEntity<?> sendEmailVerificationCode(
             @RequestBody @Valid EmailCodeRequestDTO emailCodeRequestDTO) throws Exception {
-//        emailVerificationService.sendSimpleMessage(emailCodeRequestDTO);
-//        return ResponseEntity.ok();
-        return ResponseEntity.ok(emailVerificationService.sendSimpleMessage(emailCodeRequestDTO));
+        emailVerificationService.sendSimpleMessage(emailCodeRequestDTO);
+        return ResponseEntity.ok("인증 코드가 발송됐습니다.");
+//        return ResponseEntity.ok().build();
+//        return ResponseEntity.ok(emailVerificationService.sendSimpleMessage(emailCodeRequestDTO));
     }
 
     @PostMapping("/mail/verification")
