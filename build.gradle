@@ -55,6 +55,9 @@ dependencies {
 
     // swagger 의존성 추가
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
+
+    // email 인증 의존성 추가
+    implementation 'org.springframework.boot:spring-boot-starter-mail:2.7.1'
 }
 
 tasks.named('test') {
