@@ -57,4 +57,9 @@ public class MemberExceptionHandler {
     protected final ResponseEntity<String> handleDuplicatedPasswordException(DuplicatedPasswordException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+
+    @ExceptionHandler(EmailVerificationExpireException.class)
+    protected final ResponseEntity<String> handleEmailVerificationExpireException(EmailVerificationExpireException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 }
