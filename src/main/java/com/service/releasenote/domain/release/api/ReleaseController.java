@@ -3,6 +3,8 @@ package com.service.releasenote.domain.release.api;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,12 @@ public class ReleaseController {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("api for save release")
     @PostMapping("/companies/projects/{projectId}/categories/{categoryId}/releases")
+    @ApiResponses({
+            @ApiResponse(code=201, message="생성 성공"),
+            @ApiResponse(code=401, message = "인증되지 않은 사용자"),
+            @ApiResponse(code=404, message = "존재하지 않는 카테고리 또는 존재하지 않는 프로젝트"),
+            @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
+    })
     public Long releaseAdd(
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "categoryId") Long categoryId,
@@ -43,6 +51,9 @@ public class ReleaseController {
      */
     @ApiOperation("api for get releases by category")
     @GetMapping("/companies/projects/categories/{category_id}/releases")
+    @ApiResponses({
+            @ApiResponse(code=200, message="요청 성공"),
+    })
     public ReleaseInfoDto releaseListByCategory(
             @PathVariable(name = "category_id") Long categoryId
     ) {
@@ -56,6 +67,10 @@ public class ReleaseController {
      */
     @ApiOperation("api for get releases by project")
     @GetMapping("/companies/projects/{project_id}/categories/releases")
+    @ApiResponses({
+            @ApiResponse(code=201, message="생성 성공"),
+            @ApiResponse(code=404, message = "존재하지 않는 카테고리 또는 존재하지 않는 프로젝트"),
+    })
     public ProjectReleasesDto releaseListByProject(
             @PathVariable(name = "project_id") Long projectId
     ) {
@@ -72,6 +87,12 @@ public class ReleaseController {
      */
     @ApiOperation("api for modify releases")
     @PutMapping("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
+    @ApiResponses({
+            @ApiResponse(code=200, message="요청 성공"),
+            @ApiResponse(code=401, message = "인증되지 않은 사용자"),
+            @ApiResponse(code=404, message = "존재하지 않는 카테고리 또는 카테고리에 속하는 릴리즈가 존재하지 않음"),
+            @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
+    })
     public ReleaseModifyResponseDto releaseModify(
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId,
@@ -91,6 +112,12 @@ public class ReleaseController {
      */
     @ApiOperation("api for delete releases")
     @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
+    @ApiResponses({
+            @ApiResponse(code=200, message="요청 성공"),
+            @ApiResponse(code=401, message = "인증되지 않은 사용자"),
+            @ApiResponse(code=404, message = "존재하지 않는 카테고리 또는 카테고리에 속하는 릴리즈가 존재하지 않음"),
+            @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
+    })
     public String ReleaseDelete(
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId,

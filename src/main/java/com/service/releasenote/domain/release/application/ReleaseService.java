@@ -53,7 +53,6 @@ public class ReleaseService {
         if(!projectRepository.existsById(projectId)) {
             throw new ProjectNotFoundException();
         }
-//        List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectId);
         List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
