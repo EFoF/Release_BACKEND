@@ -12,6 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ReleaseExceptionHandler {
     @ExceptionHandler(ReleasesNotFoundException.class)
     protected final ResponseEntity<String> notFoundRelease(ReleasesNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }
