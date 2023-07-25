@@ -66,7 +66,8 @@ public class SecurityConfig {
                 .antMatchers("/auth/signup").permitAll() // 회원 가입을 위한 api
                 .antMatchers("/auth/signin").permitAll() // 로그인을 위한 api
                 .antMatchers("/auth/reissue").permitAll() // reissue 를 위한 api
-                .antMatchers("/auth/getMemberId").permitAll() // getCurrentId 를 위한 api
+                .antMatchers("/auth/mail/**").permitAll() // Email 인증을 위한 api
+//                .antMatchers("/auth/getMemberId").permitAll() // getCurrentId 를 위한 api
                 .antMatchers("/auth/update/password/anonymous").permitAll() // 비로그인 유저를 위한 api
                 .antMatchers(HttpMethod.GET, "/companies/**").permitAll() // company로 시작하는 GET 방식만 허용
                 .antMatchers("/swagger-ui/index.html").permitAll() // swagger를 위한 주소
