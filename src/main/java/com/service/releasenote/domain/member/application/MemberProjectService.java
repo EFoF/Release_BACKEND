@@ -3,6 +3,7 @@ import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberCompanyRepository;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.dto.MemberDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
 import com.service.releasenote.domain.member.error.exception.DeleteMemberPermissionDeniedException;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -109,5 +111,15 @@ public class MemberProjectService {
                         .orElseThrow(UserNotFoundException::new);
         memberProjectRepository.delete(deletedMember);
 
+    }
+
+    public FindMemberListByProjectId findProjectMemberList(Long projectId) {
+        List<Member> memberList = memberRepository.findByProjectId(projectId);
+
+        List<MemberDTO.MemberListDTO> collect = memberList.stream()
+                .map(m -> new MemberDTO.MemberListDTO().toResponseDto(m))
+                .collect(Collectors.toList());
+
+        return new FindMemberListByProjectId(collect);
     }
 }
