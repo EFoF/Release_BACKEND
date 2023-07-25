@@ -24,7 +24,7 @@ public class MemberCompanyController {
     }
 
     @DeleteMapping(value = "/companies/{company_id}/members")
-    public Long deleteMemberCompnay(@PathVariable Long company_id, @RequestHeader("email") String email) {
+    public Long deleteMemberCompnay(@PathVariable Long company_id, @RequestBody String email) {
         Long deleteMemberId = memberCompanyService.deleteMemberCompany(company_id, email);
 
         // TODO: 반환 데이터

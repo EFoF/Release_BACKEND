@@ -61,6 +61,7 @@ public class MemberCompanyService {
     }
 
     @Transactional
+    // TODO: 삭제 예외처리 추가 (ROLE 관련)
     public Long deleteMemberCompany(Long company_id, String email) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
