@@ -53,9 +53,7 @@ public class CategoryController {
             @ApiResponse(code = 200, message = "요청 성공"),
             @ApiResponse(code = 404, message = "존재하지 않는 프로젝트")
     })
-    public CategoryInfoDto categoryList(
-            @PathVariable(name = "project_id") Long projectId
-    ) {
+    public CategoryInfoDto categoryList(@PathVariable(name = "project_id") Long projectId) {
         return categoryService.findCategoryByProjectId(projectId);
     }
 
@@ -75,9 +73,9 @@ public class CategoryController {
     public CategoryResponseDto categoryDetailsWithCondition (
             @PathVariable(name = "company_id") Long companyId,
             @PathVariable(name = "project_id") Long projectId,
-            @PathVariable(name = "category_id") Long categoryId
-    ) {
-        return categoryService.findCategoryByIds(companyId, projectId, categoryId);
+            @PathVariable(name = "category_id") Long categoryId,
+            @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) {
+        return categoryService.findCategoryByIds(companyId, projectId, categoryId, isDeveloper);
     }
 
     /**
@@ -91,8 +89,10 @@ public class CategoryController {
             @ApiResponse(code=200, message = "요청 성공"),
             @ApiResponse(code=404, message = "존재하지 않는 카테고리")
     })
-    public CategoryResponseDto categoryDetails (@PathVariable(name = "category_id") Long categoryId) {
-        return categoryService.findCategoryByCategoryId(categoryId);
+    public CategoryResponseDto categoryDetails (
+            @PathVariable(name = "category_id") Long categoryId,
+            @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) {
+        return categoryService.findCategoryByCategoryId(categoryId, isDeveloper);
     }
 
     /**

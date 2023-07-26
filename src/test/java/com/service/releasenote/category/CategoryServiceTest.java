@@ -230,7 +230,7 @@ public class CategoryServiceTest {
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
 
         //then
-        CategoryResponseDto resultDto = categoryService.findCategoryByCategoryId(category.getId());
+        CategoryResponseDto resultDto = categoryService.findCategoryByCategoryId(category.getId(), false);
         assertThat(resultDto.getTitle()).isEqualTo("test category title 1");
         assertThat(resultDto.getDescription()).isEqualTo("test category description 1");
         assertThat(resultDto.getDetail()).isEqualTo("test category detail 1");
@@ -250,7 +250,7 @@ public class CategoryServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> categoryService.findCategoryByCategoryId(category.getId()));
+                () -> categoryService.findCategoryByCategoryId(category.getId(), false));
 
     }
 
@@ -267,7 +267,8 @@ public class CategoryServiceTest {
                 .thenReturn(Optional.ofNullable(category));
 
         //then
-        CategoryResponseDto resultDto = categoryService.findCategoryByIds(company.getId(), project.getId(), category.getId());
+        CategoryResponseDto resultDto = categoryService.findCategoryByIds
+                (company.getId(), project.getId(), category.getId(), false);
         assertThat(resultDto.getTitle()).isEqualTo("test category title 1");
         assertThat(resultDto.getDescription()).isEqualTo("test category description 1");
         assertThat(resultDto.getDetail()).isEqualTo("test category detail 1");
@@ -287,7 +288,7 @@ public class CategoryServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> categoryService.findCategoryByIds(company.getId(), project.getId(), category.getId()));
+                () -> categoryService.findCategoryByIds(company.getId(), project.getId(), category.getId(), false));
 
     }
 

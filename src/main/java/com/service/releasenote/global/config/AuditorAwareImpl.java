@@ -13,26 +13,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Optional;
 
 @Slf4j
-public class AuditorAwareImpl implements AuditorAware<String> {
-
-    private final MemberRepository memberRepository;
-
-    public AuditorAwareImpl(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
-    }
+public class AuditorAwareImpl implements AuditorAware<Long> {
     @Override
-    public Optional<String> getCurrentAuditor() {
+    public Optional<Long> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) { // authentication 에 인증 정보가 없는 경우
             throw new UnAuthorizedException();
         }
         if(authentication.getPrincipal().equals("anonymousUser")) { // 로그인 하지 않은 경우
 //            throw new NotSignInException();
-            return Optional.ofNullable("anonymousUser");
+            return Optional.empty();
         }
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId).orElseThrow(RuntimeException::new);
-        // 조회때 N+1이 발생하는 것 보다는 수정이나 생성처럼 상대적으로 수요가 적은 요청을 처리할때 id -> name으로 바꾸기 위한 쿼리를 작성한다.
-        return Optional.ofNullable(member.getUserName());
+        return Optional.ofNullable(Long.parseLong(authentication.getName()));
     }
 }

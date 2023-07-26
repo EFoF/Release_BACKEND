@@ -1,13 +1,9 @@
 package com.service.releasenote.domain.release.application;
 
 import com.service.releasenote.domain.category.dao.CategoryRepository;
-import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
-import com.service.releasenote.domain.member.dao.MemberRepository;
-import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
-import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
@@ -129,7 +125,7 @@ public class ReleaseService {
         Releases releases = releaseRepository.findById(categoryId).orElseThrow(ReleasesNotFoundException::new);
         return ReleaseModifyResponseDto.builder()
                 .lastModifiedTime(releases.getModifiedDate())
-                .lastModifierName(releases.getModifierName())
+//                .lastModifierName(releases.getModifierId())
                 .releaseDate(releases.getReleaseDate())
                 .version(releases.getVersion())
                 .message(releases.getMessage())
@@ -165,7 +161,7 @@ public class ReleaseService {
     private ReleaseDtoEach mapReleaseToDto(Releases releases) {
         return ReleaseDtoEach.builder()
                 .lastModifiedTime(releases.getModifiedDate())
-                .lastModifierName(releases.getModifierName())
+//                .lastModifierName(releases.getModifierId())
                 .version(releases.getVersion())
                 .content(releases.getMessage())
                 .tag(releases.getTag())

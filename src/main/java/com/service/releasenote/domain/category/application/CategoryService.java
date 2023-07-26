@@ -5,6 +5,7 @@ import com.service.releasenote.domain.category.exception.CategoryNotFoundExcepti
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.category.dto.CategoryDto.*;
@@ -73,11 +75,21 @@ public class CategoryService {
      * @param categoryId
      * @return CategoryResponseDto
      */
-    public CategoryResponseDto findCategoryByCategoryId(Long categoryId) {
+    public CategoryResponseDto findCategoryByCategoryId(Long categoryId, Boolean isDeveloper) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
+        if(!isDeveloper) {
+            return CategoryResponseDto.builder()
+                    .lastModifiedTime(category.getModifiedDate())
+                    .description(category.getDescription())
+                    .detail(category.getDetail())
+                    .title(category.getTitle())
+                    .build();
+        }
+
+        Optional<Member> memberOptional = memberRepository.findById(category.getModifierId());
         return CategoryResponseDto.builder()
+                .lastModifierName(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getUserName())
                 .lastModifiedTime(category.getModifiedDate())
-                .lastModifierName(category.getModifierName())
                 .description(category.getDescription())
                 .detail(category.getDetail())
                 .title(category.getTitle())
@@ -91,11 +103,21 @@ public class CategoryService {
      * @param categoryId
      * @return CategoryResponseDto
      */
-    public CategoryResponseDto findCategoryByIds(Long companyId, Long projectId, Long categoryId) {
+    public CategoryResponseDto findCategoryByIds(Long companyId, Long projectId, Long categoryId, Boolean isDeveloper) {
         Category category = categoryRepository.findByIntersectionId(companyId, projectId, categoryId).orElseThrow(CategoryNotFoundException::new);
+        if(!isDeveloper) {
+            return CategoryResponseDto.builder()
+                    .lastModifiedTime(category.getModifiedDate())
+                    .description(category.getDescription())
+                    .detail(category.getDetail())
+                    .title(category.getTitle())
+                    .build();
+        }
+
+        Optional<Member> memberOptional = memberRepository.findById(category.getModifierId());
         return CategoryResponseDto.builder()
+                .lastModifierName(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getUserName())
                 .lastModifiedTime(category.getModifiedDate())
-                .lastModifierName(category.getModifierName())
                 .description(category.getDescription())
                 .detail(category.getDetail())
                 .title(category.getTitle())
@@ -141,9 +163,10 @@ public class CategoryService {
 
     public CategoryModifyResponseDto findCategoryAndConvert(Long categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
+        Optional<Member> memberOptional = memberRepository.findById(category.getModifierId());
         return CategoryModifyResponseDto.builder()
+                .lastModifierName(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getUserName())
                 .lastModifiedTime(category.getModifiedDate())
-                .lastModifierName(category.getModifierName())
                 .description(category.getDescription())
                 .detail(category.getDetail())
                 .title(category.getTitle())
