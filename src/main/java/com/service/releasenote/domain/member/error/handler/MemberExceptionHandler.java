@@ -30,12 +30,12 @@ public class MemberExceptionHandler {
 
     @ExceptionHandler(DeletedMemberException.class)
     protected final ResponseEntity<String> handleDeletedMemberException(DeletedMemberException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(MemberAlreadyExistsException.class)
     protected final ResponseEntity<String> handleMemberAlreadyExistsException(MemberAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
@@ -55,7 +55,7 @@ public class MemberExceptionHandler {
 
     @ExceptionHandler(DuplicatedPasswordException.class)
     protected final ResponseEntity<String> handleDuplicatedPasswordException(DuplicatedPasswordException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(EmailVerificationExpireException.class)
