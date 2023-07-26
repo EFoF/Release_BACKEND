@@ -27,7 +27,7 @@ public class EmailVerificationService {
     private final JavaMailSender javaMailSender;
     private final StringRedisTemplate stringRedisTemplate;
     private String verificationCode; // 인증 코드
-    private long VERIFICATION_CODE_EXPIRE_TIME = 1000 * 60 * 3;  // 3분
+    private final long VERIFICATION_CODE_EXPIRE_TIME = 1000 * 60 * 3;  // 3분
 
     public MimeMessage createMessage(String to) throws MessagingException, UnsupportedEncodingException {
         log.info("보내는 대상 : {}", to);
@@ -104,8 +104,6 @@ public class EmailVerificationService {
             e.printStackTrace();
             throw new IllegalArgumentException(e.getMessage());
         }
-
-//        return verificationCode;
     }
 
     // 인증 코드 검증
@@ -115,13 +113,10 @@ public class EmailVerificationService {
 
         String validity = stringRedisTemplate.opsForValue().get(email); // Redis 에 저장돼있는 인증 코드
 
-        if (validity == null){ // todo Empty 로 할지 null 로 할지 고민해야함
+        if (validity == null){
             throw new EmailVerificationExpireException();
         }
-        if (!validity.equals(inputCode)){
-            return false;
-        }
 
-        return true;
+        return validity.equals(inputCode); // true or false
     }
 }
