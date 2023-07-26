@@ -27,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -279,7 +280,7 @@ public class ReleaseServiceTest {
         when(releaseRepository.findByCategoryId(category.getId())).thenReturn(releaseList);
 
         //then
-        ReleaseInfoDto resultDto = releaseService.findReleasesByCategoryId(category.getId());
+        ReleaseInfoDto resultDto = releaseService.findReleasesByCategoryId(category.getId(), false);
         assertThat(resultDto.getReleaseDtoList()).extracting("content")
                 .contains("test release message 1", "test release message 2", "test release message 3");
 
@@ -315,7 +316,7 @@ public class ReleaseServiceTest {
         when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
         
         //then
-        ProjectReleasesDto resultDto = releaseService.findReleasesByProjectId(project.getId());
+        ProjectReleasesDto resultDto = releaseService.findReleasesByProjectId(project.getId(), false);
         List<ProjectReleasesDtoEach> resultEach = resultDto.getProjectReleasesDto();
         int iter = 0, iterEach;
         for (ProjectReleasesDtoEach each : resultEach) {
@@ -349,7 +350,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectNotFoundException.class,
-                () -> releaseService.findReleasesByProjectId(project.getId()));
+                () -> releaseService.findReleasesByProjectId(project.getId(), false));
 
     }
 
