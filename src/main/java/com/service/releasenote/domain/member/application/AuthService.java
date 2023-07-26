@@ -67,7 +67,7 @@ public class AuthService {
 
         log.info("회원 가입");
 
-        return new ResponseEntity<>("회원 가입에 성공했습니다.", HttpStatus.OK);
+        return new ResponseEntity<>("회원 가입에 성공했습니다.", HttpStatus.CREATED);
     }
 
     @Transactional(readOnly = true)
