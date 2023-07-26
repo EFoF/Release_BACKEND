@@ -3,6 +3,7 @@ import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberCompanyRepository;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.dto.MemberDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
 import com.service.releasenote.domain.member.error.exception.DeleteMemberPermissionDeniedException;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -47,9 +49,8 @@ public class MemberProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        // currentMemberId가 초대할 권한이 없으면 예외 처리 (프로젝트에 속해 있는지) (OWNER 아니어도 됨)
-//        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(projectId);
-        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(projectId);
+        // currentMemberId가 초대할 권한이 없으면 예외 처리 (프로젝트에 속해 있는지)
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!memberListByProjectId.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
@@ -85,31 +86,40 @@ public class MemberProjectService {
         // 현재 멤버의 아이디를 가져옴
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
+        Member currentMember = memberRepository.findById(currentMemberId)
+                .orElseThrow(UserNotFoundException::new);
+
         // projectId가 존재하지 않으면 예외 처리
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        // currentMemberId가 삭제할 권한이 없으면(프로젝트의 OWNER이 아니면) 예외 처리
-        MemberProject currentMember = memberProjectRepository.findMemberProjectByMemberId(currentMemberId)
-                .orElseThrow(NullPointerException::new);
-//        MemberProject currentMember = currentMemberOptional.orElseThrow(NullPointerException::new);
-
-        if(!currentMember.getRole().equals(Role.OWNER)){
-            throw new DeleteMemberPermissionDeniedException();
-        }
+        // currentMemberId가 프로젝트의 멤버가 아니면 예외 처리
+        MemberProject currentMemberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
+                .orElseThrow(UserNotFoundException::new);
 
         // memberEmail을 가진 member의 id가 memberproject에 없으면 예외 처리
         Optional<Member> MemberByEmail = memberRepository.findByEmail(memberEmail);
         Member member = MemberByEmail.orElseThrow(NullPointerException::new);
-//        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(projectId);
-        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(projectId);
+
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!memberListByProjectId.contains(member.getId())){
             throw new UserNotFoundException();
         }
 
         // member를 member_project에서 삭제
-        MemberProject deletedMember = memberProjectRepository.findByMemberAndProject(member.getId(), projectId);
+        MemberProject deletedMember = memberProjectRepository.findByMemberIdAndProjectId(member.getId(), projectId)
+                        .orElseThrow(UserNotFoundException::new);
         memberProjectRepository.delete(deletedMember);
 
+    }
+
+    public FindMemberListByProjectId findProjectMemberList(Long projectId) {
+        List<Member> memberList = memberRepository.findByProjectId(projectId);
+
+        List<MemberDTO.MemberListDTO> collect = memberList.stream()
+                .map(m -> new MemberDTO.MemberListDTO().toResponseDto(m))
+                .collect(Collectors.toList());
+
+        return new FindMemberListByProjectId(collect);
     }
 }

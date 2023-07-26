@@ -4,6 +4,7 @@ import com.service.releasenote.domain.company.dao.CompanyRepository;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberCompanyRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.dto.MemberDTO.MemberListDTO;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberCompany;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.*;
 
@@ -30,6 +32,28 @@ public class MemberCompanyService {
 
     private final MemberCompanyRepository memberCompanyRepository;
 
+
+    public List<MemberListDTO> findMembersByCompanyId(Long companyId) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+        // 로그인 되지 않은 경우
+        // TODO: exception 추가 후 수정
+        memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
+
+        List<MemberCompany> memberCompanyList = memberCompanyRepository.findByCompanyId(companyId);
+        List<MemberListDTO> memberList = memberCompanyList.stream().map(memberCompany -> {
+            Member member = memberCompany.getMember();
+            MemberListDTO memberListDTO = new MemberListDTO();
+            memberListDTO.setId(member.getId());
+            memberListDTO.setName(member.getUserName());
+            memberListDTO.setEmail(member.getEmail());
+            return memberListDTO;
+        }).collect(Collectors.toList());
+
+        return memberList;
+    }
+
+
     @Transactional
     public AddMemberResponseDTO addMemberCompany(Long company_id, AddMemberRequestDTO addMemberRequestDTO) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
@@ -41,7 +65,7 @@ public class MemberCompanyService {
         Company company = companyRepository.findById(company_id).orElseThrow(CompanyNotFoundException::new);
 
         // TODO: exception
-        List<Long> memberListByCompanyId = memberCompanyRepository.findMemberListByCompanyId(company_id);
+        List<Long> memberListByCompanyId = memberCompanyRepository.findMembersByCompanyId(company_id);
         if(!memberListByCompanyId.contains(currentMemberId)) {
             throw new UserNotFoundException();
         }
@@ -61,6 +85,7 @@ public class MemberCompanyService {
     }
 
     @Transactional
+    // TODO: 삭제 예외처리 추가 (ROLE 관련)
     public Long deleteMemberCompany(Long company_id, String email) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
@@ -71,7 +96,7 @@ public class MemberCompanyService {
         Company company = companyRepository.findById(company_id).orElseThrow(CompanyNotFoundException::new);
 
         // TODO: exception
-        List<Long> memberListByCompanyId = memberCompanyRepository.findMemberListByCompanyId(company_id);
+        List<Long> memberListByCompanyId = memberCompanyRepository.findMembersByCompanyId(company_id);
         if(!memberListByCompanyId.contains(currentMemberId)) {
             throw new UserNotFoundException();
         }
@@ -80,7 +105,7 @@ public class MemberCompanyService {
         Member member = memberRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
 
         // TODO: exception
-        if(memberListByCompanyId.contains(member.getId())) {
+        if(!memberListByCompanyId.contains(member.getId())) {
             throw new UserNotFoundException();
         }
 

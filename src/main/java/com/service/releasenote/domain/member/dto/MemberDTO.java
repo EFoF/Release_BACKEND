@@ -1,7 +1,10 @@
 package com.service.releasenote.domain.member.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
+import com.service.releasenote.domain.member.model.MemberProject;
+import com.service.releasenote.domain.project.dto.ProjectDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,6 +14,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 public class MemberDTO {
     @Getter
@@ -73,4 +77,36 @@ public class MemberDTO {
 
         private String inputEmail;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class MemberListDTO {
+
+        private Long id;
+        private String name;
+        private String email;
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public MemberDTO.MemberListDTO toResponseDto(Member member) {
+            return MemberListDTO.builder()
+                    .id(member.getId())
+                    .name(member.getUserName())
+                    .email(member.getEmail())
+                    .build();
+        }
+    }
+
 }

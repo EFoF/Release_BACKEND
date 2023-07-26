@@ -2,8 +2,10 @@ package com.service.releasenote.domain.company.dto;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.project.dto.ProjectDto;
 import lombok.*;
+import org.springframework.data.domain.Slice;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class CompanyDTO {
 
@@ -72,22 +74,21 @@ public class CompanyDTO {
         }
     }
 
-    //    ProjectDto.FindProjectListResponseDto
     @Getter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class FindProjectListByCompanyResponseDto {
-        private Long company_id;
+        private Long companyId;
         private String name;
-        private String img_url;
-        private List<ProjectDto.FindProjectListResponseDto> findProjectListResponseDtos;
+        private String imgURL;
+        private Slice<ProjectDto.FindProjectListResponseDto> findProjectListResponseDtos;
 
-        public FindProjectListByCompanyResponseDto toResponseDto(Company company, List<ProjectDto.FindProjectListResponseDto> findProjectListResponseDtos) {
+        public FindProjectListByCompanyResponseDto toResponseDto(Company company, Slice<ProjectDto.FindProjectListResponseDto> findProjectListResponseDtos) {
             return FindProjectListByCompanyResponseDto.builder()
-                    .company_id(company.getId())
+                    .companyId(company.getId())
                     .name(company.getName())
-                    .img_url(company.getImageURL())
+                    .imgURL(company.getImageURL())
                     .findProjectListResponseDtos(findProjectListResponseDtos)
                     .build();
         }

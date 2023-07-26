@@ -19,6 +19,10 @@ import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
@@ -42,7 +47,6 @@ public class ProjectService {
     private final MemberProjectRepository memberProjectRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
-    private final MemberCompanyRepository memberCompanyRepository;
     private final CategoryService categoryService;
 
     /**
@@ -94,12 +98,12 @@ public class ProjectService {
     }
 
     /**
-     * 특정 회사의 프로젝트 리스트 조회 서비스 로직
-     * -> 변경 후: 회사 단위로 내가 속한 프로젝트 리스트 조회 서비스 로직
+     * 회사 단위로 내가 속한 프로젝트 리스트 조회 서비스 로직
      * @param companyId
-     * @return List<FindProjectListResponseDto>
+     * @param pageable
+     * @return FindProjectListByCompanyResponseDto
      * */
-    public FindProjectListByCompanyResponseDto findProjectListByCompany(Long companyId) {
+    public FindProjectListByCompanyResponseDto findProjectListByCompany(Long companyId, Pageable pageable) {
 
         // 현재 멤버의 아이디를 가져옴
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
@@ -108,92 +112,17 @@ public class ProjectService {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(CompanyNotFoundException::new);
 
-        // company에 currentMemberId가 속해 있지 않으면 예외 처리
-        MemberCompany memberCompany = memberCompanyRepository.findByMemberIdAndCompanyId(currentMemberId, company.getId())
-                .orElseThrow(UserNotFoundException::new);
+        Slice<Project> projectsByCompanyIdAndMemberId =
+                projectRepository.findProjectsByCompanyIdAndMemberId(companyId, currentMemberId, pageable);
 
         // 1. companyId에 속한 프로젝트를 모두 가져온다.
         // 2. 해당 project에 currentMemberId가 속해 있다면 리스트에 포함한다.
 
-        List<Project> projectsByCompany = projectRepository.findByCompanyId(companyId);
-
-        List<Project> myProjectList = new ArrayList<>();
-        for (Project project : projectsByCompany) {
-            Optional<MemberProject> memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, project.getId());
-            if(memberProject.isPresent()) {
-                Project project1 = memberProject.get().getProject();
-                myProjectList.add(project1);
-            }
-        }
-
         // 프로젝트를 dto에 담아 리스트화
-        List<FindProjectListResponseDto> findProjectListResponseDtos = myProjectList.stream()
-                .map(project -> new FindProjectListResponseDto().toResponseDto(project))
-                .collect(Collectors.toList());
+        Slice<FindProjectListResponseDto> map = projectsByCompanyIdAndMemberId
+                .map(project -> new FindProjectListResponseDto().toResponseDto(project));
 
-        return new FindProjectListByCompanyResponseDto().toResponseDto(company, findProjectListResponseDtos);
-    }
-
-    /**
-     * 회사에 따라 내가 속한 프로젝트를 모두 조회 서비스 로직
-     * @return MyProjectByCompanyDto
-     * */
-    public MyProjectByCompanyDto findMyProjectListByCompany() {
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
-        // 내가 속한 회사 리스트 (없으면 예외 처리)
-        List<MemberCompany> memberCompanyList = memberCompanyRepository.findByMemberId(currentMemberId);
-        List<Company> companyList = memberCompanyList.stream()
-                .map(mc -> mc.getCompany())
-                .collect(Collectors.toList());
-
-        // 내가 속한 프로젝트 리스트 (전체)
-        List<MemberProject> memberProjectList = memberProjectRepository.findByMemberId(currentMemberId);
-        List<Project> projectList = memberProjectList.stream()
-                .map(mp -> mp.getProject())
-                .collect(Collectors.toList());
-
-        return mapMyProjectByCompanyToDto(companyList, projectList);
-    }
-
-    private ProjectDtoEach mapProjectToDto(Project project) {
-        return ProjectDtoEach.builder()
-                .project_id(project.getId())
-                .title(project.getTitle())
-                .build();
-    }
-
-    private MyProjectByCompanyDto mapMyProjectByCompanyToDto(List<Company> companyList, List<Project> projectList) {
-        // 회사 id로 project를 묶어서 정리
-        Map<Long, List<Project>> projectGroupByCompany = projectList.stream()
-                .collect(Collectors.groupingBy(p -> p.getCompany().getId()));
-
-        // ID로 회사 접근에 용이한 구조로 변경?
-        Map<Long, Company> companyMap = companyList.stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
-        List<MyProjectByCompanyDtoEach> result = new ArrayList<>();
-
-        projectGroupByCompany.forEach((companyId, project) -> {
-            Company company = companyMap.get(companyId);
-            CompanyResponseDto companyResponseDto = CompanyResponseDto.builder()
-                    .name(company.getName())
-                    .img_url(company.getImageURL())
-                    .build();
-
-            List<ProjectDtoEach> projectDtoEachList = project.stream()
-                    .map(p -> mapProjectToDto(p))
-                    .collect(Collectors.toList());
-
-            MyProjectByCompanyDtoEach resultEach = MyProjectByCompanyDtoEach.builder()
-                    .companyResponseDto(companyResponseDto)
-                    .projectDtoList(projectDtoEachList)
-                    .build();
-
-            result.add(resultEach);
-        });
-
-        return new MyProjectByCompanyDto(result);
-
+        return new FindProjectListByCompanyResponseDto().toResponseDto(company, map);
     }
 
     /**
@@ -217,7 +146,7 @@ public class ProjectService {
                 .orElseThrow(ProjectNotFoundException::new);
 
         // 프로젝트 정보를 수정할 권한이 없으면 예외 처리
-        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdsByProjectId(project_id);
+        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(project_id); // 수정 필요
         if(!memberListByProjectId.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }

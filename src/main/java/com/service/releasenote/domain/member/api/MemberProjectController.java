@@ -1,9 +1,11 @@
 package com.service.releasenote.domain.member.api;
 
 import com.service.releasenote.domain.member.application.MemberProjectService;
+import com.service.releasenote.domain.member.dto.MemberDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO;
 import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.Api;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,6 +36,16 @@ public class MemberProjectController {
 
         return new ResponseEntity<>(addProjectMember, HttpStatus.CREATED);
     }
+
+    @GetMapping(value = "companies/projects/{project_id}/members")
+    public ResponseEntity<FindMemberListByProjectId> findProjectMember(
+            @PathVariable Long project_id) {
+
+        FindMemberListByProjectId projectMemberList = memberProjectService.findProjectMemberList(project_id);
+        return new ResponseEntity<>(projectMemberList, HttpStatus.OK);
+    }
+
+
 
     /**
      * 프로젝트 멤버 삭제

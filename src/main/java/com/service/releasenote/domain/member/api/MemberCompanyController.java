@@ -3,17 +3,27 @@ package com.service.releasenote.domain.member.api;
 import com.service.releasenote.domain.member.application.MemberCompanyService;
 import com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberRequestDTO;
 import com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberResponseDTO;
+import com.service.releasenote.domain.member.dto.MemberDTO.MemberListDTO;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Api(tags = {"release"})
+@Api(tags = {"member_company"})
 public class MemberCompanyController {
     private final MemberCompanyService memberCompanyService;
+
+    @GetMapping(value = "/companies/{company_id}/members")
+    public List<MemberListDTO> findMembersByCompanyId(@PathVariable Long company_id) {
+        List<MemberListDTO> memberList = memberCompanyService.findMembersByCompanyId(company_id);
+
+        return memberList;
+    }
 
     @PostMapping(value = "/companies/{company_id}/members")
     public AddMemberResponseDTO addMemberCompany(@PathVariable Long company_id, @RequestBody AddMemberRequestDTO addMemberRequestDTO) {
@@ -24,7 +34,7 @@ public class MemberCompanyController {
     }
 
     @DeleteMapping(value = "/companies/{company_id}/members")
-    public Long deleteMemberCompnay(@PathVariable Long company_id, @RequestHeader("email") String email) {
+    public Long deleteMemberCompany(@PathVariable Long company_id, @RequestHeader("email") String email) {
         Long deleteMemberId = memberCompanyService.deleteMemberCompany(company_id, email);
 
         // TODO: 반환 데이터

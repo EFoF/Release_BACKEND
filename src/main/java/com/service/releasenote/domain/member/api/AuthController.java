@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.member.api;
 
 import com.service.releasenote.domain.member.application.AuthService;
+import com.service.releasenote.domain.member.application.EmailVerificationService;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import static com.service.releasenote.domain.member.dto.MemberDTO.*;
+import static com.service.releasenote.domain.member.dto.MailDTO.*;
 
 @Slf4j
 @RestController
@@ -18,6 +20,7 @@ import static com.service.releasenote.domain.member.dto.MemberDTO.*;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/signup")
     // @Valid는 SignUpRequest 에 걸려있는 유효성을 위배하는지 검사해줌.
@@ -56,6 +59,19 @@ public class AuthController {
     @PostMapping("/update/password/anonymous")
     public ResponseEntity<?> updatePasswordByAnonymousUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
         return ResponseEntity.ok(authService.updatePasswordByAnonymousUser(updatePasswordRequest));
+    }
+
+    @PostMapping("/mail/sending")
+    public ResponseEntity<?> sendEmailVerificationCode(
+            @RequestBody @Valid EmailCodeRequestDTO emailCodeRequestDTO) throws Exception {
+        emailVerificationService.sendSimpleMessage(emailCodeRequestDTO);
+        return ResponseEntity.ok("인증 코드가 발송됐습니다.");
+    }
+
+    @PostMapping("/mail/verification")
+    public ResponseEntity<?> verifyEmailVerificationCode(
+            @RequestBody @Valid EmailVerificationRequestDTO emailVerificationRequestDTO) {
+        return ResponseEntity.ok(emailVerificationService.verifyEmailVerificationCode(emailVerificationRequestDTO));
     }
 
     // 현재 로그인 된 멤버의 pk값

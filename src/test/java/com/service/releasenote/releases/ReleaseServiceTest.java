@@ -135,7 +135,7 @@ public class ReleaseServiceTest {
 
         //when
         when(projectRepository.existsById(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(project.getId())).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
         when(releaseRepository.save(any())).thenReturn(releases);
 
@@ -161,7 +161,7 @@ public class ReleaseServiceTest {
 
         //when
         when(projectRepository.existsById(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(project.getId())).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
         when(releaseRepository.save(any())).thenReturn(releases);
 
@@ -188,7 +188,7 @@ public class ReleaseServiceTest {
 
         //when
         when(projectRepository.existsById(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(project.getId())).thenReturn(new ArrayList<>());
+        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(new ArrayList<>());
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
         when(releaseRepository.save(any())).thenReturn(releases);
 
@@ -215,7 +215,7 @@ public class ReleaseServiceTest {
 
         //when
         when(projectRepository.existsById(project.getId())).thenReturn(false);
-        when(memberProjectRepository.findMemberIdsByProjectId(project.getId())).thenReturn(new ArrayList<>());
+        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(new ArrayList<>());
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
         when(releaseRepository.save(any())).thenReturn(releases);
 
@@ -242,7 +242,7 @@ public class ReleaseServiceTest {
 
         //when
         when(projectRepository.existsById(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(project.getId())).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.empty());
         when(releaseRepository.save(any())).thenReturn(releases);
 
@@ -274,7 +274,7 @@ public class ReleaseServiceTest {
 
         //when
         when(projectRepository.existsById(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(project.getId())).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
         when(releaseRepository.findByCategoryId(category.getId())).thenReturn(releaseList);
 
@@ -369,7 +369,7 @@ public class ReleaseServiceTest {
 
         //when
         when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
                 .thenReturn(Optional.ofNullable(releases));
 
@@ -395,7 +395,7 @@ public class ReleaseServiceTest {
 
         //when
         when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(currentMemberId)).thenReturn(new ArrayList<>());
+        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(new ArrayList<>());
         when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
                 .thenReturn(Optional.ofNullable(releases));
 
@@ -421,7 +421,7 @@ public class ReleaseServiceTest {
 
         //when
         when(categoryRepository.existsByProjectId(project.getId())).thenReturn(false);
-        when(memberProjectRepository.findMemberIdsByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
                 .thenReturn(Optional.ofNullable(releases));
 
@@ -447,7 +447,7 @@ public class ReleaseServiceTest {
 
         //when
         when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
                 .thenReturn(Optional.empty());
 
@@ -472,7 +472,7 @@ public class ReleaseServiceTest {
 
         //when
         when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
                 .thenReturn(Optional.ofNullable(releases));
 
@@ -498,7 +498,7 @@ public class ReleaseServiceTest {
 
         //when
         when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(currentMemberId)).thenReturn(new ArrayList<>());
+        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(new ArrayList<>());
         when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
                 .thenReturn(Optional.ofNullable(releases));
 
@@ -524,7 +524,7 @@ public class ReleaseServiceTest {
 
         //when
         when(categoryRepository.existsByProjectId(project.getId())).thenReturn(false);
-        when(memberProjectRepository.findMemberIdsByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
                 .thenReturn(Optional.ofNullable(releases));
 
@@ -550,7 +550,7 @@ public class ReleaseServiceTest {
 
         //when
         when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdsByProjectId(currentMemberId)).thenReturn(preparedMemberList);
+        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
                 .thenReturn(Optional.empty());
 
