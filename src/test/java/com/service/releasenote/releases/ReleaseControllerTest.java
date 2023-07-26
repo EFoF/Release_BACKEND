@@ -296,7 +296,7 @@ public class ReleaseControllerTest {
         ReleaseInfoDto releaseInfoDto = createReleaseInfoDto(3);
 
         //when
-        when(releaseService.findReleasesByCategoryId(category.getId())).thenReturn(releaseInfoDto);
+        when(releaseService.findReleasesByCategoryId(category.getId(), false)).thenReturn(releaseInfoDto);
 
         //then
         mockMvc.perform(get("/companies/projects/categories/{category_id}/releases", 1L)
@@ -325,7 +325,7 @@ public class ReleaseControllerTest {
         ProjectReleasesDto projectReleaseDto = createProjectReleaseDto(3, 4);
 
         //when
-        when(releaseService.findReleasesByProjectId(project.getId())).thenReturn(projectReleaseDto);
+        when(releaseService.findReleasesByProjectId(project.getId(), false)).thenReturn(projectReleaseDto);
 
         //then
         mockMvc.perform(get("/companies/projects/{project_id}/categories/releases", 1L)

@@ -4,6 +4,8 @@ import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
+import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.category.dto.CategoryDto.*;
@@ -35,6 +38,7 @@ public class ReleaseService {
     private final CategoryRepository categoryRepository;
     private final ReleaseRepository releaseRepository;
     private final ProjectRepository projectRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * release 저장 서비스 로직
@@ -64,10 +68,10 @@ public class ReleaseService {
      * @param categoryId
      * @return ReleaseInfoDto
      */
-    public ReleaseInfoDto findReleasesByCategoryId(Long categoryId) {
+    public ReleaseInfoDto findReleasesByCategoryId(Long categoryId, Boolean isDeveloper) {
         List<Releases> releasesList = releaseRepository.findByCategoryId(categoryId);
         List<ReleaseDtoEach> dtoList = releasesList.stream()
-                .map(r -> mapReleaseToDto(r))
+                .map(r -> mapReleaseToDto(r, isDeveloper))
                 .collect(Collectors.toList());
         return ReleaseInfoDto.builder().releaseDtoList(dtoList).build();
     }
@@ -77,12 +81,12 @@ public class ReleaseService {
      * @param projectId
      * @return ProjectReleasesDto
      */
-    public ProjectReleasesDto findReleasesByProjectId(Long projectId) {
+    public ProjectReleasesDto findReleasesByProjectId(Long projectId, Boolean isDeveloper) {
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
         List<Category> categoryList = categoryRepository.findByProjectId(project.getId());
         List<Long> categoryIdList = categoryList.stream().map(c -> c.getId()).collect(Collectors.toList());
         List<Releases> releasesList = releaseRepository.findByCategoryIdIn(categoryIdList);
-        return mapProjectReleaseToDto(categoryList, releasesList);
+        return mapProjectReleaseToDto(categoryList, releasesList, isDeveloper);
     }
 
     /**
@@ -123,9 +127,10 @@ public class ReleaseService {
      */
     public ReleaseModifyResponseDto findReleaseAndConvert(Long categoryId) {
         Releases releases = releaseRepository.findById(categoryId).orElseThrow(ReleasesNotFoundException::new);
+        Optional<Member> memberOptional = memberRepository.findById(releases.getModifierId());
         return ReleaseModifyResponseDto.builder()
+                .lastModifierName(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getUserName())
                 .lastModifiedTime(releases.getModifiedDate())
-//                .lastModifierName(releases.getModifierId())
                 .releaseDate(releases.getReleaseDate())
                 .version(releases.getVersion())
                 .message(releases.getMessage())
@@ -158,17 +163,26 @@ public class ReleaseService {
         return "deleted";
     }
 
-    private ReleaseDtoEach mapReleaseToDto(Releases releases) {
+    private ReleaseDtoEach mapReleaseToDto(Releases releases, Boolean isDeveloper) {
+        if(!isDeveloper) {
+            return ReleaseDtoEach.builder()
+                    .lastModifiedTime(releases.getModifiedDate())
+                    .version(releases.getVersion())
+                    .content(releases.getMessage())
+                    .tag(releases.getTag())
+                    .build();
+        }
+        Optional<Member> memberOptional = memberRepository.findById(releases.getModifierId());
         return ReleaseDtoEach.builder()
+                .lastModifierName(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getUserName())
                 .lastModifiedTime(releases.getModifiedDate())
-//                .lastModifierName(releases.getModifierId())
                 .version(releases.getVersion())
                 .content(releases.getMessage())
                 .tag(releases.getTag())
                 .build();
     }
 
-    private ProjectReleasesDto mapProjectReleaseToDto(List<Category> categoryList, List<Releases> releasesList) {
+    private ProjectReleasesDto mapProjectReleaseToDto(List<Category> categoryList, List<Releases> releasesList, Boolean isDeveloper) {
         // in 절로 한번에 조회 후 메모리에서 데이터 정제
         // 쿼리를 여러번 날리지 않아도 됨 -> 네트워크 최적화
         // 메모리에 로드가 발생 -> 트레이드 오프
@@ -187,7 +201,7 @@ public class ReleaseService {
                     .description(category.getDescription())
                     .build();
             List<ReleaseDtoEach> releaseDtoEachList = release.stream()
-                    .map(r -> mapReleaseToDto(r)).collect(Collectors.toList());
+                    .map(r -> mapReleaseToDto(r, isDeveloper)).collect(Collectors.toList());
             ProjectReleasesDtoEach resultEach = ProjectReleasesDtoEach.builder()
                     .categoryResponseDto(categoryResponseDto)
                     .releaseDtoList(releaseDtoEachList)
