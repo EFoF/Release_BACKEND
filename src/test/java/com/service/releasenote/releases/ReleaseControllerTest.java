@@ -11,7 +11,7 @@ import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
 import com.service.releasenote.global.error.exception.UnAuthorizedException;
 import com.service.releasenote.global.jwt.JwtFilter;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.service.releasenote.domain.category.dto.CategoryDto.*;
+import static com.service.releasenote.domain.category.dto.CategoryDto.CategoryResponseDto;
 import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -52,11 +52,11 @@ public class ReleaseControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    private MockMvc mockMvc;
+    private static MockMvc mockMvc;
 
-    @BeforeEach
-    public void setup(WebApplicationContext webApplicationContext) {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+    @BeforeAll
+    public static void setup(WebApplicationContext webApplicationContext) {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))
                 .apply(sharedHttpSession())
                 .build();
@@ -396,7 +396,7 @@ public class ReleaseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isConflict())
+                .andExpect(status().isNotFound())
                 .andExpect(content().string("해당 릴리즈를 찾을 수 없습니다."))
 //                .andExpect(jsonPath("$.message").value("해당 릴리즈를 찾을 수 없습니다."))
 //                .andExpect(jsonPath("$.exceptionName").value("ReleasesNotFoundException"))

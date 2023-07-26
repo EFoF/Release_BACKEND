@@ -1,10 +1,7 @@
 package com.service.releasenote.domain.category.api;
 
 import com.service.releasenote.domain.category.application.CategoryService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -64,12 +61,14 @@ public class CategoryController {
      * @param categoryId
      * @return CategoryResponseDto
      */
-    @GetMapping("/companies/{company_id}/projects/{project_id}/categories/{category_id}")
     @ApiOperation("api for get specific category by combination of companyId, projectId, categoryId")
+    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true,
+            dataType = "boolean", paramType = "query", defaultValue = "false")
     @ApiResponses({
             @ApiResponse(code=200, message = "요청 성공"),
             @ApiResponse(code=404, message = "존재하지 않는 카테고리")
     })
+    @GetMapping("/companies/{company_id}/projects/{project_id}/categories/{category_id}")
     public CategoryResponseDto categoryDetailsWithCondition (
             @PathVariable(name = "company_id") Long companyId,
             @PathVariable(name = "project_id") Long projectId,
@@ -83,12 +82,14 @@ public class CategoryController {
      * @param categoryId
      * @return CategoryResponseDto
      */
-    @GetMapping("/categories/{category_id}")
     @ApiOperation("api for get specific category by category id only")
+    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true,
+            dataType = "boolean", paramType = "query", defaultValue = "false")
     @ApiResponses({
             @ApiResponse(code=200, message = "요청 성공"),
             @ApiResponse(code=404, message = "존재하지 않는 카테고리")
     })
+    @GetMapping("/categories/{category_id}")
     public CategoryResponseDto categoryDetails (
             @PathVariable(name = "category_id") Long categoryId,
             @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) {
@@ -102,13 +103,13 @@ public class CategoryController {
      * @return String
      */
     @ApiOperation("api for delete category and releases under category")
-    @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}")
     @ApiResponses({
             @ApiResponse(code=200, message = "요청 성공"),
             @ApiResponse(code=401, message = "인증되지 않은 사용자"),
             @ApiResponse(code=404, message = "존재하지 않는 카테고리"),
             @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
     })
+    @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}")
     public String categoryRemove(
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId
@@ -124,13 +125,13 @@ public class CategoryController {
      * @return CategoryModifyResponseDto
      */
     @ApiOperation("api for update category")
-    @PutMapping("/companies/projects/{project_id}/categories/{category_id}")
     @ApiResponses({
             @ApiResponse(code=200, message = "요청 성공"),
             @ApiResponse(code=401, message = "인증되지 않은 사용자"),
             @ApiResponse(code=404, message = "존재하지 않는 카테고리"),
             @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
     })
+    @PutMapping("/companies/projects/{project_id}/categories/{category_id}")
     public CategoryModifyResponseDto categoryModify(
             @PathVariable(name = "project_id")Long projectId,
             @PathVariable(name = "category_id")Long categoryId,
