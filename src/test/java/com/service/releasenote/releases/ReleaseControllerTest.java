@@ -1,15 +1,11 @@
 package com.service.releasenote.releases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.model.Company;
-import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
-import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.api.ReleaseController;
 import com.service.releasenote.domain.release.application.ReleaseService;
-import com.service.releasenote.domain.release.dto.ReleaseDto;
 import com.service.releasenote.domain.release.exception.ReleasesNotFoundException;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
@@ -181,7 +177,7 @@ public class ReleaseControllerTest {
 
     public ReleaseModifyResponseDto createReleaseModifyResponseDto(ReleaseModifyRequestDto requestDto, Releases releases) {
         return ReleaseModifyResponseDto.builder()
-                .lastModifierName(releases.getModifierName())
+//                .lastModifierName(releases.getModifierId())
                 .lastModifiedTime(releases.getModifiedDate())
                 .releaseDate(releases.getReleaseDate())
                 .message(requestDto.getMessage())

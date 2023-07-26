@@ -182,7 +182,7 @@ public class CategoryControllerTest {
         Category category = buildCategory(project, 1L);
         CategoryResponseDto categoryResponseDto = createCategoryResponseDto();
         //when
-        when(categoryService.findCategoryByIds(company.getId(), project.getId(), category.getId()))
+        when(categoryService.findCategoryByIds(company.getId(), project.getId(), category.getId(), false))
                 .thenReturn(categoryResponseDto);
 
         //then
@@ -208,7 +208,7 @@ public class CategoryControllerTest {
         CategoryResponseDto categoryResponseDto = createCategoryResponseDto();
 
         //when
-        when(categoryService.findCategoryByCategoryId(category.getId())).thenReturn(categoryResponseDto);
+        when(categoryService.findCategoryByCategoryId(category.getId(), false)).thenReturn(categoryResponseDto);
 
         //then
         mockMvc.perform(get("/categories/{category_id}", 1L)

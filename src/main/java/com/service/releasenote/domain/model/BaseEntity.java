@@ -24,5 +24,5 @@ public class BaseEntity {
     private LocalDateTime modifiedDate;
 
     @LastModifiedBy
-    private String modifierName;
+    private Long modifierId;
 }
