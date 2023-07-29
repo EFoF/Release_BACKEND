@@ -71,7 +71,7 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity<?> signin(@Valid LoginDTO loginDTO) {
+    public ResponseEntity<?> signin(LoginDTO loginDTO) {
         // 로그인 정보로 AuthenticationToken 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
