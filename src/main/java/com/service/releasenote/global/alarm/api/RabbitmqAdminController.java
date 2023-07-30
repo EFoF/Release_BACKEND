@@ -1,38 +1,33 @@
 package com.service.releasenote.global.alarm.api;
 
-import com.service.releasenote.global.alarm.application.RabbitmqService;
-import com.service.releasenote.global.alarm.dto.RabbitmqDto;
+import com.service.releasenote.global.alarm.application.RabbitmqAdminService;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueInformation;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import static com.service.releasenote.global.alarm.dto.RabbitmqDto.*;
+import static com.service.releasenote.global.alarm.dto.RabbitmqAdminDto.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/queue")
 @Api(tags = {"amqp-rabbitmq"})
-public class RabbitmqController {
+public class RabbitmqAdminController {
 
-    private final RabbitmqService rabbitmqService;
+    private final RabbitmqAdminService rabbitmqAdminService;
 
     @PostMapping
     public String queueCreate(@RequestBody SaveQueueRequest saveQueueRequest) {
-        return rabbitmqService.saveQueue(saveQueueRequest);
+        return rabbitmqAdminService.saveQueue(saveQueueRequest);
     }
 
     @GetMapping
     public QueueInformation queueInfoGet(@RequestParam(value="queuename") String queueName) {
-        return rabbitmqService.getQueueInfo(queueName);
+        return rabbitmqAdminService.getQueueInfo(queueName);
     }
 
     @DeleteMapping
     public String queueDelete(@RequestParam(value = "queuename") String queueName) {
-        return rabbitmqService.deleteQueue(queueName);
+        return rabbitmqAdminService.deleteQueue(queueName);
     }
 }
