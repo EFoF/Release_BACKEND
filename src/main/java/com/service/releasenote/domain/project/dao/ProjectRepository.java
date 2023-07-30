@@ -17,7 +17,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     List<Project> findByCompanyId(Long companyId);
 
-    String findTitleById(Long projectId);
 
     @Query(value = "select p.* from member_project mp " +
             "join project p on p.project_id = mp.project_id " +

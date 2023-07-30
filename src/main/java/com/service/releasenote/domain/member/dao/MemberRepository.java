@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByEmail(String email);
 
+    String findUserNameById(Long id);
+
     @Query(value = "select * from member m " +
             "join member_project mp on m.member_id = mp.member_id " +
             "where project_id = :project_id", nativeQuery = true)
