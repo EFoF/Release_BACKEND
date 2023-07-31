@@ -56,7 +56,7 @@ public class ProjectService {
      * @return CreateProjectResponseDto
      * */
     @Transactional
-    public Long createProject
+    public CreateProjectResponseDto createProject
             (CreateProjectRequestDto createProjectRequestDto, Long company_id) {
 
         // 현재 멤버의 아이디를 가져옴
@@ -94,7 +94,7 @@ public class ProjectService {
                 .build();
         memberProjectRepository.save(memberProject);
 
-        return saveProject.getId();
+        return new CreateProjectResponseDto().toResponseDto(saveProject, company);
     }
 
     /**
@@ -183,7 +183,7 @@ public class ProjectService {
         // member_project에 currentMemberId가 없을 경우 예외 처리
         List<MemberProject> memberProjectsByMember = memberProjectRepository.findByMemberId(currentMemberId);
         if(memberProjectsByMember.isEmpty()){
-            throw new ProjectPermissionDeniedException();
+            throw new UserNotFoundException();
         }
 
         // member_project에 project가 없을 경우 예외 처리

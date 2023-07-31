@@ -14,7 +14,6 @@ import java.util.List;
 
 public class ProjectDto {
     @Getter
-    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CreateProjectRequestDto {
