@@ -33,6 +33,10 @@ public class Alarm {
 
     private boolean isChecked;
 
+    public void updateIsChecked(boolean isChecked) {
+        this.isChecked = isChecked;
+    }
+
     @Builder
     public Alarm(Long id, String message, MemberProject memberProject, Member member,  boolean isChecked) {
         this.memberProject = memberProject;

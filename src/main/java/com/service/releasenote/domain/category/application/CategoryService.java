@@ -1,6 +1,6 @@
 package com.service.releasenote.domain.category.application;
 
-import com.service.releasenote.domain.Alarm.application.AlarmProducerService;
+import com.service.releasenote.domain.Alarm.application.AlarmService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
@@ -32,7 +32,7 @@ import static com.service.releasenote.domain.category.dto.CategoryDto.*;
 public class CategoryService {
 
     private final MemberProjectRepository memberProjectRepository;
-    private final AlarmProducerService alarmProducerService;
+    private final AlarmService alarmService;
     private final CategoryRepository categoryRepository;
     private final ProjectRepository projectRepository;
     private final ReleaseRepository releaseRepository;
@@ -56,7 +56,7 @@ public class CategoryService {
         Category category = categorySaveRequest.toEntity(project);
         Category savedCategory = categoryRepository.save(category);
 
-        alarmProducerService.produceMessage(project.getId(), "카테고리를 생성하셨습니다.");
+        alarmService.produceMessage(project.getId(), "카테고리를 생성하셨습니다.");
 
         return savedCategory.getId();
     }
