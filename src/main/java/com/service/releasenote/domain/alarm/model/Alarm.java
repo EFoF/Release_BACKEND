@@ -1,8 +1,7 @@
-package com.service.releasenote.domain.Alarm.model;
+package com.service.releasenote.domain.alarm.model;
 
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberProject;
-import com.service.releasenote.domain.project.model.Project;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,14 +32,21 @@ public class Alarm {
 
     private boolean isChecked;
 
+    @Enumerated(EnumType.STRING)
+    private AlarmDomain alarmDomain;
+
+    private Long domainId;
+
     public void updateIsChecked(boolean isChecked) {
         this.isChecked = isChecked;
     }
 
     @Builder
-    public Alarm(Long id, String message, MemberProject memberProject, Member member,  boolean isChecked) {
+    public Alarm(Long id, Long domainId, String message, MemberProject memberProject, Member member,  boolean isChecked, AlarmDomain alarmDomain) {
         this.memberProject = memberProject;
+        this.alarmDomain = alarmDomain;
         this.isChecked = isChecked;
+        this.domainId = domainId;
         this.message = message;
         this.member = member;
         this.id = id;

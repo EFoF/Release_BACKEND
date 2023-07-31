@@ -1,4 +1,4 @@
-package com.service.releasenote.domain.Alarm.dto;
+package com.service.releasenote.domain.alarm.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
