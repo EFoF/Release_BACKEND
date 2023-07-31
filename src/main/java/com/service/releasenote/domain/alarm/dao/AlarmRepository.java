@@ -1,11 +1,10 @@
-package com.service.releasenote.domain.Alarm.dao;
+package com.service.releasenote.domain.alarm.dao;
 
-import com.service.releasenote.domain.Alarm.model.Alarm;
+import com.service.releasenote.domain.alarm.model.Alarm;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 

@@ -1,8 +1,7 @@
-package com.service.releasenote.domain.Alarm.model;
+package com.service.releasenote.domain.alarm.model;
 
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberProject;
-import com.service.releasenote.domain.project.model.Project;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

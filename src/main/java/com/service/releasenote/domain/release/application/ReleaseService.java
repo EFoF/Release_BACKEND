@@ -1,5 +1,6 @@
 package com.service.releasenote.domain.release.application;
 
+import com.service.releasenote.domain.alarm.application.AlarmService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
@@ -39,6 +40,7 @@ public class ReleaseService {
     private final ReleaseRepository releaseRepository;
     private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
+    private final AlarmService alarmService;
 
     /**
      * release 저장 서비스 로직
@@ -60,6 +62,7 @@ public class ReleaseService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         Releases releases = saveReleaseRequest.toEntity(category);
         Releases save = releaseRepository.save(releases);
+        alarmService.produceMessage(projectId, "새 릴리즈를 게시하셨습니다.");
         return save.getId();
     }
 
@@ -116,6 +119,7 @@ public class ReleaseService {
         releases.setVersion(requestDto.getVersion());
         releases.setMessage(requestDto.getMessage());
         releases.setTag(requestDto.getTag());
+        alarmService.produceMessage(projectId, "릴리즈를 수정하셨습니다.");
         // CQS
     }
 

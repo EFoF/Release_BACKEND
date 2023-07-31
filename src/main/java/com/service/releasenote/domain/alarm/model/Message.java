@@ -1,4 +1,4 @@
-package com.service.releasenote.domain.Alarm.model;
+package com.service.releasenote.domain.alarm.model;
 
 import lombok.Builder;
 import lombok.Getter;
