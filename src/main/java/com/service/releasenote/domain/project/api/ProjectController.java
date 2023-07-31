@@ -28,11 +28,11 @@ public class ProjectController {
      */
     @ApiOperation("API for project creation")
     @PostMapping("/companies/{company_id}/projects")
-    public ResponseEntity<CreateProjectResponseDto> createProject(
+    public ResponseEntity<Long> createProject(
             @RequestBody CreateProjectRequestDto createProjectRequestDto,
             @PathVariable Long company_id) {
 
-        CreateProjectResponseDto project = projectService.createProject(createProjectRequestDto, company_id);
+        Long project = projectService.createProject(createProjectRequestDto, company_id);
         return new ResponseEntity<>(project, HttpStatus.CREATED);
     }
 
@@ -74,7 +74,6 @@ public class ProjectController {
     @DeleteMapping(value = "/companies/{company_id}/projects/{project_id}")
     public ResponseEntity deleteProject(
             @PathVariable Long company_id, @PathVariable Long project_id) {
-        // 서비스 로직에서 프로젝트 삭제
         projectService.deleteProject(company_id, project_id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
