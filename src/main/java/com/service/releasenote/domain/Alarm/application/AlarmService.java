@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.Alarm.application;
 
 import com.service.releasenote.domain.Alarm.dao.AlarmRepository;
+import com.service.releasenote.domain.Alarm.exception.AlarmNotFoundException;
 import com.service.releasenote.domain.Alarm.model.Alarm;
 import com.service.releasenote.domain.Alarm.model.Message;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
@@ -88,7 +89,7 @@ public class AlarmService {
     /**
      * 그룹에 속한 사용자별 알람 반환 (전체)
      * @param projectId
-     * @return
+     * @return AlarmInfoDto
      */
     public AlarmInfoDto getAlarmDetailByProjectId(Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
@@ -100,6 +101,11 @@ public class AlarmService {
         return AlarmInfoDto.builder().alarmInfoDtoList(resultList).build();
     }
 
+    /**
+     * 그룹에 속한 사용자별 알람 반환 (읽지 않은 메세지만)
+     * @param projectId
+     * @return AlarmInfoDto
+     */
     public AlarmInfoDto getAlarmDetailWithNotReadByProjectId(Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         MemberProject memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
@@ -126,11 +132,25 @@ public class AlarmService {
         }
     }
 
+    @Transactional
+    public void deleteAlarm(Long projectId, Long alarmId) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        MemberProject memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
+                .orElseThrow(MemberProjectNotFoundException::new);
+        List<Alarm> alarmList = alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId());
+        if(!alarmList.stream().anyMatch(alarm -> alarm.getId().equals(alarmId))) {
+            throw new AlarmNotFoundException("현재 멤버의 알람 리스트에 해당 알람이 존재하지 않습니다.");
+        }
+        Alarm alarm = alarmRepository.findById(alarmId).orElseThrow(AlarmNotFoundException::new);
+        alarmRepository.delete(alarm);
+    }
+
     private AlarmInfoDtoEach convertToDto(Alarm alarm) {
         return AlarmInfoDtoEach.builder()
                 .authorEmail(alarm.getMember().getEmail())
                 .authorId(alarm.getMember().getId())
                 .message(alarm.getMessage())
+                .id(alarm.getId())
                 .build();
     }
 }

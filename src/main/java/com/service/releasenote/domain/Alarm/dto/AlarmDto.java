@@ -14,6 +14,7 @@ public class AlarmDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AlarmInfoDtoEach {
+        private Long id;
         private String message;
         private Long authorId;
         private String authorEmail;
