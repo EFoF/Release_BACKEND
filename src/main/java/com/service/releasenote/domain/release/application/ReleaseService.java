@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.release.application;
 
 import com.service.releasenote.domain.alarm.application.AlarmService;
+import com.service.releasenote.domain.alarm.model.AlarmDomain;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
@@ -62,7 +63,7 @@ public class ReleaseService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         Releases releases = saveReleaseRequest.toEntity(category);
         Releases save = releaseRepository.save(releases);
-        alarmService.produceMessage(projectId, "새 릴리즈를 게시하셨습니다.");
+        alarmService.produceMessage(projectId, releases.getId(), "새 릴리즈를 게시하셨습니다.", AlarmDomain.RELEASE);
         return save.getId();
     }
 
@@ -119,7 +120,7 @@ public class ReleaseService {
         releases.setVersion(requestDto.getVersion());
         releases.setMessage(requestDto.getMessage());
         releases.setTag(requestDto.getTag());
-        alarmService.produceMessage(projectId, "릴리즈를 수정하셨습니다.");
+        alarmService.produceMessage(projectId, releases.getId(), "릴리즈를 수정하셨습니다.", AlarmDomain.RELEASE);
         // CQS
     }
 
@@ -162,8 +163,8 @@ public class ReleaseService {
         }
         Releases releases = releaseRepository.findByCategoryIdAndReleaseId(categoryId, releaseId)
                 .orElseThrow(() ->  new ReleasesNotFoundException("해당 카테고리에 속하는 릴리즈가 없습니다."));
-
         releaseRepository.delete(releases);
+        alarmService.produceMessage(projectId, 0L, "릴리즈를 삭제하셨습니다.", AlarmDomain.RELEASE);
         return "deleted";
     }
 

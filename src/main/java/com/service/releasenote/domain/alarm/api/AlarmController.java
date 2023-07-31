@@ -48,7 +48,6 @@ public class AlarmController {
         alarmService.deleteAlarm(projectId, alarmId);
     }
 
-    @GetMapping("/categories/{categoryId}")
 
 
 }

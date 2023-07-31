@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.category.application;
 
 import com.service.releasenote.domain.alarm.application.AlarmService;
+import com.service.releasenote.domain.alarm.model.AlarmDomain;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
@@ -56,7 +57,7 @@ public class CategoryService {
         Category category = categorySaveRequest.toEntity(project);
         Category savedCategory = categoryRepository.save(category);
 
-        alarmService.produceMessage(project.getId(), "카테고리를 생성하셨습니다.");
+        alarmService.produceMessage(project.getId(), category.getId(), "카테고리를 생성하셨습니다.", AlarmDomain.CATEGORY);
 
         return savedCategory.getId();
     }
@@ -146,7 +147,7 @@ public class CategoryService {
         releaseRepository.deleteAll(releaseList);
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         categoryRepository.delete(category);
-        alarmService.produceMessage(projectId, "카테고리를 삭제하셨습니다.");
+        alarmService.produceMessage(projectId, 0L,"카테고리를 삭제하셨습니다.", AlarmDomain.CATEGORY);
         return "deleted";
     }
 
@@ -162,7 +163,7 @@ public class CategoryService {
         category.setTitle(modifyRequestDto.getTitle());
         category.setDescription(modifyRequestDto.getDescription());
         category.setDetail(modifyRequestDto.getDetail());
-        alarmService.produceMessage(projectId, "카테고리를 수정하셨습니다.");
+        alarmService.produceMessage(projectId,  category.getId(), "카테고리를 수정하셨습니다.", AlarmDomain.CATEGORY);
         // 커맨드와 쿼리를 분리
     }
 

@@ -9,16 +9,20 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Message {
+    private Long domainId;
     private Long memberId;
     private Long projectId;
-    private String memberName;
     private String content;
+    private String memberName;
+    private AlarmDomain alarmDomain;
 
     @Builder
-    public Message(Long memberId, Long projectId, String memberName, String content) {
+    public Message(Long domainId, Long memberId, Long projectId, String memberName, String content, AlarmDomain alarmDomain) {
+        this.content = content;
+        this.domainId = domainId;
         this.memberId = memberId;
         this.projectId = projectId;
         this.memberName = memberName;
-        this.content = content;
+        this.alarmDomain = alarmDomain;
     }
 }

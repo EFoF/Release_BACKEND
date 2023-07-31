@@ -3,6 +3,7 @@ package com.service.releasenote.domain.alarm.application;
 import com.service.releasenote.domain.alarm.dao.AlarmRepository;
 import com.service.releasenote.domain.alarm.exception.AlarmNotFoundException;
 import com.service.releasenote.domain.alarm.model.Alarm;
+import com.service.releasenote.domain.alarm.model.AlarmDomain;
 import com.service.releasenote.domain.alarm.model.Message;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
@@ -50,7 +51,7 @@ public class AlarmService {
      * @param projectId
      * @param content
      */
-    public void produceMessage(Long projectId, String content) {
+    public void produceMessage(Long projectId, Long domainId, String content, AlarmDomain alarmDomain) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
         Member author = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
@@ -59,6 +60,8 @@ public class AlarmService {
                 .memberName(author.getUserName())
                 .projectId(project.getId())
                 .memberId(author.getId())
+                .alarmDomain(alarmDomain)
+                .domainId(domainId)
                 .build();
         rabbitTemplate.convertAndSend(exchange, bindingKey, message);
     }
@@ -76,6 +79,8 @@ public class AlarmService {
         List<MemberProject> memberProjectList = memberProjectRepository.findMemberProjectByProjectId(projectId);
         for (MemberProject memberProject : memberProjectList) {
             Alarm alarm = Alarm.builder()
+                    .alarmDomain(message.getAlarmDomain())
+                    .domainId(message.getDomainId())
                     .message(message.getContent())
                     .memberProject(memberProject)
                     .isChecked(false)
