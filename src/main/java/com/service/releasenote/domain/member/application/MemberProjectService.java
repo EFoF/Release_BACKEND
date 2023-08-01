@@ -60,7 +60,7 @@ public class MemberProjectService {
         Optional<Member> memberByEmail = memberRepository.findByEmail(email);
 
         // memberId가 존재하지 않으면 예외 처리
-        Member member = memberByEmail.orElseThrow(NullPointerException::new);
+        Member member = memberByEmail.orElseThrow(UserNotFoundException::new);
 
         // member가 projectId의 회사에 속해있지 않으면 예외 처리
         Company company = project.getCompany();
