@@ -172,6 +172,7 @@ public class ReleaseService {
         if(!isDeveloper) {
             return ReleaseDtoEach.builder()
                     .lastModifiedTime(releases.getModifiedDate())
+                    .releaseDate(releases.getReleaseDate())
                     .version(releases.getVersion())
                     .content(releases.getMessage())
                     .tag(releases.getTag())
@@ -181,6 +182,7 @@ public class ReleaseService {
         return ReleaseDtoEach.builder()
                 .lastModifierName(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getUserName())
                 .lastModifiedTime(releases.getModifiedDate())
+                .releaseDate(releases.getReleaseDate())
                 .version(releases.getVersion())
                 .content(releases.getMessage())
                 .tag(releases.getTag())
