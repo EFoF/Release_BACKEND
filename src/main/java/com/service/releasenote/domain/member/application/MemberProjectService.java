@@ -1,4 +1,8 @@
 package com.service.releasenote.domain.member.application;
+import com.service.releasenote.domain.alarm.application.AlarmService;
+import com.service.releasenote.domain.alarm.dao.AlarmRepository;
+import com.service.releasenote.domain.alarm.model.Alarm;
+import com.service.releasenote.domain.alarm.model.AlarmDomain;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberCompanyRepository;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
@@ -34,9 +38,11 @@ import java.util.stream.Collectors;
 public class MemberProjectService {
 
     private final MemberProjectRepository memberProjectRepository;
-    private final ProjectRepository projectRepository;
     private final MemberCompanyRepository memberCompanyRepository;
+    private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
+    private final AlarmRepository alarmRepository;
+    private final AlarmService alarmService;
 
     @Transactional
     public AddProjectMemberResponseDto addProjectMember
@@ -77,7 +83,7 @@ public class MemberProjectService {
         // member_project에 저장 (role은 MEMBER)
         MemberProject newMemberProject = addProjectMemberRequestDto.toEntity(project, member);
         MemberProject saveMemberProject = memberProjectRepository.save(newMemberProject);
-
+        alarmService.produceMessage(projectId, member.getId(), member.getUserName() + " 님을 초대하셨습니다.", AlarmDomain.MEMBER);
         return new AddProjectMemberResponseDto().toResponseDto(saveMemberProject);
     }
 
@@ -109,8 +115,12 @@ public class MemberProjectService {
         // member를 member_project에서 삭제
         MemberProject deletedMember = memberProjectRepository.findByMemberIdAndProjectId(member.getId(), projectId)
                         .orElseThrow(UserNotFoundException::new);
+        List<Alarm> alarmList = alarmRepository.findByMemberProjectId(deletedMember.getId());
+        for (Alarm alarm : alarmList) {
+            alarmRepository.delete(alarm);
+        }
         memberProjectRepository.delete(deletedMember);
-
+        alarmService.produceMessage(projectId, member.getId(), member.getUserName() + " 님을 추방하셨습니다.", AlarmDomain.MEMBER);
     }
 
     public FindMemberListByProjectId findProjectMemberList(Long projectId) {
