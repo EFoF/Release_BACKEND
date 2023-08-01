@@ -1,4 +1,4 @@
-package com.service.releasenote.domain.Alarm.exception;
+package com.service.releasenote.domain.alarm.exception;
 
 public class AlarmNotFoundException extends RuntimeException{
     public AlarmNotFoundException() {

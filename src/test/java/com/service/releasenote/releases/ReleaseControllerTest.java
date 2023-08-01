@@ -177,7 +177,6 @@ public class ReleaseControllerTest {
 
     public ReleaseModifyResponseDto createReleaseModifyResponseDto(ReleaseModifyRequestDto requestDto, Releases releases) {
         return ReleaseModifyResponseDto.builder()
-//                .lastModifierName(releases.getModifierId())
                 .lastModifiedTime(releases.getModifiedDate())
                 .releaseDate(releases.getReleaseDate())
                 .message(requestDto.getMessage())
@@ -230,59 +229,9 @@ public class ReleaseControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(saveReleaseRequest)))
                 .andExpect(status().is2xxSuccessful())
-//                .andExpect(content().string("Security Context에 인증 정보가 없습니다."))
                 .andDo(print());
     }
 
-//    @Test
-//    @DisplayName("실패 - 릴리즈 생성 테스트 - 존재하지 않는 프로젝트")
-//    public void saveReleaseForFailureByNotExistsProject() throws Exception {
-//        //given
-//        Company company = buildCompany(1L);
-//        Project project = buildProject(company, 1L);
-//        Category category = buildCategory(project, 1L);
-//        Releases releases = buildReleases(category, 1L);
-//        SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
-//
-//        //when
-//        when(releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()))
-//                .thenThrow(ProjectNotFoundException.class);
-//
-//        //then
-//        mockMvc.perform(post("/companies/projects/{projectId}/categories/{categoryId}/releases",
-//                        1L, 1L)
-//                                .contentType(MediaType.APPLICATION_JSON)
-//                                .content(objectMapper.writeValueAsString(saveReleaseRequest)))
-//                .andExpect(status().isConflict())
-//                .andExpect(content().string("프로젝트를 찾을 수 없습니다."))
-//                .andDo(print());
-//
-//    }
-//
-//    @Test
-//    @DisplayName("실패 - 릴리즈 생성 테스트 - 프로젝트에 속하지 않은 사용자")
-//    public void saveProjectForFailureByNonProjectMember() throws Exception {
-//        //given
-//        Company company = buildCompany(1L);
-//        Project project = buildProject(company, 1L);
-//        Category category = buildCategory(project, 1L);
-//        Releases releases = buildReleases(category, 1L);
-//        SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
-//
-//        //when
-//        when(releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()))
-//                .thenThrow(ProjectPermissionDeniedException.class);
-//
-//        //then
-//        mockMvc.perform(post("/companies/projects/{projectId}/categories/{categoryId}/releases",
-//                        1L, 1L)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(saveReleaseRequest)))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().string("프로젝트 수정 권한이 없습니다."))
-//                .andDo(print());
-//
-//    }
 
     @Test
     @DisplayName("성공 - 카테고리 하위 릴리즈 모두 조회 테스트")

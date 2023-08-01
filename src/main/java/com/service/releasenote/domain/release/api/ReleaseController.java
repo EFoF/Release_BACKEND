@@ -47,14 +47,11 @@ public class ReleaseController {
      * @return ReleaseInfoDto
      */
     @ApiOperation("api for get releases by category")
-    @GetMapping("/companies/projects/categories/{category_id}/releases")
-    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true,
-            dataType = "Boolean", paramType = "query", defaultValue = "false")
-    @ApiResponses({
-            @ApiResponse(code=200, message="요청 성공"),
-    })
+    @GetMapping("/companies/projects/categories/{id}/releases")
+    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true, dataType = "Boolean", paramType = "query", defaultValue = "false")
+    @ApiResponses({ @ApiResponse(code=200, message="요청 성공")})
     public ReleaseInfoDto releaseListByCategory(
-            @PathVariable(name = "category_id") Long categoryId,
+            @PathVariable(name = "id") Long categoryId,
             @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) {
         return releaseService.findReleasesByCategoryId(categoryId, isDeveloper);
     }
@@ -65,12 +62,8 @@ public class ReleaseController {
      * @return ProjectReleasesDto
      */
     @ApiOperation("api for get releases by project")
-    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true,
-            dataType = "boolean", paramType = "query", defaultValue = "false")
-    @ApiResponses({
-            @ApiResponse(code=201, message="생성 성공"),
-            @ApiResponse(code=404, message = "존재하지 않는 카테고리 또는 존재하지 않는 프로젝트"),
-    })
+    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true, dataType = "boolean", paramType = "query", defaultValue = "false")
+    @ApiResponses({ @ApiResponse(code=201, message="생성 성공"), @ApiResponse(code=404, message = "존재하지 않는 카테고리 또는 존재하지 않는 프로젝트"),})
     @GetMapping("/companies/projects/{project_id}/categories/releases")
     public ProjectReleasesDto releaseListByProject(
             @PathVariable(name = "project_id") Long projectId,
