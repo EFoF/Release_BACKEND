@@ -4,6 +4,8 @@ import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.project.application.ProjectService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +29,12 @@ public class ProjectController {
      * @return ResponseEntity<CreateProjectResponseDto>
      */
     @ApiOperation("API for project creation")
+    @ApiResponses({
+            @ApiResponse(code=201, message="생성 성공"),
+            @ApiResponse(code=401, message = "인증되지 않은 사용자"),
+            @ApiResponse(code=404, message = "존재하지 않는 회사"),
+            @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
+    })
     @PostMapping("/companies/{company_id}/projects")
     public ResponseEntity<CreateProjectResponseDto> createProject(
             @RequestBody CreateProjectRequestDto createProjectRequestDto,
@@ -43,6 +51,10 @@ public class ProjectController {
      * @return ResponseEntity<FindProjectListByCompanyResponseDto>
      * */
     @ApiOperation("API for project inquiry of specific company")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "요청 성공"),
+            @ApiResponse(code = 404, message = "존재하지 않는 회")
+    })
     @GetMapping(value = "/companies/{company_id}/projects")
     public ResponseEntity<FindProjectListByCompanyResponseDto> projectListByCompany(@PathVariable Long company_id, Pageable pageable) {
         FindProjectListByCompanyResponseDto projectListByCompany = projectService.findProjectListByCompany(company_id, pageable);
@@ -55,6 +67,10 @@ public class ProjectController {
      * @return ResponseEntity
      * */
     @ApiOperation("API for project modification")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "요청 성공"),
+            @ApiResponse(code = 404, message = "존재하지 않는 회사")
+    })
     @PutMapping(value = "/companies/projects/{project_id}")
     public ResponseEntity updateProject(
             @PathVariable Long project_id,
@@ -71,6 +87,12 @@ public class ProjectController {
      * @return ResponseEntity
      * */
     @ApiOperation("API for deleting projects")
+    @ApiResponses({
+            @ApiResponse(code=200, message = "요청 성공"),
+            @ApiResponse(code=401, message = "인증되지 않은 사용자"),
+            @ApiResponse(code=404, message = "존재하지 않는 프로젝트"),
+            @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
+    })
     @DeleteMapping(value = "/companies/{company_id}/projects/{project_id}")
     public ResponseEntity deleteProject(
             @PathVariable Long company_id, @PathVariable Long project_id) {
