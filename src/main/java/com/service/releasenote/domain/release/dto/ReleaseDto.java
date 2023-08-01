@@ -41,6 +41,7 @@ public class ReleaseDto {
     @AllArgsConstructor
     public static class ReleaseDtoEach {
         private LocalDateTime lastModifiedTime;
+        private LocalDateTime releaseDate;
         private String lastModifierName;
         private String content;
         private String version;
