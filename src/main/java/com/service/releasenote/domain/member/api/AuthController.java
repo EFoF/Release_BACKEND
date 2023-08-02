@@ -55,14 +55,14 @@ public class AuthController {
     }
 
     // 로그인 되어 있는 유저의 비밀번호 변경
-    @PostMapping("/update/password")
+    @PatchMapping("/update/password")
     public ResponseEntity<String> updatePasswordByLoggedInUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
         authService.updatePasswordByLoggedInUser(updatePasswordRequest);
         return ResponseEntity.ok("비밀번호가 변경 되었습니다.");
     }
 
     // 로그인 되어 있는 않은 유저의 비밀번호 변경
-    @PostMapping("/update/password/anonymous")
+    @PatchMapping("/update/password/anonymous")
     public ResponseEntity<String> updatePasswordByAnonymousUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
         authService.updatePasswordByAnonymousUser(updatePasswordRequest);
         return ResponseEntity.ok("비밀번호가 변경 되었습니다.");
