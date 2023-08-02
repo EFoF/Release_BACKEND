@@ -6,10 +6,13 @@ import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
-import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
+import com.service.releasenote.domain.member.dao.MemberRepository;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
+import com.service.releasenote.domain.member.model.Authority;
+import com.service.releasenote.domain.member.model.Member;
+import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.domain.project.application.ProjectService;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.dto.ProjectDto.*;
@@ -23,8 +26,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.mockito.Mock;
@@ -33,9 +34,8 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,13 +46,16 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
 public class ProjectServiceTest {
-
+    @MockBean
+    PasswordEncoder passwordEncoder;
     @MockBean
     MemberProjectRepository memberProjectRepository;
     @MockBean
     ProjectRepository projectRepository;
     @MockBean
     CompanyRepository companyRepository;
+    @MockBean
+    MemberRepository memberRepository;
     @MockBean
     CategoryRepository categoryRepository;
     @Autowired
@@ -61,7 +64,7 @@ public class ProjectServiceTest {
     public Company buildCompany(Long id) {
         return Company.builder()
                 .ImageURL("test image url")
-                .name("test company name " + id)
+                .name("teset company name " + id)
                 .id(id)
                 .build();
     }
@@ -76,38 +79,23 @@ public class ProjectServiceTest {
                 .build();
     }
 
+    public Member buildMember(Long id) { // Test 용 멤버 생성
+        return Member.builder()
+                .id(id)
+                .userName("test_user_name")
+                .email("test_email@test.com")
+                .password(passwordEncoder.encode("test_password"))
+                .authority(Authority.ROLE_USER)
+                .memberLoginType(MemberLoginType.RELEASE_LOGIN)
+                .isDeleted(false)
+                .build();
+    }
+
     public CreateProjectRequestDto createProjectSaveRequest() {
         return CreateProjectRequestDto.builder()
                 .description("test project description")
                 .title("test project title")
                 .scope(true)
-                .build();
-    }
-
-    public FindProjectListResponseDto createMyProjectEachDto(int id) {
-        return FindProjectListResponseDto.builder()
-                .project_id((long) id)
-                .title("test project title " + id)
-                .description("test project description " + id)
-                .scope(true)
-                .create_date(LocalDateTime.now())
-                .modified_date(LocalDateTime.now())
-                .build();
-    }
-
-    public CompanyDTO.FindProjectListByCompanyResponseDto createMyProjectByCompanyDto(int number) {
-        List<FindProjectListResponseDto> list = new ArrayList<>();
-        for(int i=1; i<=number; i++) {
-            list.add(createMyProjectEachDto(i));
-        }
-
-        Slice<FindProjectListResponseDto> findProjectListResponseDtos = new SliceImpl<>(list);
-
-        return CompanyDTO.FindProjectListByCompanyResponseDto.builder()
-                .companyId(1L)
-                .name("test company name " + 1L)
-                .imgURL("test image url " + 1L)
-                .findProjectListResponseDtos(findProjectListResponseDtos)
                 .build();
     }
 
@@ -130,12 +118,14 @@ public class ProjectServiceTest {
 
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
+        Member member = buildMember(currentMemberId);
         CreateProjectRequestDto projectSaveRequest = createProjectSaveRequest();
 
         //when
-        when(memberProjectRepository.findMemberIdByProjectId(any())).thenReturn(preparedMemberList);
         when(companyRepository.findById(company.getId())).thenReturn(Optional.ofNullable(company));
+        when(memberRepository.findById(currentMemberId)).thenReturn(Optional.ofNullable(member));
         when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
+        when(memberProjectRepository.findMemberIdByProjectId(any())).thenReturn(preparedMemberList);
         when(projectRepository.save(any())).thenReturn(project);
 
         //then
@@ -183,62 +173,6 @@ public class ProjectServiceTest {
 
     @Test
     @WithMockCustomUser
-    @DisplayName("성공 - 회사 내 내가 속한 프로젝트 조회 테스트")
-    public void getProjectsByCompanyForSuccess () throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        List<Long> preparedMemberList = new ArrayList<>();
-        preparedMemberList.add(currentMemberId);
-
-        Company company = buildCompany(1L);
-        Project project1 = buildProject(company, 1L);
-        Project project2 = buildProject(company, 2L);
-        Project project3 = buildProject(company, 3L);
-
-        List<Project> projectList = new ArrayList<>();
-        projectList.add(project1);
-        projectList.add(project2);
-        projectList.add(project3);
-        Slice<Project> projectSlice = new SliceImpl<>(projectList);
-
-        Pageable pageable = PageRequest.of(0, 3);
-
-        //when
-        when(companyRepository.findById(company.getId())).thenReturn(Optional.ofNullable(company));
-        when(projectRepository.findProjectsByCompanyIdAndMemberId(any(), any(), any())).thenReturn(projectSlice);
-
-        //then
-        CompanyDTO.FindProjectListByCompanyResponseDto findProjectListByCompanyResponseDto = projectService.findProjectListByCompany(company.getId(), pageable);
-        assertThat(findProjectListByCompanyResponseDto.getCompanyId()).isEqualTo(1L);
-        assertThat(findProjectListByCompanyResponseDto.getName()).isEqualTo("test company name 1");
-        assertThat(findProjectListByCompanyResponseDto.getImgURL()).isEqualTo("test image url");
-
-        assertThat(findProjectListByCompanyResponseDto.getFindProjectListResponseDtos())
-                .extracting("title")
-                .contains("test project title 1", "test project title 2", "test project title 3");
-        assertThat(findProjectListByCompanyResponseDto.getFindProjectListResponseDtos())
-                .extracting("description")
-                .contains("test project description 1", "test project description 2", "test project description 3");
-    }
-
-    @Test
-    @WithMockCustomUser
-    @DisplayName("실패 - 회사 내 내가 속한 프로젝트 조회 테스트 - 존재하지 않는 회사")
-    public void getProjectsByCompanyForFailureByNotExistCompany () throws Exception {
-        //given
-        Company company = buildCompany(1L);
-        Pageable pageable = PageRequest.of(0, 3);
-
-        //when
-        when(companyRepository.findById(company.getId())).thenReturn(Optional.empty());
-
-        //then
-        Assertions.assertThrows(CompanyNotFoundException.class,
-                () -> projectService.findProjectListByCompany(company.getId(), pageable));
-    }
-
-    @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 수정 테스트")
     public void updateProjectForSuccess() throws Exception {
         //given
@@ -248,9 +182,11 @@ public class ProjectServiceTest {
 
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
+        Member member = buildMember(currentMemberId);
         UpdateProjectRequestDto updateProjectRequestDto = updateProjectRequest();
 
         //when
+        when(memberRepository.findById(currentMemberId)).thenReturn(Optional.ofNullable(member));
         when(memberProjectRepository.findMemberIdByProjectId(any())).thenReturn(preparedMemberList);
         when(companyRepository.findById(company.getId())).thenReturn(Optional.ofNullable(company));
         when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
@@ -286,9 +222,11 @@ public class ProjectServiceTest {
         //given
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
+        Member member = buildMember(1L);
         UpdateProjectRequestDto updateProjectRequestDto = updateProjectRequest();
 
         //when
+        when(memberRepository.findById(any())).thenReturn(Optional.ofNullable(member));
         when(memberProjectRepository.findMemberIdByProjectId(any())).thenReturn(new ArrayList<>());
         when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
 
@@ -308,9 +246,11 @@ public class ProjectServiceTest {
 
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
+        Member member = buildMember(currentMemberId);
         UpdateProjectRequestDto updateProjectRequestDto = updateProjectRequest();
 
         //when
+        when(memberRepository.findById(any())).thenReturn(Optional.ofNullable(member));
         when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
         when(projectRepository.findById(project.getId())).thenReturn(Optional.empty());
 

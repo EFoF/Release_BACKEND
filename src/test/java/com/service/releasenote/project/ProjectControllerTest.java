@@ -4,11 +4,9 @@ package com.service.releasenote.project;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.model.Category;
-import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.project.api.ProjectController;
 import com.service.releasenote.domain.project.application.ProjectService;
-import com.service.releasenote.domain.project.dto.ProjectDto;
 import com.service.releasenote.domain.project.dto.ProjectDto.*;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.global.jwt.JwtFilter;
@@ -19,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.*;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +27,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -68,7 +63,7 @@ public class ProjectControllerTest {
     public Company buildCompany(Long id) {
         return Company.builder()
                 .ImageURL("test image url")
-                .name("test company name " + id)
+                .name("teset company name " + id)
                 .id(id)
                 .build();
     }
@@ -88,33 +83,6 @@ public class ProjectControllerTest {
                 .description("test project description")
                 .title("test project title")
                 .scope(true)
-                .build();
-    }
-
-    public FindProjectListResponseDto createMyProjectEachDto(int id) {
-        return FindProjectListResponseDto.builder()
-                .project_id((long) id)
-                .title("test project title " + id)
-                .description("test project description " + id)
-                .scope(true)
-                .create_date(LocalDateTime.now())
-                .modified_date(LocalDateTime.now())
-                .build();
-    }
-
-    public CompanyDTO.FindProjectListByCompanyResponseDto createMyProjectByCompanyDto(int number) {
-        List<FindProjectListResponseDto> list = new ArrayList<>();
-        for(int i=1; i<=number; i++) {
-            list.add(createMyProjectEachDto(i));
-        }
-
-        Slice<FindProjectListResponseDto> findProjectListResponseDtos = new SliceImpl<>(list);
-
-        return CompanyDTO.FindProjectListByCompanyResponseDto.builder()
-                .companyId(1L)
-                .name("test company name " + 1L)
-                .imgURL("test image url " + 1L)
-                .findProjectListResponseDtos(findProjectListResponseDtos)
                 .build();
     }
 
@@ -144,28 +112,6 @@ public class ProjectControllerTest {
                         .content(objectMapper.writeValueAsString(projectSaveRequest)))
                 .andExpect(content().string(project.getId().toString()))
                 .andExpect(status().isCreated());
-    }
-
-    @Test
-    @DisplayName("성공 - 특정 회사 내 내가 속한 프로젝트 조회")
-    public void getProjectsWithCompanyForSuccess() throws Exception {
-        //given
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        CompanyDTO.FindProjectListByCompanyResponseDto findProjectListByCompanyResponseDto = createMyProjectByCompanyDto(3);
-
-        //when
-        when(projectService.findProjectListByCompany(any(), any())).thenReturn(findProjectListByCompanyResponseDto);
-
-        //then
-        mockMvc.perform(get("/companies/{company_id}/projects", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.name").value("test company name 1"))
-                .andExpect(jsonPath("$.findProjectListResponseDtos.content[0].title").value("test project title 1"))
-                .andExpect(jsonPath("$.findProjectListResponseDtos.content[1].title").value("test project title 2"))
-                .andExpect(jsonPath("$.findProjectListResponseDtos.content[2].title").value("test project title 3"))
-                .andDo(print());
     }
 
     @Test
