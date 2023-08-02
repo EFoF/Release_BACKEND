@@ -5,6 +5,8 @@ import com.service.releasenote.domain.member.application.EmailVerificationServic
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import static com.service.releasenote.domain.member.dto.MemberDTO.*;
+import static com.service.releasenote.domain.token.dto.TokenDTO.*;
 import static com.service.releasenote.domain.member.dto.MailDTO.*;
 
 @Slf4j
@@ -23,58 +26,67 @@ public class AuthController {
     private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/signup")
-    // @Valid는 SignUpRequest 에 걸려있는 유효성을 위배하는지 검사해줌.
-    public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signUpRequest) {
-        return ResponseEntity.ok(authService.signup(signUpRequest));
+    public ResponseEntity<String> signup(@Valid @RequestBody SignUpRequest signUpRequest) {
+        authService.signup(signUpRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body("회원 가입에 성공했습니다.");
     }
-
     @PostMapping("/signin")
-    public ResponseEntity<?> signin(@Valid @RequestBody LoginDTO loginDTO) {
-        return ResponseEntity.ok(authService.signin(loginDTO));
+    public ResponseEntity<HttpHeaders> signin(@Valid @RequestBody LoginDTO loginDTO) {
+        HttpHeaders httpHeaders = authService.signin(loginDTO);
+        return ResponseEntity.ok(httpHeaders);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        return ResponseEntity.ok(authService.logout(request));
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        authService.logout(request);
+        return ResponseEntity.ok("로그아웃 되었습니다.");
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(HttpServletRequest request) {
+    public ResponseEntity<TokenInfoDTO> reissue(HttpServletRequest request) {
         return ResponseEntity.ok(authService.reissue(request));
     }
 
     // 회원 탈퇴
     @PostMapping("/withdrawal")
-    public ResponseEntity<?> withdrawal(HttpServletRequest request, @RequestBody WithDrawalDTO withDrawalDTO) {
-        return ResponseEntity.ok(authService.withdrawal(request, withDrawalDTO));
+    public ResponseEntity<String> withdrawal(HttpServletRequest request, @RequestBody WithDrawalDTO withDrawalDTO) {
+        authService.withdrawal(request, withDrawalDTO);
+        return ResponseEntity.ok("회원 탈퇴 처리되었습니다.");
     }
 
     // 로그인 되어 있는 유저의 비밀번호 변경
     @PostMapping("/update/password")
-    public ResponseEntity<?> updatePasswordByLoggedInUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
-        return ResponseEntity.ok(authService.updatePasswordByLoggedInUser(updatePasswordRequest));
+    public ResponseEntity<String> updatePasswordByLoggedInUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
+        authService.updatePasswordByLoggedInUser(updatePasswordRequest);
+        return ResponseEntity.ok("비밀번호가 변경 되었습니다.");
     }
 
     // 로그인 되어 있는 않은 유저의 비밀번호 변경
     @PostMapping("/update/password/anonymous")
-    public ResponseEntity<?> updatePasswordByAnonymousUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
-        return ResponseEntity.ok(authService.updatePasswordByAnonymousUser(updatePasswordRequest));
+    public ResponseEntity<String> updatePasswordByAnonymousUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
+        authService.updatePasswordByAnonymousUser(updatePasswordRequest);
+        return ResponseEntity.ok("비밀번호가 변경 되었습니다.");
     }
 
     @PostMapping("/mail/sending")
-    public ResponseEntity<?> sendEmailVerificationCode(
+    public ResponseEntity<String> sendEmailVerificationCode(
             @RequestBody @Valid EmailCodeRequestDTO emailCodeRequestDTO) throws Exception {
         emailVerificationService.sendSimpleMessage(emailCodeRequestDTO);
         return ResponseEntity.ok("인증 코드가 발송됐습니다.");
     }
 
     @PostMapping("/mail/verification")
-    public ResponseEntity<?> verifyEmailVerificationCode(
+    public ResponseEntity<Boolean> verifyEmailVerificationCode(
             @RequestBody @Valid EmailVerificationRequestDTO emailVerificationRequestDTO) {
         return ResponseEntity.ok(emailVerificationService.verifyEmailVerificationCode(emailVerificationRequestDTO));
     }
 
-    // 현재 로그인 된 멤버의 pk값
+    @GetMapping("/member/info")
+    public ResponseEntity<MemberResponseDTO> findMemberByMemberId(){
+        return ResponseEntity.ok(authService.findMemberByMemberId());
+    }
+
+    // 현재 로그인 된 멤버의 pk값 - test 용
     @GetMapping("/getMemberId")
     public ResponseEntity<Long> getCurrentIdTest(){
         Long memberId = SecurityUtil.getCurrentMemberId();

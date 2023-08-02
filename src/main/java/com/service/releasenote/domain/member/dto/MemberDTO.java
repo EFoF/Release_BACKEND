@@ -5,10 +5,7 @@ import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.project.dto.ProjectDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -109,4 +106,12 @@ public class MemberDTO {
         }
     }
 
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class MemberResponseDTO{
+        private String username;
+        private String email;
+    }
 }
