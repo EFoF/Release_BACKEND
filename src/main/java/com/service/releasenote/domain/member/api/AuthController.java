@@ -23,7 +23,6 @@ public class AuthController {
     private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/signup")
-    // @Valid는 SignUpRequest 에 걸려있는 유효성을 위배하는지 검사해줌.
     public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signUpRequest) {
         return ResponseEntity.ok(authService.signup(signUpRequest));
     }
@@ -80,5 +79,11 @@ public class AuthController {
         Long memberId = SecurityUtil.getCurrentMemberId();
         log.info("memberId: {}", memberId);
         return ResponseEntity.ok(memberId);
+    }
+
+    @GetMapping("/member/info")
+    public ResponseEntity<MemberResponseDTO> findMemberByMemberId(){
+        MemberResponseDTO member = authService.findMemberByMemberId();
+        return ResponseEntity.ok(member);
     }
 }

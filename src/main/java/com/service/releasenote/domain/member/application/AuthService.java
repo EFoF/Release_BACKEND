@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -252,5 +253,22 @@ public class AuthService {
         log.info("비밀번호 변경 - 비로그인 유저");
 
         return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
+    }
+
+    @Transactional(readOnly = true)
+    public MemberResponseDTO findMemberByMemberId(){
+        Long memberId = SecurityUtil.getCurrentMemberId();
+
+        Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
+
+        String userName = member.getUserName();
+        String email = member.getEmail();
+
+        MemberResponseDTO memberResponseDTO = MemberResponseDTO.builder()
+                .username(userName)
+                .email(email)
+                .build();
+
+        return memberResponseDTO;
     }
 }
