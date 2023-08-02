@@ -48,7 +48,7 @@ public class AuthController {
     }
 
     // 회원 탈퇴
-    @PostMapping("/withdrawal")
+    @PatchMapping("/withdrawal")
     public ResponseEntity<String> withdrawal(HttpServletRequest request, @RequestBody WithDrawalDTO withDrawalDTO) {
         authService.withdrawal(request, withDrawalDTO);
         return ResponseEntity.ok("회원 탈퇴 처리되었습니다.");
