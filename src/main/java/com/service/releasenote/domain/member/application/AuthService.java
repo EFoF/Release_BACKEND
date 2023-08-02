@@ -12,9 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -25,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +41,7 @@ public class AuthService {
 
     @Transactional
     // 회원가입 로직
-    public ResponseEntity<?> signup(SignUpRequest signUpRequest) {
+    public void signup(SignUpRequest signUpRequest) {
         Optional<Member> member = memberRepository.findByEmail(signUpRequest.getEmail());
 
         if (member.isPresent()) { // 이미 가입한 유저인지 검증
@@ -67,12 +63,10 @@ public class AuthService {
         memberRepository.save(memberBuilder);
 
         log.info("회원 가입");
-
-        return new ResponseEntity<>("회원 가입에 성공했습니다.", HttpStatus.CREATED);
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity<?> signin(LoginDTO loginDTO) {
+    public HttpHeaders signin(LoginDTO loginDTO) {
         // 로그인 정보로 AuthenticationToken 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
@@ -103,14 +97,14 @@ public class AuthService {
 
             log.info("로그인");
 
-            return new ResponseEntity<>(httpHeaders, HttpStatus.OK);
+            return httpHeaders;
         } catch (BadCredentialsException e) {
             throw new InvalidCredentialsException();
         }
     }
 
     @Transactional
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public void logout(HttpServletRequest request) {
         // Header 에서 Access Token 추출
         String accessToken = jwtFilter.resolveToken(request);
 
@@ -134,12 +128,10 @@ public class AuthService {
                 .set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
 
         log.info("로그아웃");
-
-        return new ResponseEntity<>("로그아웃 되었습니다.", HttpStatus.OK);
     }
 
     @Transactional
-    public ResponseEntity<?> reissue(HttpServletRequest request) {
+    public TokenInfoDTO reissue(HttpServletRequest request) {
         String accessToken = jwtFilter.resolveToken(request);
 
         Authentication authentication = tokenProvider.getAuthentication(accessToken);
@@ -173,12 +165,13 @@ public class AuthService {
                         tokenInfoDTO.getRefreshTokenExpiresIn(), TimeUnit.MILLISECONDS);
 
         log.info("reissue!");
-        return new ResponseEntity<>(tokenInfoDTO, HttpStatus.OK);
+
+        return tokenInfoDTO;
     }
 
     @Transactional
     // 회원 탈퇴
-    public ResponseEntity<?> withdrawal(HttpServletRequest request, WithDrawalDTO withDrawalDTO) {
+    public void withdrawal(HttpServletRequest request, WithDrawalDTO withDrawalDTO) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
@@ -198,13 +191,11 @@ public class AuthService {
         member.setDeleted(true); // isDeleted 필드 True 로 전환.
 
         log.info("회원 탈퇴");
-
-        return new ResponseEntity<>("회원 탈퇴 처리되었습니다.", HttpStatus.OK);
     }
 
     @Transactional
     // 로그인 되어 있는 유저의 비밀번호 변경
-    public ResponseEntity<?> updatePasswordByLoggedInUser(UpdatePasswordRequest updatePasswordRequest) {
+    public void updatePasswordByLoggedInUser(UpdatePasswordRequest updatePasswordRequest) {
         Long memberId = SecurityUtil.getCurrentMemberId();
 
         String inputOldPassword = updatePasswordRequest.getInputOldPassword();
@@ -228,13 +219,11 @@ public class AuthService {
         member.setPassword(passwordEncoder.encode(inputNewPassword));
 
         log.info("비밀번호 변경 - 로그인 유저");
-
-        return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
     }
 
     @Transactional
     // 로그인 되어 있는 않은 유저의 비밀번호 변경
-    public ResponseEntity<?> updatePasswordByAnonymousUser(UpdatePasswordRequest updatePasswordRequest) {
+    public void updatePasswordByAnonymousUser(UpdatePasswordRequest updatePasswordRequest) {
         String inputEmail = updatePasswordRequest.getInputEmail();
         String inputNewPassword = updatePasswordRequest.getInputNewPassword();
 
@@ -251,8 +240,6 @@ public class AuthService {
         member.setPassword(passwordEncoder.encode(inputNewPassword));
 
         log.info("비밀번호 변경 - 비로그인 유저");
-
-        return new ResponseEntity<>("비밀번호가 변경 되었습니다.", HttpStatus.OK);
     }
 
     @Transactional(readOnly = true)
