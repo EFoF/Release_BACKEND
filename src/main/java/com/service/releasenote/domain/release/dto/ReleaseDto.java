@@ -46,6 +46,7 @@ public class ReleaseDto {
         private String content;
         private String version;
         private Tag tag;
+        private Long id;
     }
 
     @Getter

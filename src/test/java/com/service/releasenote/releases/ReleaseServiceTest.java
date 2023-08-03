@@ -1,19 +1,20 @@
 package com.service.releasenote.releases;
 
 import com.service.releasenote.domain.category.dao.CategoryRepository;
-import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.model.Authority;
+import com.service.releasenote.domain.member.model.Member;
+import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
-import com.service.releasenote.domain.release.dto.ReleaseDto;
 import com.service.releasenote.domain.release.exception.ReleasesNotFoundException;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
@@ -27,16 +28,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.service.releasenote.domain.category.dto.CategoryDto.*;
+import static com.service.releasenote.domain.category.dto.CategoryDto.CategoryResponseDto;
 import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
-import static com.service.releasenote.domain.release.dto.ReleaseDto.SaveReleaseRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -59,8 +59,23 @@ public class ReleaseServiceTest {
     @MockBean
     MemberRepository memberRepository;
 
+    @MockBean
+    PasswordEncoder passwordEncoder;
+
     @Autowired
     ReleaseService releaseService;
+
+    public Member buildMember(Long id) { // Test 용 멤버 생성
+        return Member.builder()
+                .id(id)
+                .userName("test_user_name")
+                .email("test_email@test.com")
+                .password(passwordEncoder.encode("test_password"))
+                .authority(Authority.ROLE_USER)
+                .memberLoginType(MemberLoginType.RELEASE_LOGIN)
+                .isDeleted(false)
+                .build();
+    }
 
     public Company buildCompany(Long id) {
         return Company.builder()
@@ -129,16 +144,19 @@ public class ReleaseServiceTest {
         preparedMemberList.add(currentMemberId);
 
         Company company = buildCompany(1L);
+        Member member = buildMember(currentMemberId);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
         Releases releases = buildReleases(category, 1L);
         SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
 
         //when
-        when(projectRepository.existsById(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
-        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
         when(releaseRepository.save(any())).thenReturn(releases);
+        when(projectRepository.existsById(project.getId())).thenReturn(true);
+        when(memberRepository.findById(currentMemberId)).thenReturn(Optional.ofNullable(member));
+        when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
+        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
+        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
 
         //then
         Long savedId = releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId());
