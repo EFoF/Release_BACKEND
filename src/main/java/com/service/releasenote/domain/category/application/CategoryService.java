@@ -181,6 +181,7 @@ public class CategoryService {
 
     private CategoryEachDto mapCategoryEntityToCategoryEachDto(Category category) {
         return CategoryEachDto.builder()
+                .id(category.getId())
                 .title(category.getTitle())
                 .description(category.getDescription())
                 .build();

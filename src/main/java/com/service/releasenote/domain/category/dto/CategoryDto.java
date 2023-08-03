@@ -48,6 +48,7 @@ public class CategoryDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CategoryEachDto {
+        private Long id;
         private String title;
         private String description;
     }
