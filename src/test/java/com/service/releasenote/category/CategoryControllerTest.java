@@ -103,8 +103,9 @@ public class CategoryControllerTest {
                 .build();
     }
 
-    public CategoryEachDto createCategoryEachDto(int id) {
+    public CategoryEachDto createCategoryEachDto(Long id) {
         return CategoryEachDto.builder()
+                .id(id)
                 .description("test category description " + id)
                 .title("test category title " + id)
                 .build();
@@ -113,7 +114,7 @@ public class CategoryControllerTest {
     public CategoryInfoDto createCategoryInfoDto(int number) {
         List<CategoryEachDto> list = new ArrayList<>();
         for(int i=1; i<=number; i++) {
-            list.add(createCategoryEachDto(i));
+            list.add(createCategoryEachDto(Long.valueOf(i)));
         }
         return CategoryInfoDto.builder()
                 .categoryEachDtoList(list)
@@ -215,6 +216,7 @@ public class CategoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.title").value("test category title"))
                 .andExpect(jsonPath("$.detail").value("test category detail"))
                 .andExpect(jsonPath("$.description").value("test category description"))

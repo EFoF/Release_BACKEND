@@ -46,10 +46,7 @@ public class CategoryController {
      */
     @ApiOperation("api for get categories by project id")
     @GetMapping("/companies/projects/{project_id}/categories")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "요청 성공"),
-            @ApiResponse(code = 404, message = "존재하지 않는 프로젝트")
-    })
+    @ApiResponses({ @ApiResponse(code = 200, message = "요청 성공"), @ApiResponse(code = 404, message = "존재하지 않는 프로젝트")})
     public CategoryInfoDto categoryList(@PathVariable(name = "project_id") Long projectId) {
         return categoryService.findCategoryByProjectId(projectId);
     }
@@ -62,12 +59,8 @@ public class CategoryController {
      * @return CategoryResponseDto
      */
     @ApiOperation("api for get specific category by combination of companyId, projectId, categoryId")
-    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true,
-            dataType = "boolean", paramType = "query", defaultValue = "false")
-    @ApiResponses({
-            @ApiResponse(code=200, message = "요청 성공"),
-            @ApiResponse(code=404, message = "존재하지 않는 카테고리")
-    })
+    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true, dataType = "boolean", paramType = "query", defaultValue = "false")
+    @ApiResponses({ @ApiResponse(code=200, message = "요청 성공"), @ApiResponse(code=404, message = "존재하지 않는 카테고리")})
     @GetMapping("/companies/{company_id}/projects/{project_id}/categories/{category_id}")
     public CategoryResponseDto categoryDetailsWithCondition (
             @PathVariable(name = "company_id") Long companyId,
@@ -83,12 +76,8 @@ public class CategoryController {
      * @return CategoryResponseDto
      */
     @ApiOperation("api for get specific category by category id only")
-    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true,
-            dataType = "boolean", paramType = "query", defaultValue = "false")
-    @ApiResponses({
-            @ApiResponse(code=200, message = "요청 성공"),
-            @ApiResponse(code=404, message = "존재하지 않는 카테고리")
-    })
+    @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true, dataType = "boolean", paramType = "query", defaultValue = "false")
+    @ApiResponses({ @ApiResponse(code=200, message = "요청 성공"), @ApiResponse(code=404, message = "존재하지 않는 카테고리")})
     @GetMapping("/categories/{category_id}")
     public CategoryResponseDto categoryDetails (
             @PathVariable(name = "category_id") Long categoryId,
