@@ -40,7 +40,6 @@ import static org.springframework.test.web.servlet.setup.SharedHttpSessionConfig
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AuthController.class)
 @MockBean(JpaMetamodelMappingContext.class)
-//@AutoConfigureMockMvc(addFilters = false)
 public class AuthControllerTest {
     @MockBean
     AuthService authService;
@@ -125,6 +124,11 @@ public class AuthControllerTest {
 
     // valid 실패한 경우 -> 컨트롤러 단에서 검증
 
+    /**
+     * 회원가입 , 로그인 테스트 (password 필드가 들어가는 test) 에서
+     * 해당 DTO 에서 password 필드의 @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) 속성때문에
+     * password 가 들어가지 않으므로, String 형을 만들어서 직접 Json 객체를 만든다.
+     */
     @Test
     @DisplayName("성공 : 회원가입 테스트")
     public void signupForSuccess() throws Exception {
@@ -132,12 +136,16 @@ public class AuthControllerTest {
         SignUpRequest signUpRequest = createSignUpRequest();
 
         //when
+        String s = objectMapper.writeValueAsString(signUpRequest);
+        String password = signUpRequest.getPassword();
+        String substring = s.substring(0, s.length() - 1);
+        s = substring + ",\"password\":" + "\"" + password + "\"" + "}";
 
         //then
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpRequest)))
+                        .content(s))
                 .andExpect(content().string("회원 가입에 성공했습니다."))
                 .andExpect(status().isCreated());
     }
@@ -148,14 +156,19 @@ public class AuthControllerTest {
         //given
         LoginDTO loginDTO = createLoginDTO();
 
+        String s = objectMapper.writeValueAsString(loginDTO);
+        String password = loginDTO.getPassword();
+        String substring = s.substring(0, s.length() - 1);
+        s = substring + ",\"password\":" + "\"" + password + "\"" + "}";
+
         //when
 
         //then
         mockMvc.perform(post("/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginDTO)))
-                .andExpect(content().string("123")) //httpHeaders 들어가야함
+                        .content(s))
+                .andExpect(content().string("")) //httpHeaders 들어가야함
                 .andExpect(status().isOk());
     }
 
@@ -270,6 +283,7 @@ public class AuthControllerTest {
         EmailVerificationRequestDTO emailVerificationRequestDTO = createEmailVerificationRequestDTO();
 
         //when
+        when(emailVerificationService.verifyEmailVerificationCode(any())).thenReturn(true);
 
         //then
         mockMvc.perform(post("/auth/mail/verification")
@@ -277,7 +291,7 @@ public class AuthControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(emailVerificationRequestDTO))
                 )
-                .andExpect(content().string("true"))
+                .andExpect(content().string(String.valueOf(true)))
                 .andExpect(status().isOk());
     }
 
