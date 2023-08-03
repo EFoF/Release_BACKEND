@@ -36,11 +36,12 @@ public class CategoryDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CategoryResponseDto {
-            private String title;
-            private String description;
-            private String detail;
-            private String lastModifierName;
-            private LocalDateTime lastModifiedTime;
+        private Long id;
+        private String detail;
+        private String title;
+        private String description;
+        private String lastModifierName;
+        private LocalDateTime lastModifiedTime;
     }
 
     @Getter

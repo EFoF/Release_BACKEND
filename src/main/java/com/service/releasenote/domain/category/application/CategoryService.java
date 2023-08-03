@@ -89,6 +89,7 @@ public class CategoryService {
                     .description(category.getDescription())
                     .detail(category.getDetail())
                     .title(category.getTitle())
+                    .id(category.getId())
                     .build();
         }
 
@@ -99,6 +100,7 @@ public class CategoryService {
                 .description(category.getDescription())
                 .detail(category.getDetail())
                 .title(category.getTitle())
+                .id(category.getId())
                 .build();
     }
 
@@ -117,6 +119,7 @@ public class CategoryService {
                     .description(category.getDescription())
                     .detail(category.getDetail())
                     .title(category.getTitle())
+                    .id(category.getId())
                     .build();
         }
 
@@ -127,6 +130,7 @@ public class CategoryService {
                 .description(category.getDescription())
                 .detail(category.getDetail())
                 .title(category.getTitle())
+                .id(category.getId())
                 .build();
     }
 
