@@ -128,6 +128,7 @@ public class CategoryControllerTest {
                 .detail("test category detail")
                 .title("test category title")
                 .lastModifierName("tester")
+                .id(1L)
                 .build();
     }
 
@@ -192,6 +193,7 @@ public class CategoryControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.title").value("test category title"))
                 .andExpect(jsonPath("$.detail").value("test category detail"))
                 .andExpect(jsonPath("$.description").value("test category description"))
