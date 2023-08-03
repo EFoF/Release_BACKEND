@@ -6,6 +6,10 @@ import com.service.releasenote.domain.category.exception.CategoryNotFoundExcepti
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
+import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.model.Authority;
+import com.service.releasenote.domain.member.model.Member;
+import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectPermissionDeniedException;
@@ -20,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +38,17 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceTest {
+
+    @MockBean
+    PasswordEncoder passwordEncoder;
     @MockBean
     MemberProjectRepository memberProjectRepository;
-
     @MockBean
     CategoryRepository categoryRepository;
-
     @MockBean
     ProjectRepository projectRepository;
-
+    @MockBean
+    MemberRepository memberRepository;
     @Autowired
     CategoryService categoryService;
 
@@ -73,6 +80,18 @@ public class CategoryServiceTest {
                 .build();
     }
 
+    public Member buildMember(Long id) { // Test 용 멤버 생성
+        return Member.builder()
+                .id(id)
+                .userName("test_user_name")
+                .email("test_email@test.com")
+                .password(passwordEncoder.encode("test_password"))
+                .authority(Authority.ROLE_USER)
+                .memberLoginType(MemberLoginType.RELEASE_LOGIN)
+                .isDeleted(false)
+                .build();
+    }
+
     public CategorySaveRequest createCategorySaveRequest() {
         return CategorySaveRequest.builder()
                 .description("test category description")
@@ -101,9 +120,11 @@ public class CategoryServiceTest {
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
+        Member member = buildMember(currentMemberId);
         CategorySaveRequest categorySaveRequest = createCategorySaveRequest();
 
         //when
+        when(memberRepository.findById(currentMemberId)).thenReturn(Optional.ofNullable(member));
         when(memberProjectRepository.findMemberIdByProjectId(any())).thenReturn(preparedMemberList);
         when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
         when(categoryRepository.save(any())).thenReturn(category);
