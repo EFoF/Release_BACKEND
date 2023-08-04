@@ -19,10 +19,7 @@ import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,6 +120,15 @@ public class ProjectService {
                 .map(project -> new FindProjectListResponseDto().toResponseDto(project));
 
         return new FindProjectListByCompanyResponseDto().toResponseDto(company, map);
+    }
+
+    /**
+     * 내가 속한 프로젝트 조회 서비스 로직
+     * */
+    public ProjectPaginationDtoWrapper getProjectPage(Pageable pageable) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Page<ProjectPaginationDtoEach> projects = projectRepository.paginationTest(currentMemberId, pageable);
+        return ProjectPaginationDtoWrapper.builder().list(projects).build();
     }
 
     /**

@@ -1,12 +1,14 @@
 package com.service.releasenote.domain.project.dto;
 
 
+import com.querydsl.core.annotations.QueryProjection;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.project.model.Project;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -123,6 +125,36 @@ public class ProjectDto {
                     .modified_date(project.getModifiedDate())
                     .build();
         }
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    public static class ProjectPaginationDtoEach {
+        private String title;
+        private String description;
+        private Long id;
+        private Long companyId;
+        private String ImageURL;
+        private String name;
+
+        @QueryProjection
+        public ProjectPaginationDtoEach(String title, String description, Long id, Long companyId, String imageURL, String name) {
+            this.title = title;
+            this.description = description;
+            this.id = id;
+            this.companyId = companyId;
+            this.ImageURL = imageURL;
+            this.name = name;
+        }
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProjectPaginationDtoWrapper {
+        private Page<ProjectPaginationDtoEach> list;
     }
 
 
