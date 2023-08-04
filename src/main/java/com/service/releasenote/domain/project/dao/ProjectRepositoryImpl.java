@@ -3,8 +3,7 @@ package com.service.releasenote.domain.project.dao;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.service.releasenote.domain.member.model.QMemberProject;
-import com.service.releasenote.domain.project.dto.ProjectPaginationDto;
-import com.service.releasenote.domain.project.dto.QProjectPaginationDto_ProjectPaginationDtoEach;
+import com.service.releasenote.domain.project.dto.QProjectDto_ProjectPaginationDtoEach;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.project.model.QProject;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import java.util.List;
 
 import static com.service.releasenote.domain.member.model.QMemberProject.*;
-import static com.service.releasenote.domain.project.dto.ProjectPaginationDto.*;
+import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static com.service.releasenote.domain.project.model.QProject.*;
 
 @RequiredArgsConstructor
@@ -26,14 +25,17 @@ public class ProjectRepositoryImpl implements ProjectCustomRepository{
     @Override
     public Page<ProjectPaginationDtoEach> paginationTest(Long memberId, Pageable pageable) {
         List<ProjectPaginationDtoEach> fetch = jpaQueryFactory
-                .select(new QProjectPaginationDto_ProjectPaginationDtoEach(
+                .select(new QProjectDto_ProjectPaginationDtoEach(
                         memberProject.project.title,
                         memberProject.project.description,
                         memberProject.project.id,
-                        memberProject.project.company.id
+                        memberProject.project.company.id,
+                        memberProject.project.company.ImageURL,
+                        memberProject.project.company.name
                 ))
                 .from(memberProject)
-                .leftJoin(memberProject.project, project)
+//                .leftJoin(memberProject.project, project)
+                .join(memberProject.project, project)
                 .where(memberProject.member.id.eq(memberId))
                 .orderBy(project.company.id.asc())
                 .offset(pageable.getOffset())

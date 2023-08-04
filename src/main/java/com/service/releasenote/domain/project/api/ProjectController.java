@@ -50,6 +50,14 @@ public class ProjectController {
     }
 
     /**
+     * 내가 속한 프로젝트 조회 Api
+     * */
+    @GetMapping("/companies/projects")
+    public ProjectPaginationDtoWrapper paginationTest(Pageable pageable) {
+        return projectService.getProjectPage(pageable);
+    }
+
+    /**
      * 프로젝트 수정 Api
      * @param project_id
      * @return ResponseEntity
