@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.alarm.dto.AlarmDto.*;
@@ -75,18 +76,21 @@ public class AlarmService {
     public void consumeMessage(Message message) {
         Long projectId = message.getProjectId();
         Long memberId = message.getMemberId();
-        Member author = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
-        List<MemberProject> memberProjectList = memberProjectRepository.findMemberProjectByProjectId(projectId);
-        for (MemberProject memberProject : memberProjectList) {
-            Alarm alarm = Alarm.builder()
-                    .alarmDomain(message.getAlarmDomain())
-                    .domainId(message.getDomainId())
-                    .message(message.getContent())
-                    .memberProject(memberProject)
-                    .isChecked(false)
-                    .member(author)
-                    .build();
-            alarmRepository.save(alarm);
+//        Member author = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
+        Optional<Member> memberOptional = memberRepository.findById(memberId);
+        if(memberOptional.isPresent()) {
+            List<MemberProject> memberProjectList = memberProjectRepository.findMemberProjectByProjectId(projectId);
+            for (MemberProject memberProject : memberProjectList) {
+                Alarm alarm = Alarm.builder()
+                        .alarmDomain(message.getAlarmDomain())
+                        .domainId(message.getDomainId())
+                        .message(message.getContent())
+                        .memberProject(memberProject)
+                        .member(memberOptional.get())
+                        .isChecked(false)
+                        .build();
+                alarmRepository.save(alarm);
+            }
         }
         // 이후에 필요하면 웹소켓을 열어서 푸시알람을 보낼 수도 있음
     }
