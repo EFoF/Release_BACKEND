@@ -42,6 +42,7 @@ public class ReleaseDto {
     public static class ReleaseDtoEach {
         private LocalDateTime lastModifiedTime;
         private LocalDateTime releaseDate;
+        private String lastModifierEmail;
         private String lastModifierName;
         private String content;
         private String version;
