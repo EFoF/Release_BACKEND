@@ -126,6 +126,7 @@ public class ReleaseControllerTest {
                 .lastModifierName("tester")
                 .version("1.0.0")
                 .tag(Tag.NEW)
+                .id(Long.valueOf(number))
                 .build();
     }
     public ReleaseInfoDto createReleaseInfoDto(int iter) {
@@ -252,12 +253,12 @@ public class ReleaseControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.releaseDtoList[0].content")
-                        .value("test release 1"))
-                .andExpect(jsonPath("$.releaseDtoList[1].content")
-                        .value("test release 2"))
-                .andExpect(jsonPath("$.releaseDtoList[2].content")
-                        .value("test release 3"))
+                .andExpect(jsonPath("$.releaseDtoList[0].content").value("test release 1"))
+                .andExpect(jsonPath("$.releaseDtoList[0].id").value(1L))
+                .andExpect(jsonPath("$.releaseDtoList[1].content").value("test release 2"))
+                .andExpect(jsonPath("$.releaseDtoList[1].id").value(2L))
+                .andExpect(jsonPath("$.releaseDtoList[2].content").value("test release 3"))
+                .andExpect(jsonPath("$.releaseDtoList[2].id").value(3L))
                 .andDo(print());
 
     }

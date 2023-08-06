@@ -176,6 +176,7 @@ public class ReleaseService {
                     .version(releases.getVersion())
                     .content(releases.getMessage())
                     .tag(releases.getTag())
+                    .id(releases.getId())
                     .build();
         }
         Optional<Member> memberOptional = memberRepository.findById(releases.getModifierId());
@@ -186,6 +187,7 @@ public class ReleaseService {
                 .version(releases.getVersion())
                 .content(releases.getMessage())
                 .tag(releases.getTag())
+                .id(releases.getId())
                 .build();
     }
 
