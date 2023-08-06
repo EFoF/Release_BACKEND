@@ -196,20 +196,22 @@ public class ReleaseService {
         // 쿼리를 여러번 날리지 않아도 됨 -> 네트워크 최적화
         // 메모리에 로드가 발생 -> 트레이드 오프
 
-        // 카테고리 ID로 release를 묶어서 정리
-        Map<Long, List<Releases>> releasesGroupByCategory = releasesList.stream()
-                .collect(Collectors.groupingBy(r -> r.getCategory().getId()));
-        // ID로 카테고리 접근에 용이한 구조로 변경
-        Map<Long, Category> categoryMap = categoryList.stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
         List<ProjectReleasesDtoEach> result = new ArrayList<>();
 
-        releasesGroupByCategory.forEach((categoryId, release) -> {
-            Category category = categoryMap.get(categoryId);
+            // 카테고리 ID로 release를 묶어서 정리
+            Map<Long, List<Releases>> releasesGroupByCategory = releasesList.stream()
+                    .collect(Collectors.groupingBy(r -> r.getCategory().getId()));
+            // ID로 카테고리 접근에 용이한 구조로 변경
+            Map<Long, Category> categoryMap = categoryList.stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
+
+        categoryMap.forEach((categoryId, category) -> {
+            List<Releases> releases = releasesGroupByCategory.get(categoryId);
             CategoryResponseDto categoryResponseDto = CategoryResponseDto.builder()
+                    .id(category.getId())
                     .title(category.getTitle())
                     .description(category.getDescription())
                     .build();
-            List<ReleaseDtoEach> releaseDtoEachList = release.stream()
+            List<ReleaseDtoEach> releaseDtoEachList = releases == null ? new ArrayList<>() : releases.stream()
                     .map(r -> mapReleaseToDto(r, isDeveloper)).collect(Collectors.toList());
             ProjectReleasesDtoEach resultEach = ProjectReleasesDtoEach.builder()
                     .categoryResponseDto(categoryResponseDto)
@@ -217,7 +219,6 @@ public class ReleaseService {
                     .build();
             result.add(resultEach);
         });
-
         return new ProjectReleasesDto(result);
     }
 
