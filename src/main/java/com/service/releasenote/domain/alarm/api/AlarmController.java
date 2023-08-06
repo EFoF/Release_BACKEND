@@ -37,7 +37,7 @@ public class AlarmController {
         alarmService.readAlarm(projectId);
     }
 
-    @ApiOperation("api for read alarm")
+    @ApiOperation("api for delete alarm")
     @ApiResponses({ @ApiResponse(code=204, message="요청 성공"), @ApiResponse(code=404, message="알람 자체가 존재하지 않거나 사용자에게 알람이 존재하지 않음")})
     @DeleteMapping("{projectId}/alarms/{alarmId}")
     public void alarmDelete(
