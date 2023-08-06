@@ -146,7 +146,7 @@ public class AlarmService {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         MemberProject memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
                 .orElseThrow(MemberProjectNotFoundException::new);
-        List<Alarm> alarmList = alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId());
+        List<Alarm> alarmList = alarmRepository.findByMemberProjectId(memberProject.getId());
         if(!alarmList.stream().anyMatch(alarm -> alarm.getId().equals(alarmId))) {
             throw new AlarmNotFoundException("현재 멤버의 알람 리스트에 해당 알람이 존재하지 않습니다.");
         }
