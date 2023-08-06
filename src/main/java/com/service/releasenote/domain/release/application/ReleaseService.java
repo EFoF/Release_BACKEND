@@ -182,6 +182,7 @@ public class ReleaseService {
         Optional<Member> memberOptional = memberRepository.findById(releases.getModifierId());
         return ReleaseDtoEach.builder()
                 .lastModifierName(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getUserName())
+                .lastModifierEmail(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getEmail())
                 .lastModifiedTime(releases.getModifiedDate())
                 .releaseDate(releases.getReleaseDate())
                 .version(releases.getVersion())
