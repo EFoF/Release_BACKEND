@@ -7,6 +7,7 @@ import com.service.releasenote.domain.member.model.Authority;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.global.annotations.WithMockCustomUser;
+import com.service.releasenote.global.error.exception.UnAuthorizedException;
 import com.service.releasenote.global.jwt.JwtFilter;
 import com.service.releasenote.global.jwt.TokenProvider;
 import org.junit.jupiter.api.Assertions;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,15 +33,18 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
 import static org.assertj.core.api.Assertions.*;
 
 import static com.service.releasenote.domain.member.dto.MemberDTO.*;
@@ -58,11 +63,11 @@ public class AuthServiceTest {
 
 //    @MockBean
 //    @Autowired
-    @Mock
+    @Autowired
     AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    @Mock
-    AuthenticationManager mockAuthenticationManager;
+    @MockBean
+    AuthenticationManager authenticationManager;
 
     @MockBean
     JwtFilter jwtFilter;
@@ -73,8 +78,7 @@ public class AuthServiceTest {
     @Autowired
     AuthService authService;
 
-//    @Autowired
-//    private MockHttpServletRequest request = new MockHttpServletRequest();
+    private static MockHttpServletRequest request;
 
     public Member buildMember(Long id) { // Test 용 멤버 생성
         return Member.builder()
@@ -120,7 +124,7 @@ public class AuthServiceTest {
 
     @BeforeAll
     public static void setup() throws IOException {
-        MockHttpServletRequest request = new MockHttpServletRequest();
+        request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer token");
     }
 
@@ -185,18 +189,24 @@ public class AuthServiceTest {
 //        UsernamePasswordAuthenticationToken authenticationToken =
 //                new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
 //
-//        given(authenticationManagerBuilder.getObject()).willReturn(mockAuthenticationManager);
-//        given(mockAuthenticationManager.authenticate(any())).willReturn(authenticationToken);
+//        // Mock AuthenticationManager
+//        AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
+//        when(authenticationManager.authenticate(authenticationToken)).thenReturn(
+//                new UsernamePasswordAuthenticationToken(member, null, null)
+//        );
+//
+//        // Mock SecurityContextHolder
+//        SecurityContextHolder.setContext(new SecurityContextImpl());
+//        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 //
 //        System.out.println("authenticationToken = " + authenticationToken);
-////        System.out.println("authenticationManagerBuilder = " + authenticationManagerBuilder.getObject());
 //        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 //
 //        //when
 //        when(memberRepository.findById(Long.valueOf(authentication.getName()))).thenReturn(Optional.ofNullable(member));
 //
 //        //then
-//        HttpHeaders headers = authService.signin(loginDTO);
+////        HttpHeaders headers = authService.signin(loginDTO);
 ////        assertThat(headers.equals());
 //    }
 
@@ -242,61 +252,62 @@ public class AuthServiceTest {
 //        Assertions.assertThrows(DeletedMemberException.class, () -> authService.signin(loginDTO));
 //    }
 //
-//    @Test
-//    @WithMockCustomUser
-//    @DisplayName("성공 : 로그아웃 테스트")
-//    public void logoutForSuccess() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        MockHttpServletRequest request = new MockHttpServletRequest();
-//
-//        String accessToken = jwtFilter.resolveToken(request);
-//
-//        Authentication authentication = tokenProvider.getAuthentication(accessToken);
-//
-//        given(stringRedisTemplate.opsForValue().get("RT:" + "any()")).willReturn(any());
-//
-//        //when
-//        when(tokenProvider.validateToken(accessToken)).thenReturn(true);
-//        when(stringRedisTemplate.opsForValue().get("RT:" + "any()")).thenReturn(null);
-//
-//        //then
-//        ResponseEntity<?> logout = authService.logout(any());
-//        assertThat(logout.getBody().toString()).isEqualTo("로그아웃 되었습니다.");
-//    }
-//
+    @Test
+    @WithMockCustomUser
+    @DisplayName("성공 : 로그아웃 테스트")
+    public void logoutForSuccess() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        String accessToken = jwtFilter.resolveToken(request);
+
+        Authentication authentication = tokenProvider.getAuthentication(accessToken);
+
+        //when
+        when(tokenProvider.validateToken(accessToken)).thenReturn(true);
+    }
+
 //    @Test
 //    @DisplayName("실패 : 로그아웃 테스트 - 인증되지 않은 사용자")
 //    public void logoutForFailureByUnAuthorizedUser() throws Exception {
 //        //given
 //        Member member = buildMember(1L);
+//        String accessToken = jwtFilter.resolveToken(request);
 //
-//        String accessToken = jwtFilter.resolveToken(any());
+//        String username = member.getUserName();
+//        String refreshTokenKey = "RT:" + username;
 //
-//        //when
-//        when(!tokenProvider.validateToken(accessToken)).thenReturn(false);
-//
-//        //then
-//        Assertions.assertThrows(AuthenticationException.class, () -> authService.logout(any()));
-//    }
-//
-//    @Test
-//    @WithMockCustomUser
-//    @DisplayName("실패 : 로그아웃 테스트 - Access Token 유효하지 않을 경우")
-//    public void logoutForFailureByInvalidToken() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        String accessToken = jwtFilter.resolveToken(any());
 //
 //        //when
-//        when(!tokenProvider.validateToken(accessToken)).thenReturn(true);
+//        ValueOperations<String, String> valueOperations = mock(ValueOperations.class);
+//        when(tokenProvider.validateToken(accessToken)).thenReturn(true);
+//        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+//        when(valueOperations.get(refreshTokenKey)).thenReturn("some_refresh_token");
+////        when(stringRedisTemplate.opsForValue().get(any())).thenReturn(null);
+////        when(mockValueOps.get(any())).thenReturn(null);
 //
 //        //then
-//        Assertions.assertThrows(InvalidTokenException.class, () -> authService.logout(any()));
+//        Assertions.assertThrows(AuthenticationException.class, () -> authService.logout(request));
 //    }
-//
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 : 로그아웃 테스트 - Access Token 유효하지 않을 경우")
+    public void logoutForFailureByInvalidToken() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        String accessToken = jwtFilter.resolveToken(request);
+
+        //when
+        when(tokenProvider.validateToken(accessToken)).thenReturn(false);
+
+        //then
+        Assertions.assertThrows(InvalidTokenException.class, () -> authService.logout(any()));
+    }
+
 //    @Test
 //    @WithMockCustomUser
 //    @DisplayName("성공 : reissue 테스트")
@@ -304,7 +315,7 @@ public class AuthServiceTest {
 //        //given
 //        Member member = buildMember(1L);
 //
-//        String accessToken = jwtFilter.resolveToken(any());
+//        String accessToken = jwtFilter.resolveToken(request);
 //
 //        Authentication authentication = tokenProvider.getAuthentication(accessToken);
 //
@@ -318,7 +329,7 @@ public class AuthServiceTest {
 //        ResponseEntity<?> reissue = authService.reissue(any());
 //        assertThat(reissue.getStatusCode()).isEqualTo(HttpStatus.OK);
 //    }
-//
+
 //    @Test
 //    @DisplayName("실패 : reissue 테스트 - 인증되지 않은 사용자")
 //    public void reissueForFailureByUnAuthorizedUser() throws Exception {
@@ -381,232 +392,204 @@ public class AuthServiceTest {
 //        Assertions.assertThrows(InvalidTokenException.class, () -> authService.reissue(any()));
 //    }
 //
-//    @Test
-//    @WithMockCustomUser
-//    @DisplayName("성공 : 회원탈퇴 테스트")
-//    public void withdrawalForSuccess() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        WithDrawalDTO withDrawalDTO = createWithDrawalDTO();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        String inputPassword = withDrawalDTO.getInputPassword();
-//
-//        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
-//
-//        given(isPasswordMatch).willReturn(true);
-//
-//        //when
-//        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-////        when(!isPasswordMatch).thenReturn(false);
-//
-//        //then
-//        ResponseEntity<?> withdrawal = authService.withdrawal(any(), withDrawalDTO);
-//        assertThat(withdrawal.getBody().toString()).isEqualTo("회원 탈퇴 처리되었습니다.");
-//    }
-//
-//    @Test
-//    @DisplayName("실패 : 회원탈퇴 테스트 - 인증되지 않은 사용자")
-//    public void withdrawalForFailureByUnAuthorizedUser() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        WithDrawalDTO withDrawalDTO = createWithDrawalDTO();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        String inputPassword = withDrawalDTO.getInputPassword();
-//
-//        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
-//
-//        given(isPasswordMatch).willReturn(true);
-//
-//        //when
-//        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-////        when(!isPasswordMatch).thenReturn(false);
-//
-//        //then
-//        Assertions.assertThrows(AuthenticationException.class, () -> authService.withdrawal(any(), withDrawalDTO));
-//    }
-//
-//    @Test
-//    @WithMockCustomUser
-//    @DisplayName("실패 : 회원탈퇴 테스트 - 비밀번호 틀렸을 경우")
-//    public void withdrawalForFailureInvalidPassword() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        WithDrawalDTO withDrawalDTO = createWithDrawalDTO();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        String inputPassword = withDrawalDTO.getInputPassword();
-//
-//        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
-//
-//        given(isPasswordMatch).willReturn(false);
-//
-//        //when
-//        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-////        when(!isPasswordMatch).thenReturn(true);
-//
-//        //then
-//        Assertions.assertThrows(InvalidPasswordException.class, () -> authService.withdrawal(any(), withDrawalDTO));
-//    }
-//
-//    @Test
-//    @WithMockCustomUser
-//    @DisplayName("성공 : 비밀번호 변경(로그인) 테스트")
-//    public void updatePasswordByLoggedInUserForSuccess() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
-//
-//        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
-//        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        boolean isPasswordMatch = passwordEncoder.matches(inputOldPassword, originPassword);
-//        boolean isDuplicatedPassword = passwordEncoder.matches(inputNewPassword, originPassword);
-//
-//        given(isPasswordMatch).willReturn(true);
-//        given(isDuplicatedPassword).willReturn(false);
-//
-//        //when
-//        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-////        when(isPasswordMatch).thenReturn(true);
-////        when(isDuplicatedPassword).thenReturn(false);
-//
-//        //then
-//        ResponseEntity<?> updatePasswordByLoggedInUser = authService.updatePasswordByLoggedInUser(updatePasswordRequest);
-//        assertThat(updatePasswordByLoggedInUser.getBody().toString()).isEqualTo("비밀번호가 변경 되었습니다.");
-//    }
-//
-//    @Test
-//    @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 인증되지 않은 사용자")
-//    public void updatePasswordByLoggedInUserForFailureByUnAuthorizedUser() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
-//
-//        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
-//        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        boolean isPasswordMatch = passwordEncoder.matches(inputOldPassword, originPassword);
-//        boolean isDuplicatedPassword = passwordEncoder.matches(inputNewPassword, originPassword);
-//
-//        //when
-//        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-//        when(!isPasswordMatch).thenReturn(false);
-//        when(isDuplicatedPassword).thenReturn(false);
-//
-//        //then
-//        Assertions.assertThrows(AuthenticationException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
-//    }
-//
-//    @Test
-//    @WithMockCustomUser
-//    @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 입력한 비밀번호가 틀렸을 경우")
-//    public void updatePasswordByLoggedInUserForFailureByInvalidPassword() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
-//
-//        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
-//        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        boolean isPasswordMatch = passwordEncoder.matches(inputOldPassword, originPassword);
-//        boolean isDuplicatedPassword = passwordEncoder.matches(inputNewPassword, originPassword);
-//
-//        //when
-//        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-//        when(!isPasswordMatch).thenReturn(true);
-//        when(isDuplicatedPassword).thenReturn(false);
-//
-//        //then
-//        Assertions.assertThrows(InvalidPasswordException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
-//    }
-//
-//    @Test
-//    @WithMockCustomUser
-//    @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 변경할 비밀번호가 기존 비밀번호와 일치할 경우")
-//    public void updatePasswordByLoggedInUserForFailureByDuplicatedPassword() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
-//
-//        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
-//        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        boolean isPasswordMatch = passwordEncoder.matches(inputOldPassword, originPassword);
-//        boolean isDuplicatedPassword = passwordEncoder.matches(inputNewPassword, originPassword);
-//
-//        //when
-//        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-//        when(!isPasswordMatch).thenReturn(false);
-//        when(isDuplicatedPassword).thenReturn(true);
-//
-//        //then
-//        Assertions.assertThrows(DuplicatedPasswordException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
-//    }
-//
-//    @Test
-//    @DisplayName("성공 : 비밀번호 변경(비 로그인) 테스트")
-//    public void updatePasswordByAnonymousUserForSuccess() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
-//
-//        String inputEmail = updatePasswordRequest.getInputEmail();
-//        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        boolean isDuplicatedPassword = passwordEncoder.matches(inputNewPassword, originPassword);
-//
-//        //when
-//        when(memberRepository.findByEmail(inputEmail)).thenReturn(Optional.ofNullable(member));
-//        when(isDuplicatedPassword).thenReturn(false);
-//
-//        //then
-//        ResponseEntity<?> updatePasswordByAnonymousUser = authService.updatePasswordByAnonymousUser(updatePasswordRequest);
-//        assertThat(updatePasswordByAnonymousUser.getBody().toString()).isEqualTo("비밀번호가 변경 되었습니다.");
-//    }
-//
-//    @Test
-//    @DisplayName("실패 : 비밀번호 변경(비 로그인) 테스트 - 변경할 비밀번호가 기존 비밀번호와 일치할 경우")
-//    public void updatePasswordByAnonymousUserForFailureByDuplicatedPassword() throws Exception {
-//        //given
-//        Member member = buildMember(1L);
-//
-//        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
-//
-//        String inputEmail = updatePasswordRequest.getInputEmail();
-//        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
-//
-//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-//
-//        boolean isDuplicatedPassword = passwordEncoder.matches(inputNewPassword, originPassword);
-//
-//        //when
-//        when(memberRepository.findByEmail(inputEmail)).thenReturn(Optional.ofNullable(member));
-//        when(isDuplicatedPassword).thenReturn(true);
-//
-//        //then
-//        Assertions.assertThrows(DuplicatedPasswordException.class, () -> authService.updatePasswordByAnonymousUser(updatePasswordRequest));
-//    }
+    @Test
+    @WithMockCustomUser
+    @DisplayName("성공 : 회원탈퇴 테스트")
+    public void withdrawalForSuccess() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        WithDrawalDTO withDrawalDTO = createWithDrawalDTO();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        String inputPassword = withDrawalDTO.getInputPassword();
+
+        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
+
+        given(isPasswordMatch).willReturn(true);
+
+        //when
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
+
+        //then
+    }
+
+    @Test
+    @DisplayName("실패 : 회원탈퇴 테스트 - 인증되지 않은 사용자")
+    public void withdrawalForFailureByUnAuthorizedUser() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        WithDrawalDTO withDrawalDTO = createWithDrawalDTO();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        String inputPassword = withDrawalDTO.getInputPassword();
+
+        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
+
+        given(isPasswordMatch).willReturn(true);
+
+        //when
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
+
+        //then
+        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.withdrawal(request, withDrawalDTO));
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 : 회원탈퇴 테스트 - 비밀번호 틀렸을 경우")
+    public void withdrawalForFailureInvalidPassword() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        WithDrawalDTO withDrawalDTO = createWithDrawalDTO();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        String inputPassword = withDrawalDTO.getInputPassword();
+
+        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
+
+        given(isPasswordMatch).willReturn(false);
+
+        //when
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
+
+        //then
+        Assertions.assertThrows(InvalidPasswordException.class, () -> authService.withdrawal(request, withDrawalDTO));
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("성공 : 비밀번호 변경(로그인) 테스트")
+    public void updatePasswordByLoggedInUserForSuccess() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
+
+        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
+        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        //when
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
+        when(passwordEncoder.matches(inputOldPassword, originPassword)).thenReturn(true);
+        when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(false);
+
+        //then
+    }
+
+    @Test
+    @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 인증되지 않은 사용자")
+    public void updatePasswordByLoggedInUserForFailureByUnAuthorizedUser() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
+
+        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
+        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        //when
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
+        when(passwordEncoder.matches(inputOldPassword, originPassword)).thenReturn(true);
+        when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(false);
+
+        //then
+        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 입력한 비밀번호가 틀렸을 경우")
+    public void updatePasswordByLoggedInUserForFailureByInvalidPassword() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
+
+        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
+        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        //when
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
+        when(passwordEncoder.matches(inputOldPassword, originPassword)).thenReturn(false);
+        when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(false);
+
+        //then
+        Assertions.assertThrows(InvalidPasswordException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 변경할 비밀번호가 기존 비밀번호와 일치할 경우")
+    public void updatePasswordByLoggedInUserForFailureByDuplicatedPassword() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
+
+        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
+        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        //when
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
+        when(passwordEncoder.matches(inputOldPassword, originPassword)).thenReturn(true);
+        when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(true);
+
+        //then
+        Assertions.assertThrows(DuplicatedPasswordException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
+    }
+
+    @Test
+    @DisplayName("성공 : 비밀번호 변경(비 로그인) 테스트")
+    public void updatePasswordByAnonymousUserForSuccess() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
+
+        String inputEmail = updatePasswordRequest.getInputEmail();
+        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        //when
+        when(memberRepository.findByEmail(inputEmail)).thenReturn(Optional.ofNullable(member));
+        when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(false);
+
+        //then
+    }
+
+    @Test
+    @DisplayName("실패 : 비밀번호 변경(비 로그인) 테스트 - 변경할 비밀번호가 기존 비밀번호와 일치할 경우")
+    public void updatePasswordByAnonymousUserForFailureByDuplicatedPassword() throws Exception {
+        //given
+        Member member = buildMember(1L);
+
+        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
+
+        String inputEmail = updatePasswordRequest.getInputEmail();
+        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
+
+        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+
+        //when
+        when(memberRepository.findByEmail(inputEmail)).thenReturn(Optional.ofNullable(member));
+        when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(true);
+
+        //then
+        Assertions.assertThrows(DuplicatedPasswordException.class, () -> authService.updatePasswordByAnonymousUser(updatePasswordRequest));
+    }
 }
