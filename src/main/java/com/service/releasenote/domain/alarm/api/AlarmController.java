@@ -32,7 +32,6 @@ public class AlarmController {
 
     @ApiOperation("api for read alarm")
     @ApiResponses({ @ApiResponse(code=204, message="요청 성공"), @ApiResponse(code=404, message="존재하지 않는 memberProject")})
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("{projectId}/alarms")
     public void alarmRead(@PathVariable(name = "projectId") Long projectId) {
         alarmService.readAlarm(projectId);
@@ -40,7 +39,6 @@ public class AlarmController {
 
     @ApiOperation("api for read alarm")
     @ApiResponses({ @ApiResponse(code=204, message="요청 성공"), @ApiResponse(code=404, message="알람 자체가 존재하지 않거나 사용자에게 알람이 존재하지 않음")})
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{projectId}/alarms/{alarmId}")
     public void alarmDelete(
             @PathVariable(name = "projectId") Long projectId,
