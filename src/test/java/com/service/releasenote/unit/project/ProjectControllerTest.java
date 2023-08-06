@@ -1,4 +1,4 @@
-package com.service.releasenote.project;
+package com.service.releasenote.unit.project;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;

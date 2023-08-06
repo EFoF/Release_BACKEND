@@ -1,4 +1,4 @@
-package com.service.releasenote.auth;
+package com.service.releasenote.unit.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.service.releasenote.domain.member.api.AuthController;

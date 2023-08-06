@@ -1,4 +1,4 @@
-package com.service.releasenote.alarm;
+package com.service.releasenote.unit.alarm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.service.releasenote.domain.alarm.api.AlarmController;

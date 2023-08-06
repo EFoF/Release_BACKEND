@@ -1,4 +1,4 @@
-package com.service.releasenote.releases;
+package com.service.releasenote.unit.releases;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.service.releasenote.domain.category.model.Category;

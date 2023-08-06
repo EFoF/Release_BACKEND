@@ -1,4 +1,4 @@
-package com.service.releasenote.category;
+package com.service.releasenote.unit.category;
 
 import com.service.releasenote.domain.category.application.CategoryService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;

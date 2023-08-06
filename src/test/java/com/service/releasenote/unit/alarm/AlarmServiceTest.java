@@ -1,4 +1,4 @@
-package com.service.releasenote.alarm;
+package com.service.releasenote.unit.alarm;
 
 import com.service.releasenote.domain.alarm.application.AlarmService;
 import com.service.releasenote.domain.alarm.dao.AlarmRepository;

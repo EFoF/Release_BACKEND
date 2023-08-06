@@ -1,4 +1,4 @@
-package com.service.releasenote.auth;
+package com.service.releasenote.unit.auth;
 
 import com.service.releasenote.domain.member.application.AuthService;
 import com.service.releasenote.domain.member.dao.MemberRepository;

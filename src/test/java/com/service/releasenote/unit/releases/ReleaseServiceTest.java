@@ -1,4 +1,4 @@
-package com.service.releasenote.releases;
+package com.service.releasenote.unit.releases;
 
 import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.exception.CategoryNotFoundException;
