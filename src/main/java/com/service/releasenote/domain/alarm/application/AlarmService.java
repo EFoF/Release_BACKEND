@@ -112,6 +112,7 @@ public class AlarmService {
 
     /**
      * 그룹에 속한 사용자별 알람 반환 (읽지 않은 메세지만)
+     * 리팩토링 여지 존재 : 동적 쿼리로 메서드 하나로 처리 가능
      * @param projectId
      * @return AlarmInfoDto
      */
