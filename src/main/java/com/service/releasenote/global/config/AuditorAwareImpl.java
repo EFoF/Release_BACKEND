@@ -17,10 +17,11 @@ public class AuditorAwareImpl implements AuditorAware<Long> {
     @Override
     public Optional<Long> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) { // authentication 에 인증 정보가 없는 경우
-            throw new UnAuthorizedException();
-        }
-        if(authentication.getPrincipal().equals("anonymousUser")) { // 로그인 하지 않은 경우
+//        if (authentication == null) { // authentication 에 인증 정보가 없는 경우
+////            throw new UnAuthorizedException();
+//            return Optional.empty();
+//        }
+        if(authentication == null || authentication.getPrincipal().equals("anonymousUser")) { // 로그인 하지 않은 경우
 //            throw new NotSignInException();
             return Optional.empty();
         }
