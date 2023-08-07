@@ -101,11 +101,11 @@ public class MemberProjectService {
 
         // currentMemberId가 프로젝트의 멤버가 아니면 예외 처리
         MemberProject currentMemberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(ProjectPermissionDeniedException::new);
 
         // memberEmail을 가진 member의 id가 memberproject에 없으면 예외 처리
         Optional<Member> MemberByEmail = memberRepository.findByEmail(memberEmail);
-        Member member = MemberByEmail.orElseThrow(NullPointerException::new);
+        Member member = MemberByEmail.orElseThrow(UserNotFoundException::new);
 
         List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!memberListByProjectId.contains(member.getId())){
