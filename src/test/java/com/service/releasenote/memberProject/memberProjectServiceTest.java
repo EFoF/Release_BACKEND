@@ -6,6 +6,7 @@ import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.application.MemberProjectService;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.dto.MemberDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
 import com.service.releasenote.domain.member.error.exception.DuplicatedProjectMemberException;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
@@ -78,7 +79,7 @@ public class memberProjectServiceTest {
     public Member buildMember(Long id) { // Test 용 멤버 생성
         return Member.builder()
                 .id(id)
-                .userName("test_user_name")
+                .userName("test_user_name " + id)
                 .email("test_email@test.com")
                 .password(passwordEncoder.encode("test_password"))
                 .authority(Authority.ROLE_USER)
@@ -98,6 +99,24 @@ public class memberProjectServiceTest {
     public AddProjectMemberRequestDto SaveProjectMemberRequestDto() {
         return AddProjectMemberRequestDto.builder()
                 .email("test_email@test.com")
+                .build();
+    }
+
+    public MemberDTO.MemberListDTO getMemberEachDto(Long id) {
+        return MemberDTO.MemberListDTO.builder()
+                .id(id)
+                .name("test_user_name " + id)
+                .email("test_user_email " + id)
+                .build();
+    }
+
+    public FindMemberListByProjectId getProjectMemberResponseDto(int number) {
+        List<MemberDTO.MemberListDTO> list = new ArrayList<>();
+        for(int i=1; i<=number; i++) {
+            list.add(getMemberEachDto(Long.valueOf(i)));
+        }
+        return FindMemberListByProjectId.builder()
+                .memberListDTOS(list)
                 .build();
     }
 
@@ -133,7 +152,7 @@ public class memberProjectServiceTest {
         AddProjectMemberResponseDto addProjectMemberResponseDto = memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId());
         assertThat(addProjectMemberResponseDto.getMember_id()).isEqualTo(2L);
         assertThat(addProjectMemberResponseDto.getProject_id()).isEqualTo(1L);
-        assertThat(addProjectMemberResponseDto.getName()).isEqualTo("test_user_name");
+        assertThat(addProjectMemberResponseDto.getName()).isEqualTo("test_user_name 2");
     }
 
     @Test
@@ -243,6 +262,36 @@ public class memberProjectServiceTest {
         //then
         Assertions.assertThrows(DuplicatedProjectMemberException.class,
                 () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId()));
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("성공 - 프로젝트 멤버 조회 테스트")
+    public void getProjectMemberForSuccess() throws Exception {
+        //given
+        Long currentMemberId = 1L;
+        List<Long> preparedMemberList = new ArrayList<>();
+        preparedMemberList.add(currentMemberId);
+
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Member member1 = buildMember(currentMemberId);
+        Member member2 = buildMember(2L);
+        Member member3 = buildMember(3L);
+
+        List<Member> memberList = new ArrayList<>();
+        memberList.add(member1);
+        memberList.add(member2);
+        memberList.add(member3);
+
+        //when
+        memberRepository.findByProjectId(project.getId());
+        when(memberRepository.findByProjectId(project.getId())).thenReturn(memberList);
+
+        //then
+        FindMemberListByProjectId findMemberListByProjectId = memberProjectService.findProjectMemberList(project.getId());
+        assertThat(findMemberListByProjectId.getMemberListDTOS()).extracting("name")
+                .contains("test_user_name 1", "test_user_name 2", "test_user_name 3");
     }
 
     @Test
