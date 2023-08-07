@@ -1,9 +1,11 @@
 package com.service.releasenote.memberProject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.api.MemberProjectController;
 import com.service.releasenote.domain.member.application.MemberProjectService;
+import com.service.releasenote.domain.member.dto.MemberDTO;
 import com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
 import com.service.releasenote.domain.member.model.*;
 import com.service.releasenote.domain.project.api.ProjectController;
@@ -28,10 +30,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.SharedHttpSessionConfigurer.sharedHttpSession;
@@ -114,9 +118,28 @@ public class memberProjectControllerTest {
                 .build();
     }
 
+    public MemberDTO.MemberListDTO getMemberEachDto(Long id) {
+        return MemberDTO.MemberListDTO.builder()
+                .id(id)
+                .name("test_user_name " + id)
+                .email("test_user_email " + id)
+                .build();
+    }
+
+    public FindMemberListByProjectId getProjectMemberResponseDto(int number) {
+        List<MemberDTO.MemberListDTO> list = new ArrayList<>();
+        for(int i=1; i<=number; i++) {
+            list.add(getMemberEachDto(Long.valueOf(i)));
+        }
+        return FindMemberListByProjectId.builder()
+                .memberListDTOS(list)
+                .build();
+    }
+
+
     @Test
     @DisplayName("성공 - 프로젝트 멤버 추가 테스트")
-    public void saveProjectForSuccess() throws Exception {
+    public void saveProjectMemberForSuccess() throws Exception {
         //given
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
@@ -141,11 +164,33 @@ public class memberProjectControllerTest {
                 .andExpect(status().isCreated());
     }
 
+    @Test
+    @DisplayName("성공 - 프로젝트 멤버 모두 조회")
+    public void getProjectMemberForSuccess() throws Exception {
+        //given
+        Company company = buildCompany(1L);
+        Project project = buildProject(company, 1L);
+        Member member = buildMember(1L);
+        MemberProject memberProject = buildMemberProject(1L, project, member);
+        FindMemberListByProjectId findMemberListByProjectId = getProjectMemberResponseDto(3);
 
+        //when
+        when(memberProjectService.findProjectMemberList(project.getId())).thenReturn(findMemberListByProjectId);
+
+        //then
+        mockMvc.perform(get("/companies/projects/{project_id}/members", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.memberListDTOS[0].name").value("test_user_name 1"))
+                .andExpect(jsonPath("$.memberListDTOS[1].name").value("test_user_name 2"))
+                .andExpect(jsonPath("$.memberListDTOS[2].name").value("test_user_name 3"))
+                .andDo(print());
+    }
 
     @Test
-    @DisplayName("성공 - 프로젝트 삭제 테스트")
-    public void deleteProjectForSuccess() throws Exception {
+    @DisplayName("성공 - 프로젝트 멤버 삭제 테스트")
+    public void deleteProjectMemberForSuccess() throws Exception {
         //given
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
