@@ -34,7 +34,6 @@ public class ProjectRepositoryImpl implements ProjectCustomRepository{
                         memberProject.project.company.name
                 ))
                 .from(memberProject)
-//                .leftJoin(memberProject.project, project)
                 .join(memberProject.project, project)
                 .where(memberProject.member.id.eq(memberId))
                 .orderBy(project.company.id.asc())
