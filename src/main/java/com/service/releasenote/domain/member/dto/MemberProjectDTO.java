@@ -19,6 +19,7 @@ import java.util.List;
 public class MemberProjectDTO {
 
     @Getter
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AddProjectMemberRequestDto {
@@ -43,12 +44,14 @@ public class MemberProjectDTO {
         private Long member_id;
         private Long project_id;
         private Role role;
+        private String name;
 
         public MemberProjectDTO.AddProjectMemberResponseDto toResponseDto(MemberProject memberProject) {
             return AddProjectMemberResponseDto.builder()
                     .member_id(memberProject.getMember().getId())
                     .project_id(memberProject.getProject().getId())
                     .role(memberProject.getRole())
+                    .name(memberProject.getMember().getUserName())
                     .build();
         }
     }

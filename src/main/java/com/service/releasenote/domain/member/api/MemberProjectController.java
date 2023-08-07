@@ -35,7 +35,7 @@ public class MemberProjectController {
             @ApiResponse(code=200, message = "요청 성공"),
             @ApiResponse(code=404, message = "존재하지 않는 카테고리")
     })
-    @PostMapping(value = "companies/projects/{project_id}/members")
+    @PostMapping(value = "/companies/projects/{project_id}/members")
     public ResponseEntity<AddProjectMemberResponseDto> addMemberProject(
             @RequestBody AddProjectMemberRequestDto addProjectMemberRequestDto,
             @PathVariable Long project_id) {
@@ -58,7 +58,7 @@ public class MemberProjectController {
             @ApiResponse(code=200, message = "요청 성공"),
             @ApiResponse(code=404, message = "존재하지 않는 프로젝트 멤버")
     })
-    @GetMapping(value = "companies/projects/{project_id}/members")
+    @GetMapping(value = "/companies/projects/{project_id}/members")
     public ResponseEntity<FindMemberListByProjectId> findProjectMember(
             @PathVariable Long project_id) {
 
@@ -78,7 +78,7 @@ public class MemberProjectController {
             @ApiResponse(code=404, message = "존재하지 않는 프로젝트"),
             @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
     })
-    @DeleteMapping(value = "companies/projects/{project_id}/members")
+    @DeleteMapping(value = "/companies/projects/{project_id}/members")
     public ResponseEntity deleteMemberProject(
             @PathVariable Long project_id,
             @RequestHeader("email") String memberEmail) {
