@@ -103,7 +103,7 @@ public class ProjectControllerTest {
         CreateProjectRequestDto projectSaveRequest = createProjectSaveRequest();
 
         //when
-        when(projectService.createProject(any(), any())).thenReturn(project.getId());
+        when(projectService.createProject(any(), any(), any())).thenReturn(project.getId());
 
         //then
         mockMvc.perform(post("/companies/{company_id}/projects", 1L)
