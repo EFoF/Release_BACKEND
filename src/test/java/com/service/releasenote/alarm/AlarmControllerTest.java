@@ -8,6 +8,7 @@ import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.domain.project.exception.exceptions.MemberProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.handler.ProjectExceptionHandler;
+import com.service.releasenote.global.annotations.WithMockCustomUser;
 import com.service.releasenote.global.error.exception.UnAuthorizedException;
 import com.service.releasenote.global.jwt.JwtFilter;
 import org.junit.jupiter.api.BeforeAll;
@@ -97,6 +98,7 @@ public class AlarmControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 알람 조회")
     public void getAlarmDetailsForSuccess() throws Exception {
         //given
@@ -171,6 +173,7 @@ public class AlarmControllerTest {
 //    }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 알람 읽음 처리")
     public void readAlarmForSuccess() throws Exception {
         //then
@@ -216,6 +219,7 @@ public class AlarmControllerTest {
 //    }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 알람 삭제")
     public void deleteAlarmForSuccess() throws Exception {
         //then

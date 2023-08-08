@@ -123,8 +123,8 @@ public class IntegrationTest {
 
     public AddMemberResponseDTO buildAddMemberResponseDto(Long memberId, Long companyId, Role role) {
         return AddMemberResponseDTO.builder()
-                .company_id(companyId)
-                .member_id(memberId)
+                .companyId(companyId)
+                .memberId(memberId)
                 .role(role)
                 .build();
     }
@@ -135,11 +135,10 @@ public class IntegrationTest {
                 .build();
     }
 
-    public CreateProjectRequestDto createProjectRequestDto() {
-        return CreateProjectRequestDto.builder()
-
-                .build()
-    }
+//    public CreateProjectRequestDto createProjectRequestDto() {
+//        return CreateProjectRequestDto.builder()
+//                .build()
+//    }
 
     private void setup() {
         // 1. 20명의 멤버를 생성하여 데이터베이스에 저장
@@ -184,17 +183,17 @@ public class IntegrationTest {
             buildSecurityContext(securityContext, loginDTO);
 
             // 2.2 로그인한 멤버는 회사를 만든다.
-            Long companyId = companyService.createCompany(buildCreateCopanyRequestDto(ownerId));
+//            Long companyId = companyService.createCompany(buildCreateCopanyRequestDto(ownerId));
             // 3. 회사를 생성한 후 멤버들을 초대한다.
             List<Long> members = memberList.get(ownerId);
             for (Long member : members) {
-                memberCompanyService.addMemberCompany(companyId, buildAddMemberRequestDto(member));
+//                memberCompanyService.addMemberCompany(companyId, buildAddMemberRequestDto(member));
             }
         }
         // 4. 초대된 멤버는 프로젝트를 생성한다.
         // A : 1,2,2,1
         buildSecurityContext(securityContext, loginDTOList.get(0));
-        projectService.createProject()
+//        projectService.createProject()
 
         // 5. 프로젝트를 생성한 후 멤버들을 초대한다.
         // 6. 테스트 요구사항에 맞춰 담당자가 카테고리를 생성한다.
