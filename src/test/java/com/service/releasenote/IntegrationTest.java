@@ -14,8 +14,10 @@ import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.application.ProjectService;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
+import com.service.releasenote.domain.project.dto.ProjectDto;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
+import com.service.releasenote.global.annotations.WithMockCustomUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -25,8 +27,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
@@ -36,14 +43,13 @@ import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemb
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberResponseDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.LoginDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.SignUpRequest;
+import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc
 public class IntegrationTest {
 
-    @LocalServerPort
-    private int port;
     @Autowired
     MockMvc mockMvc;
     @Autowired
@@ -73,7 +79,7 @@ public class IntegrationTest {
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
-    TestRestTemplate restTemplate;
+    AuthenticationManagerBuilder authenticationManagerBuilder;
 
 
     @BeforeEach
@@ -129,7 +135,12 @@ public class IntegrationTest {
                 .build();
     }
 
-    @Disabled
+    public CreateProjectRequestDto createProjectRequestDto() {
+        return CreateProjectRequestDto.builder()
+
+                .build()
+    }
+
     private void setup() {
         // 1. 20명의 멤버를 생성하여 데이터베이스에 저장
         for(int i=1; i<=20; i++) {
@@ -158,11 +169,19 @@ public class IntegrationTest {
 
 
         // 2. 오너들이 회사를 생성
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        List<LoginDTO> loginDTOList = new ArrayList<>();
         for (Long ownerId : ownerList) {
             // 2.1 오너들이 회사를 생성하기 위해선 로그인을 수행해야 한다.
+            /*
+                TODO 2.2 로그인 서비스를 수행 해도 복잡하게 얽힌 필터나 스프링 시큐리티 내부 로직 등에 의해서
+                 SecurityContext가 제대로 동작하지 않았다. 따라서 수동으로 SecurityContext를 생성 후 인증해주겠음.
+                 추후 해당 부분까지 테스트로 수행할 수 있게 리팩토링 할 예정
+             */
+
             LoginDTO loginDTO = buildLoginDto(ownerId);
-//            authService.signin(loginDTO);
-            String url = "http://localhost:" + this.port + "/signin";
+            loginDTOList.add(loginDTO);
+            buildSecurityContext(securityContext, loginDTO);
 
             // 2.2 로그인한 멤버는 회사를 만든다.
             Long companyId = companyService.createCompany(buildCreateCopanyRequestDto(ownerId));
@@ -173,12 +192,22 @@ public class IntegrationTest {
             }
         }
         // 4. 초대된 멤버는 프로젝트를 생성한다.
+        // A : 1,2,2,1
+        buildSecurityContext(securityContext, loginDTOList.get(0));
+        projectService.createProject()
+
         // 5. 프로젝트를 생성한 후 멤버들을 초대한다.
         // 6. 테스트 요구사항에 맞춰 담당자가 카테고리를 생성한다.
         // 7. 테스트 요구사항에 맞춰 담당자가 릴리즈를 생성한다.
         // 8. 테스트 환경설정이 끝났다.
+    }
 
-
+    // 직접 SecurityContext를 생성한 뒤 인증을 시키는 메서드이다.
+    private void buildSecurityContext(SecurityContext securityContext, LoginDTO loginDTO) {
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword());
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        securityContext.setAuthentication(authentication);
     }
 
     /*
