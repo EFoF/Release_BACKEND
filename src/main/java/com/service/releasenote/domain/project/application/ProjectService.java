@@ -210,7 +210,7 @@ public class ProjectService {
         // 프로젝트에 속한 하위 카테고리 삭제
         List<Category> categoryIdByProjectId = categoryRepository.findCategoryByProjectId(projectId);
         for (Category category : categoryIdByProjectId) {
-            categoryService.deleteCategory(category.getId(), projectId);
+            categoryService.deleteCategory(category.getId(), projectId, currentMemberId);
         }
 
         // member_project에서 삭제

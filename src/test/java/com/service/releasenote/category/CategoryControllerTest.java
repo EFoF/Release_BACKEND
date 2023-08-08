@@ -136,13 +136,14 @@ public class CategoryControllerTest {
     @DisplayName("성공 - 카테고리 생성 테스트")
     public void saveCategoryForSuccess() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
         CategorySaveRequest categorySaveRequest = createCategorySaveRequest();
 
         //when
-        when(categoryService.saveCategory(any(), any())).thenReturn(category.getId());
+        when(categoryService.saveCategory(any(), any(), currentMemberId)).thenReturn(category.getId());
 
         //then
         mockMvc.perform(post("/companies/projects/{project_id}/categories", 1L)
@@ -248,12 +249,13 @@ public class CategoryControllerTest {
     @DisplayName("성공 - 카테고리 삭제")
     public void deleteCategoryForSuccess() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
 
         //when
-        when(categoryService.deleteCategory(project.getId(), category.getId()))
+        when(categoryService.deleteCategory(project.getId(), category.getId(), currentMemberId))
                 .thenReturn("deleted");
 
         //then

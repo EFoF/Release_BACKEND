@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.category.api;
 
 import com.service.releasenote.domain.category.application.CategoryService;
+import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +35,9 @@ public class CategoryController {
     })
     public Long categoryAdd(
             @PathVariable(name = "project_id") Long projectId,
-            @RequestBody CategorySaveRequest categorySaveRequest
-            ) {
-        return categoryService.saveCategory(categorySaveRequest, projectId);
+            @RequestBody CategorySaveRequest categorySaveRequest) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return categoryService.saveCategory(categorySaveRequest, projectId, currentMemberId);
     }
 
     /**
@@ -101,9 +102,9 @@ public class CategoryController {
     @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}")
     public String categoryRemove(
             @PathVariable(name = "project_id") Long projectId,
-            @PathVariable(name = "category_id") Long categoryId
-    ) {
-        return categoryService.deleteCategory(categoryId, projectId);
+            @PathVariable(name = "category_id") Long categoryId) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return categoryService.deleteCategory(categoryId, projectId, currentMemberId);
     }
 
     /**
@@ -124,9 +125,9 @@ public class CategoryController {
     public CategoryModifyResponseDto categoryModify(
             @PathVariable(name = "project_id")Long projectId,
             @PathVariable(name = "category_id")Long categoryId,
-            @RequestBody CategoryModifyRequestDto modifyRequestDto
-    ) {
-        categoryService.modifyCategory(modifyRequestDto, categoryId, projectId);
+            @RequestBody CategoryModifyRequestDto modifyRequestDto) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        categoryService.modifyCategory(modifyRequestDto, categoryId, projectId, currentMemberId);
         return categoryService.findCategoryAndConvert(categoryId);
     }
 }
