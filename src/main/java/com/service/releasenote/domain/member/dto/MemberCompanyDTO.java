@@ -35,11 +35,14 @@ public class MemberCompanyDTO {
         private Long company_id;
         private Role role;
 
+        private String name;
+
         public AddMemberResponseDTO toResponseDTO(MemberCompany memberCompany) {
             return AddMemberResponseDTO.builder()
                     .member_id(memberCompany.getMember().getId())
                     .company_id(memberCompany.getCompany().getId())
                     .role(memberCompany.getRole())
+                    .name(memberCompany.getMember().getUserName())
                     .build();
         }
     }
