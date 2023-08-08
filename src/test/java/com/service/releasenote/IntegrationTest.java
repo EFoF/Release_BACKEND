@@ -1,23 +1,21 @@
 package com.service.releasenote;
 
-import com.service.releasenote.domain.alarm.application.AlarmService;
 import com.service.releasenote.domain.alarm.dao.AlarmRepository;
 import com.service.releasenote.domain.category.application.CategoryService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.company.application.CompanyService;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
-import com.service.releasenote.domain.company.dto.CompanyDTO;
+import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.application.AuthService;
+import com.service.releasenote.domain.member.application.MemberCompanyService;
 import com.service.releasenote.domain.member.dao.MemberRepository;
-import com.service.releasenote.domain.member.dto.MemberDTO;
-import com.service.releasenote.domain.member.model.Authority;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
+import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.application.ProjectService;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -25,21 +23,27 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
-import static com.service.releasenote.domain.member.dto.MemberDTO.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.service.releasenote.domain.company.dto.CompanyDTO.CreateCompanyRequestDTO;
+import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberRequestDTO;
+import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberResponseDTO;
+import static com.service.releasenote.domain.member.dto.MemberDTO.LoginDTO;
+import static com.service.releasenote.domain.member.dto.MemberDTO.SignUpRequest;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class IntegrationTest {
 
+    @LocalServerPort
+    private int port;
     @Autowired
     MockMvc mockMvc;
     @Autowired
@@ -65,7 +69,12 @@ public class IntegrationTest {
     @Autowired
     ReleaseService releaseService;
     @Autowired
+    MemberCompanyService memberCompanyService;
+    @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    TestRestTemplate restTemplate;
+
 
     @BeforeEach
     private void clearAll() {
@@ -106,6 +115,20 @@ public class IntegrationTest {
                 .build();
     }
 
+    public AddMemberResponseDTO buildAddMemberResponseDto(Long memberId, Long companyId, Role role) {
+        return AddMemberResponseDTO.builder()
+                .company_id(companyId)
+                .member_id(memberId)
+                .role(role)
+                .build();
+    }
+
+    public AddMemberRequestDTO buildAddMemberRequestDto(Long userId) {
+        return AddMemberRequestDTO.builder()
+                .email("user"+userId+"@doklib.com")
+                .build();
+    }
+
     @Disabled
     private void setup() {
         // 1. 20명의 멤버를 생성하여 데이터베이스에 저장
@@ -114,22 +137,43 @@ public class IntegrationTest {
             authService.signup(signUpRequest);
         }
         List<Long> ownerList = new ArrayList<>();
-        ownerList.add(1L);
-        ownerList.add(5L);
-        ownerList.add(8L);
-        ownerList.add(13L);
-        ownerList.add(16L);
+        ownerList.add(1L); ownerList.add(5L); ownerList.add(8L); ownerList.add(13L); ownerList.add(16L);
+        Map<Long, List<Long>> memberList = new HashMap<>();
+        List<Long> ACompanyMembers = new ArrayList<>();
+        ACompanyMembers.add(2L); ACompanyMembers.add(3L); ACompanyMembers.add(4L);
+        List<Long> BCompanyMembers = new ArrayList<>();
+        BCompanyMembers.add(6L); BCompanyMembers.add(7L);
+        List<Long> CCompanyMembers = new ArrayList<>();
+        CCompanyMembers.add(9L); CCompanyMembers.add(10L); CCompanyMembers.add(11L); CCompanyMembers.add(12L);
+        List<Long> DCompanyMembers = new ArrayList<>();
+        DCompanyMembers.add(14L); DCompanyMembers.add(15L);
+        List<Long> ECompanyMembers = new ArrayList<>();
+        ECompanyMembers.add(17L); ECompanyMembers.add(18L); ECompanyMembers.add(19L); ECompanyMembers.add(20L);
+
+        memberList.put(1L, ACompanyMembers);
+        memberList.put(5L, BCompanyMembers);
+        memberList.put(8L, CCompanyMembers);
+        memberList.put(13L, DCompanyMembers);
+        memberList.put(16L, ECompanyMembers);
+
 
         // 2. 오너들이 회사를 생성
-        // 2.1 오너들이 회사를 생성하기 위해선 로그인을 수행해야 한다.
         for (Long ownerId : ownerList) {
-//            authService.signin()
-            // 2.2 로그인한 멤버는 회사를 만든다.
-            // 3. 회사를 생성한 후 멤버들을 초대한다.
-            // 4. 초대된 멤버는 프로젝트를 생성한다.
-            // 5. 프로젝트를 생성한 후 멤버들을 초대한다.
-        }
+            // 2.1 오너들이 회사를 생성하기 위해선 로그인을 수행해야 한다.
+            LoginDTO loginDTO = buildLoginDto(ownerId);
+//            authService.signin(loginDTO);
+            String url = "http://localhost:" + this.port + "/signin";
 
+            // 2.2 로그인한 멤버는 회사를 만든다.
+            Long companyId = companyService.createCompany(buildCreateCopanyRequestDto(ownerId));
+            // 3. 회사를 생성한 후 멤버들을 초대한다.
+            List<Long> members = memberList.get(ownerId);
+            for (Long member : members) {
+                memberCompanyService.addMemberCompany(companyId, buildAddMemberRequestDto(member));
+            }
+        }
+        // 4. 초대된 멤버는 프로젝트를 생성한다.
+        // 5. 프로젝트를 생성한 후 멤버들을 초대한다.
         // 6. 테스트 요구사항에 맞춰 담당자가 카테고리를 생성한다.
         // 7. 테스트 요구사항에 맞춰 담당자가 릴리즈를 생성한다.
         // 8. 테스트 환경설정이 끝났다.
@@ -223,9 +267,12 @@ public class IntegrationTest {
         Member member = byId.get();
 
         //when
-        
+        Optional<Company> companyOptional = companyRepository.findById(4L);
+        Company company = companyOptional.get();
+
         //then
         assertThat(member.getUserName()).isEqualTo("user2");
+        assertThat(company.getName()).isEqualTo("company_from_user13");
     
     }
 
