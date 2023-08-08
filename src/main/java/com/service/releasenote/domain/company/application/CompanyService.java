@@ -18,6 +18,7 @@ import com.service.releasenote.domain.project.exception.exceptions.CompanyNotFou
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
 import com.service.releasenote.domain.release.model.Releases;
+import com.service.releasenote.global.config.S3Config;
 import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +26,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
+import static com.service.releasenote.global.config.S3Constants.DIRECTORY;
 
 @Slf4j
 @Service
@@ -52,14 +56,22 @@ public class CompanyService {
 
     private final MemberProjectRepository memberProjectRepository;
 
+    private final S3Config s3Uploader;
+
     @Transactional
-    public Long createCompany(CreateCompanyRequestDTO createCompanyRequestDTO) {
+    public Long createCompany(MultipartFile inputImage, String inputName) throws IOException {
+        String imageUrl = s3Uploader.upload(inputImage, DIRECTORY);
+
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
         // 로그인 되지 않은 경우
         // TODO: exception 추가 후 수정
         Member member = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
-        Company company = companyRepository.save(createCompanyRequestDTO.toEntity());
+        Company company = Company.builder()
+                .name(inputName)
+                .ImageURL(imageUrl)
+                .build();
+        companyRepository.save(company);
         MemberCompany memberCompany = MemberCompany.builder()
                 .role(Role.OWNER)
                 .company(company)
@@ -107,7 +119,7 @@ public class CompanyService {
     }
 
     @Transactional
-    public UpdateCompanyResponseDTO updateCompany(Long company_id, UpdateCompanyRequestDTO updateCompanyRequestDTO) {
+    public UpdateCompanyResponseDTO updateCompany(Long company_id, MultipartFile inputImage, String inputName) throws IOException {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
         // 로그인 되지 않은 경우
@@ -125,8 +137,11 @@ public class CompanyService {
             throw new UserNotFoundException();
         }
 
-        company.setName(updateCompanyRequestDTO.getName());
-        company.setImageUrl(updateCompanyRequestDTO.getImageUrl());
+        s3Uploader.delete(company.getImageURL(), DIRECTORY);
+        String imageUrl = s3Uploader.upload(inputImage, DIRECTORY);
+
+        company.setName(inputName);
+        company.setImageUrl(imageUrl);
 
         return new UpdateCompanyResponseDTO().toResponseDTO(company);
     }
@@ -165,6 +180,7 @@ public class CompanyService {
         List<MemberCompany> memberCompanyList = memberCompanyRepository.findMemberCompanyByCompanyId(company_id);
         memberCompanyRepository.deleteAll(memberCompanyList);
 
+        s3Uploader.delete(company.getImageURL(), DIRECTORY);
         companyRepository.delete(company);
 
         return company_id;
