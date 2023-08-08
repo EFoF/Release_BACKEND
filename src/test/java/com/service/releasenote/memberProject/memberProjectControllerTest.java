@@ -12,6 +12,7 @@ import com.service.releasenote.domain.project.api.ProjectController;
 import com.service.releasenote.domain.project.application.ProjectService;
 import com.service.releasenote.domain.project.dto.ProjectDto;
 import com.service.releasenote.domain.project.model.Project;
+import com.service.releasenote.global.annotations.WithMockCustomUser;
 import com.service.releasenote.global.jwt.JwtFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -137,6 +138,7 @@ public class memberProjectControllerTest {
 
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 멤버 추가 테스트")
     public void saveProjectMemberForSuccess() throws Exception {
         //given
@@ -188,6 +190,7 @@ public class memberProjectControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 멤버 삭제 테스트")
     public void deleteProjectMemberForSuccess() throws Exception {
         //given

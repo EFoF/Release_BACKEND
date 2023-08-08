@@ -108,7 +108,6 @@ public class ProjectServiceTest {
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 생성 테스트")
     public void saveProjectForSuccess() throws Exception {
         //given
@@ -134,26 +133,6 @@ public class ProjectServiceTest {
     }
 
     @Test
-    @DisplayName("실패 - 프로젝트 생성 테스트 - 인증되지 않은 사용자")
-    public void saveProjectForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        CreateProjectRequestDto projectSaveRequest = createProjectSaveRequest();
-
-        //when
-        when(companyRepository.findById(company.getId())).thenReturn(Optional.ofNullable(company));
-        when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
-        when(projectRepository.save(any())).thenReturn(project);
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> projectService.createProject(projectSaveRequest, company.getId(), currentMemberId));
-    }
-
-    @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 프로젝트 생성 테스트 - 존재하지 않는 회사")
     public void saveProjectForFailureByNonProjectMember() throws Exception {
         //given
@@ -174,7 +153,6 @@ public class ProjectServiceTest {
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 수정 테스트")
     public void updateProjectForSuccess() throws Exception {
         //given
@@ -200,26 +178,8 @@ public class ProjectServiceTest {
         assertThat(updateProjectResponseDto.isScope()).isEqualTo(false);
     }
 
-    @Test
-    @DisplayName("실패 - 프로젝트 수정 테스트 - 인증되지 않은 사용자")
-    public void updateProjectForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        UpdateProjectRequestDto updateProjectRequestDto = updateProjectRequest();
-
-        //when
-        when(memberProjectRepository.findMemberIdByProjectId(any())).thenReturn(new ArrayList<>());
-        when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> projectService.updateProject(updateProjectRequestDto, project.getId(), currentMemberId));
-    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 프로젝트 수정 테스트 - 프로젝트에 속하지 않은 사용자")
     public void updateProjectForFailureByNonProjectMember() throws Exception {
         //given
@@ -240,7 +200,6 @@ public class ProjectServiceTest {
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 프로젝트 수정 테스트 - 존재하지 않는 프로젝트")
     public void updateProjectForFailureByNotExistProject() throws Exception {
         //given
@@ -263,21 +222,8 @@ public class ProjectServiceTest {
                 () -> projectService.updateProject(updateProjectRequestDto, project.getId(), currentMemberId));
     }
 
-    @Test
-    @DisplayName("실패 - 카테고리 삭제 테스트 - 인증되지 않은 사용자")
-    public void deleteProjectForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-
-        //when & then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> projectService.deleteProject(company.getId(), project.getId(), currentMemberId));
-    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 프로젝트 삭제 테스트 - 프로젝트에 속하지 않은 사용자")
     public void deleteProjectForFailureByNonProjectMember() throws Exception {
         //given
@@ -294,7 +240,6 @@ public class ProjectServiceTest {
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 프로젝트 삭제 테스트 - 존재하지 않는 프로젝트")
     public void deleteProjectForFailureByNotExistsProject() throws Exception {
         //given
