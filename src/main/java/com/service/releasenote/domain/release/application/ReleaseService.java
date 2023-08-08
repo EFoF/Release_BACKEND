@@ -51,8 +51,7 @@ public class ReleaseService {
      * @return Long
      */
     @Transactional
-    public Long saveRelease(SaveReleaseRequest saveReleaseRequest, Long projectId, Long categoryId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public Long saveRelease(SaveReleaseRequest saveReleaseRequest, Long projectId, Long categoryId, Long currentMemberId) {
         if(!projectRepository.existsById(projectId)) {
             throw new ProjectNotFoundException();
         }
@@ -103,12 +102,10 @@ public class ReleaseService {
      */
     @Transactional
     public void modifyReleases(ReleaseModifyRequestDto requestDto, Long projectId,
-                                                   Long categoryId, Long releaseId) {
+                                                   Long categoryId, Long releaseId, Long currentMemberId) {
         if(!categoryRepository.existsByProjectId(projectId)) {
             throw new CategoryNotFoundException();
         }
-
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 //        List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectId);
         List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
@@ -151,11 +148,10 @@ public class ReleaseService {
      * @return String
      */
     @Transactional
-    public String deleteRelease(Long projectId, Long categoryId, Long releaseId) {
+    public String deleteRelease(Long projectId, Long categoryId, Long releaseId, Long currentMemberId) {
         if(!categoryRepository.existsByProjectId(projectId)) {
             throw new CategoryNotFoundException();
         }
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 //        List<Long> memberList = memberProjectRepository.findMemberIdByProjectId(projectId);
         List<Long> memberList = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!memberList.contains(currentMemberId)) {

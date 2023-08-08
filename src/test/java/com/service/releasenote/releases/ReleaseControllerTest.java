@@ -190,6 +190,7 @@ public class ReleaseControllerTest {
     @DisplayName("성공 - 릴리즈 생성 테스트")
     public void saveReleaseForSuccess() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
@@ -197,7 +198,7 @@ public class ReleaseControllerTest {
         SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
 
         //when
-        when(releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()))
+        when(releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId))
                 .thenReturn(1L);
 
         //then
@@ -214,6 +215,7 @@ public class ReleaseControllerTest {
     @DisplayName("실패 - 릴리즈 생성 테스트 - 인증되지 않은 사용자")
     public void saveReleaseForFailureByUnAuthorizedUser() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
@@ -221,7 +223,7 @@ public class ReleaseControllerTest {
         SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
 
         //when
-        when(releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()))
+        when(releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId))
                 .thenThrow(UnAuthorizedException.class);
 
         //then
@@ -358,13 +360,14 @@ public class ReleaseControllerTest {
     @DisplayName("성공 - 릴리즈 삭제 테스트")
     public void deleteReleaseForSuccess() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
         Releases releases = buildReleases(category, 1L);
 
         //when
-        when(releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()))
+        when(releaseService.deleteRelease(project.getId(), category.getId(), releases.getId(), currentMemberId))
                 .thenReturn("deleted");
 
         //then

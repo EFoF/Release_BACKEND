@@ -159,7 +159,7 @@ public class ReleaseServiceTest {
         when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
 
         //then
-        Long savedId = releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId());
+        Long savedId = releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId);
         assertThat(savedId).isEqualTo(releases.getId());
 
     }
@@ -186,7 +186,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(UnAuthorizedException.class,
-                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
+                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId));
 
     }
 
@@ -213,7 +213,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
+                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId));
 
     }
 
@@ -240,7 +240,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectNotFoundException.class,
-                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
+                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId));
 
     }
 
@@ -267,7 +267,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
+                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId));
 
     }
 
@@ -394,7 +394,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(UnAuthorizedException.class,
-                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId(), currentMemberId));
     }
 
     @Test
@@ -420,7 +420,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId(), currentMemberId));
     }
 
     @Test
@@ -446,7 +446,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId(), currentMemberId));
     }
 
     @Test
@@ -472,7 +472,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ReleasesNotFoundException.class,
-                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId(), currentMemberId));
     }
 
 
@@ -497,7 +497,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(UnAuthorizedException.class,
-                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId(), currentMemberId));
 
     }
 
@@ -523,7 +523,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId(), currentMemberId));
 
     }
 
@@ -549,7 +549,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId(), currentMemberId));
 
     }
 
@@ -575,7 +575,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ReleasesNotFoundException.class,
-                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId(), currentMemberId));
 
     }
 

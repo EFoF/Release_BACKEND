@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.release.api;
 
 import com.service.releasenote.domain.release.application.ReleaseService;
+import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,8 @@ public class ReleaseController {
             @PathVariable(name = "categoryId") Long categoryId,
             @RequestBody SaveReleaseRequest saveReleaseRequest
     ) {
-        return releaseService.saveRelease(saveReleaseRequest, projectId, categoryId);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return releaseService.saveRelease(saveReleaseRequest, projectId, categoryId, currentMemberId);
     }
 
     /**
@@ -93,7 +95,8 @@ public class ReleaseController {
             @PathVariable(name = "release_id") Long releaseId,
             @RequestBody ReleaseModifyRequestDto releaseModifyRequestDto
     ) {
-        releaseService.modifyReleases(releaseModifyRequestDto, projectId, categoryId, releaseId);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        releaseService.modifyReleases(releaseModifyRequestDto, projectId, categoryId, releaseId, currentMemberId);
         return releaseService.findReleaseAndConvert(releaseId);
     }
 
@@ -117,6 +120,7 @@ public class ReleaseController {
             @PathVariable(name = "category_id") Long categoryId,
             @PathVariable(name = "release_id") Long releaseId
     ) {
-        return releaseService.deleteRelease(projectId, categoryId, releaseId);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return releaseService.deleteRelease(projectId, categoryId, releaseId, currentMemberId);
     }
 }
