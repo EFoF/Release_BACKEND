@@ -8,6 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
 
@@ -22,8 +25,10 @@ public class CompanyController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/companies")
-    public Long createCompany(@RequestBody CreateCompanyRequestDTO createCompanyRequestDTO) {
-        Long companyId = companyService.createCompany(createCompanyRequestDTO);
+    public Long createCompany (
+            @RequestPart(value="image", required = false) MultipartFile image,
+            @RequestPart(value="name") String name) throws IOException {
+        Long companyId = companyService.createCompany(image, name);
 
         // TODO: 반환 데이터 협의
         return companyId;
@@ -49,8 +54,10 @@ public class CompanyController {
     }
 
     @PutMapping("/companies/{company_id}")
-    public UpdateCompanyResponseDTO updateCompany(@PathVariable Long company_id, @RequestBody UpdateCompanyRequestDTO updateCompanyRequestDTO){
-        UpdateCompanyResponseDTO updateCompany = companyService.updateCompany(company_id, updateCompanyRequestDTO);
+    public UpdateCompanyResponseDTO updateCompany(@PathVariable Long company_id,
+                                                  @RequestPart(value="image", required = false) MultipartFile image,
+                                                  @RequestPart(value="name", required = false) String name) throws IOException {
+        UpdateCompanyResponseDTO updateCompany = companyService.updateCompany(company_id, image, name);
 
         // TODO: 반환 데이터 협의
         return updateCompany;

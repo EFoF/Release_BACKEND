@@ -4,8 +4,6 @@ import com.service.releasenote.domain.project.dto.ProjectDto;
 import lombok.*;
 import org.springframework.data.domain.Slice;
 
-import java.util.List;
-import java.util.stream.Stream;
 
 public class CompanyDTO {
 
@@ -45,15 +43,6 @@ public class CompanyDTO {
         public void setImageUrl(String imageUrl) {
             this.imageUrl = imageUrl;
         }
-    }
-
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class UpdateCompanyRequestDTO {
-        private String name;
-        private String imageUrl;
     }
 
     @Getter
