@@ -54,10 +54,7 @@ public class ProjectService {
      * */
     @Transactional
     public Long createProject
-    (CreateProjectRequestDto createProjectRequestDto, Long company_id) {
-
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    (CreateProjectRequestDto createProjectRequestDto, Long company_id, Long currentMemberId) {
 
         // 회사가 존재하지 않는 경우 예외 처리
         Company company = companyRepository.findById(company_id)
@@ -100,10 +97,7 @@ public class ProjectService {
      * @param pageable
      * @return FindProjectListByCompanyResponseDto
      * */
-    public FindProjectListByCompanyResponseDto findProjectListByCompany(Long companyId, Pageable pageable) {
-
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public FindProjectListByCompanyResponseDto findProjectListByCompany(Long companyId, Pageable pageable, Long currentMemberId) {
 
         // company가 없으면 예외 처리
         Company company = companyRepository.findById(companyId)
@@ -125,8 +119,7 @@ public class ProjectService {
     /**
      * 내가 속한 프로젝트 조회 서비스 로직
      * */
-    public ProjectPaginationDtoWrapper getProjectPage(Pageable pageable) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public ProjectPaginationDtoWrapper getProjectPage(Pageable pageable, Long currentMemberId) {
         Page<ProjectPaginationDtoEach> projects = projectRepository.paginationTest(currentMemberId, pageable);
         return ProjectPaginationDtoWrapper.builder().list(projects).build();
     }
@@ -139,9 +132,7 @@ public class ProjectService {
      * */
     @Transactional
     public UpdateProjectResponseDto updateProject
-    (UpdateProjectRequestDto updateProjectRequestDto, Long project_id) {
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    (UpdateProjectRequestDto updateProjectRequestDto, Long project_id, Long currentMemberId) {
 
         // 로그인 하지 않은 경우 예외 처리
         Member member = memberRepository.findById(currentMemberId)
@@ -171,9 +162,7 @@ public class ProjectService {
      * @param projectId
      * */
     @Transactional
-    public void deleteProject(Long companyId, Long projectId) {
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public void deleteProject(Long companyId, Long projectId, Long currentMemberId) {
 
         // 프로젝트가 존재하지 않는 경우 예외 처리
         Project project = projectRepository.findById(projectId)
@@ -210,7 +199,7 @@ public class ProjectService {
         // 프로젝트에 속한 하위 카테고리 삭제
         List<Category> categoryIdByProjectId = categoryRepository.findCategoryByProjectId(projectId);
         for (Category category : categoryIdByProjectId) {
-            categoryService.deleteCategory(category.getId(), projectId);
+            categoryService.deleteCategory(category.getId(), projectId, currentMemberId);
         }
 
         // member_project에서 삭제

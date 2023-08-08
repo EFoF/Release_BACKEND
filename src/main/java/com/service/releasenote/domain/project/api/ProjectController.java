@@ -2,6 +2,7 @@ package com.service.releasenote.domain.project.api;
 
 import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.project.application.ProjectService;
+import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,8 @@ public class ProjectController {
             @RequestBody CreateProjectRequestDto createProjectRequestDto,
             @PathVariable Long company_id) {
 
-        Long project = projectService.createProject(createProjectRequestDto, company_id);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Long project = projectService.createProject(createProjectRequestDto, company_id, currentMemberId);
         return new ResponseEntity<>(project, HttpStatus.CREATED);
     }
 
@@ -45,7 +47,8 @@ public class ProjectController {
     @ApiOperation("API for project inquiry of specific company")
     @GetMapping(value = "/companies/{company_id}/projects")
     public ResponseEntity<FindProjectListByCompanyResponseDto> projectListByCompany(@PathVariable Long company_id, Pageable pageable) {
-        FindProjectListByCompanyResponseDto projectListByCompany = projectService.findProjectListByCompany(company_id, pageable);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        FindProjectListByCompanyResponseDto projectListByCompany = projectService.findProjectListByCompany(company_id, pageable, currentMemberId);
         return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
     }
 
@@ -54,7 +57,8 @@ public class ProjectController {
      * */
     @GetMapping("/companies/projects")
     public ProjectPaginationDtoWrapper paginationTest(Pageable pageable) {
-        return projectService.getProjectPage(pageable);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return projectService.getProjectPage(pageable, currentMemberId);
     }
 
     /**
@@ -66,9 +70,9 @@ public class ProjectController {
     @PutMapping(value = "/companies/projects/{project_id}")
     public ResponseEntity updateProject(
             @PathVariable Long project_id,
-            @RequestBody UpdateProjectRequestDto updateProjectRequestDto
-    ) {
-        projectService.updateProject(updateProjectRequestDto, project_id);
+            @RequestBody UpdateProjectRequestDto updateProjectRequestDto) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        projectService.updateProject(updateProjectRequestDto, project_id, currentMemberId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -82,7 +86,8 @@ public class ProjectController {
     @DeleteMapping(value = "/companies/{company_id}/projects/{project_id}")
     public ResponseEntity deleteProject(
             @PathVariable Long company_id, @PathVariable Long project_id) {
-        projectService.deleteProject(company_id, project_id);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        projectService.deleteProject(company_id, project_id, currentMemberId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

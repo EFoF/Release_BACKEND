@@ -171,10 +171,9 @@ public class AuthService {
 
     @Transactional
     // 회원 탈퇴
-    public void withdrawal(HttpServletRequest request, WithDrawalDTO withDrawalDTO) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
+    public void withdrawal(HttpServletRequest request, WithDrawalDTO withDrawalDTO, Long currentMemberId) {
 
-        Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
 
         String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
 
@@ -195,13 +194,12 @@ public class AuthService {
 
     @Transactional
     // 로그인 되어 있는 유저의 비밀번호 변경
-    public void updatePasswordByLoggedInUser(UpdatePasswordRequest updatePasswordRequest) {
-        Long memberId = SecurityUtil.getCurrentMemberId();
+    public void updatePasswordByLoggedInUser(UpdatePasswordRequest updatePasswordRequest, Long currentMemberId) {
 
         String inputOldPassword = updatePasswordRequest.getInputOldPassword();
         String inputNewPassword = updatePasswordRequest.getInputNewPassword();
 
-        Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
 
         String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
 
@@ -243,10 +241,9 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public MemberResponseDTO findMemberByMemberId(){
-        Long memberId = SecurityUtil.getCurrentMemberId();
+    public MemberResponseDTO findMemberByMemberId(Long currentMemberId){
 
-        Member member = memberRepository.findById(memberId).orElseThrow(UserNotFoundException::new);
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
 
         String userName = member.getUserName();
         String email = member.getEmail();

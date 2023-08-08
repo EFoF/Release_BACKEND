@@ -33,8 +33,7 @@ public class MemberCompanyService {
     private final MemberCompanyRepository memberCompanyRepository;
 
 
-    public List<MemberListDTO> findMembersByCompanyId(Long companyId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public List<MemberListDTO> findMembersByCompanyId(Long companyId, Long currentMemberId) {
 
         // 로그인 되지 않은 경우
         // TODO: exception 추가 후 수정
@@ -55,8 +54,7 @@ public class MemberCompanyService {
 
 
     @Transactional
-    public AddMemberResponseDTO addMemberCompany(Long company_id, AddMemberRequestDTO addMemberRequestDTO) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public AddMemberResponseDTO addMemberCompany(Long company_id, AddMemberRequestDTO addMemberRequestDTO, Long currentMemberId) {
 
         // TODO: exception 추가 후 수정
         memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
@@ -86,8 +84,7 @@ public class MemberCompanyService {
 
     @Transactional
     // TODO: 삭제 예외처리 추가 (ROLE 관련)
-    public Long deleteMemberCompany(Long company_id, String email) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public Long deleteMemberCompany(Long company_id, String email, Long currentMemberId) {
 
         // TODO: exception 추가 후 수정
         memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);

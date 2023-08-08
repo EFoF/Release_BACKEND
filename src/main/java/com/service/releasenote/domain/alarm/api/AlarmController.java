@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.alarm.api;
 
 import com.service.releasenote.domain.alarm.application.AlarmService;
+import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,17 +25,19 @@ public class AlarmController {
     public AlarmInfoDto alarmDetails(
             @PathVariable(name = "projectId") Long projectId,
             @RequestParam(value = "onlyNew", defaultValue = "true") Boolean onlyNew) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
         if(onlyNew) {
-            return alarmService.getAlarmDetailWithNotReadByProjectId(projectId);
+            return alarmService.getAlarmDetailWithNotReadByProjectId(projectId, currentMemberId);
         }
-        return alarmService.getAlarmDetailByProjectId(projectId);
+        return alarmService.getAlarmDetailByProjectId(projectId, currentMemberId);
     }
 
     @ApiOperation("api for read alarm")
     @ApiResponses({ @ApiResponse(code=204, message="요청 성공"), @ApiResponse(code=404, message="존재하지 않는 memberProject")})
     @PostMapping("{projectId}/alarms")
     public void alarmRead(@PathVariable(name = "projectId") Long projectId) {
-        alarmService.readAlarm(projectId);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        alarmService.readAlarm(projectId, currentMemberId);
     }
 
     @ApiOperation("api for delete alarm")
@@ -43,7 +46,8 @@ public class AlarmController {
     public void alarmDelete(
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "alarmId") Long alarmId) {
-        alarmService.deleteAlarm(projectId, alarmId);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        alarmService.deleteAlarm(projectId, alarmId, currentMemberId);
     }
 
 

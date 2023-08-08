@@ -8,6 +8,7 @@ import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
 import com.service.releasenote.domain.project.exception.exceptions.MemberProjectNotFoundException;
 import com.service.releasenote.domain.project.exception.handler.ProjectExceptionHandler;
+import com.service.releasenote.global.annotations.WithMockCustomUser;
 import com.service.releasenote.global.error.exception.UnAuthorizedException;
 import com.service.releasenote.global.jwt.JwtFilter;
 import org.junit.jupiter.api.BeforeAll;
@@ -97,6 +98,7 @@ public class AlarmControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 알람 조회")
     public void getAlarmDetailsForSuccess() throws Exception {
         //given
@@ -105,7 +107,7 @@ public class AlarmControllerTest {
         AlarmInfoDto alarmInfoDto = alarmInfoDtoBuilder(5, member);
 
         //when
-        when(alarmService.getAlarmDetailByProjectId(1L)).thenReturn(alarmInfoDto);
+        when(alarmService.getAlarmDetailByProjectId(1L, currentMemberId)).thenReturn(alarmInfoDto);
 
         //then
 
@@ -134,7 +136,7 @@ public class AlarmControllerTest {
         //when
         // when(alarmService.getAlarmDetailByProjectId(1L)).thenThrow(UnAuthorizedException.class);
         // 위 코드는 반환값이 없을 경우에 컴파일 에러가 발생해 실행되지 않는다. 예외를 검증할 때는 아래와 같이 사용하자.
-        doThrow(UnAuthorizedException.class).when(alarmService).getAlarmDetailByProjectId(1L);
+        doThrow(UnAuthorizedException.class).when(alarmService).getAlarmDetailByProjectId(1L, currentMemberId);
 
         //then
         ResultActions perform = mockMvc.perform(get("/companies/projects/{projectId}/alarms", 1L)
@@ -171,6 +173,7 @@ public class AlarmControllerTest {
 //    }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 알람 읽음 처리")
     public void readAlarmForSuccess() throws Exception {
         //then
@@ -186,7 +189,8 @@ public class AlarmControllerTest {
     @DisplayName("실패 - 알람 읽음 처리 - 인증되지 않은 사용자")
     public void readAlarmForFailureByUnAuthorizedUser() throws Exception {
         //when
-        doThrow(UnAuthorizedException.class).when(alarmService).readAlarm(1L);
+        Long currentMemberId = 1L;
+        doThrow(UnAuthorizedException.class).when(alarmService).readAlarm(1L, currentMemberId);
 
         //then
         ResultActions perform = mockMvc.perform(post("/companies/projects/{projectId}/alarms", 1L)
@@ -215,6 +219,7 @@ public class AlarmControllerTest {
 //    }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 알람 삭제")
     public void deleteAlarmForSuccess() throws Exception {
         //then
@@ -229,7 +234,8 @@ public class AlarmControllerTest {
     @DisplayName("실패 - 알람 삭제 - 인증되지 않은 사용자")
     public void deleteAlarmForFailureByUnAuthorizedUser() throws Exception {
         //when
-        doThrow(UnAuthorizedException.class).when(alarmService).deleteAlarm(1L, 1L);
+        Long currentMemberId = 1L;
+        doThrow(UnAuthorizedException.class).when(alarmService).deleteAlarm(1L, 1L, currentMemberId);
 
         //then
         ResultActions perform = mockMvc.perform(delete("/companies/projects/{projectId}/alarms/{alarmId}", 1L, 1L)

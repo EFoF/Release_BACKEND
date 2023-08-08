@@ -9,6 +9,7 @@ import com.service.releasenote.domain.project.api.ProjectController;
 import com.service.releasenote.domain.project.application.ProjectService;
 import com.service.releasenote.domain.project.dto.ProjectDto.*;
 import com.service.releasenote.domain.project.model.Project;
+import com.service.releasenote.global.annotations.WithMockCustomUser;
 import com.service.releasenote.global.jwt.JwtFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -95,6 +96,7 @@ public class ProjectControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 생성 테스트")
     public void saveProjectForSuccess() throws Exception {
         //given
@@ -103,7 +105,7 @@ public class ProjectControllerTest {
         CreateProjectRequestDto projectSaveRequest = createProjectSaveRequest();
 
         //when
-        when(projectService.createProject(any(), any())).thenReturn(project.getId());
+        when(projectService.createProject(any(), any(), any())).thenReturn(project.getId());
 
         //then
         mockMvc.perform(post("/companies/{company_id}/projects", 1L)
@@ -115,6 +117,7 @@ public class ProjectControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 수정 테스트")
     public void modifyProjectForSuccess() throws Exception {
         //given
@@ -132,6 +135,7 @@ public class ProjectControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 삭제 테스트")
     public void deleteProjectForSuccess() throws Exception {
         //given

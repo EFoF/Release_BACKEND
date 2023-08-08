@@ -51,8 +51,7 @@ public class ReleaseService {
      * @return Long
      */
     @Transactional
-    public Long saveRelease(SaveReleaseRequest saveReleaseRequest, Long projectId, Long categoryId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public Long saveRelease(SaveReleaseRequest saveReleaseRequest, Long projectId, Long categoryId, Long currentMemberId) {
         if(!projectRepository.existsById(projectId)) {
             throw new ProjectNotFoundException();
         }
@@ -63,7 +62,7 @@ public class ReleaseService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         Releases releases = saveReleaseRequest.toEntity(category);
         Releases save = releaseRepository.save(releases);
-        alarmService.produceMessage(projectId, releases.getId(), "새 릴리즈를 게시하셨습니다.", AlarmDomain.RELEASE);
+        alarmService.produceMessage(projectId, releases.getId(), "새 릴리즈를 게시하셨습니다.", AlarmDomain.RELEASE, currentMemberId);
         return save.getId();
     }
 
@@ -103,12 +102,10 @@ public class ReleaseService {
      */
     @Transactional
     public void modifyReleases(ReleaseModifyRequestDto requestDto, Long projectId,
-                                                   Long categoryId, Long releaseId) {
+                                                   Long categoryId, Long releaseId, Long currentMemberId) {
         if(!categoryRepository.existsByProjectId(projectId)) {
             throw new CategoryNotFoundException();
         }
-
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 //        List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectId);
         List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
@@ -120,7 +117,7 @@ public class ReleaseService {
         releases.setVersion(requestDto.getVersion());
         releases.setMessage(requestDto.getMessage());
         releases.setTag(requestDto.getTag());
-        alarmService.produceMessage(projectId, releases.getId(), "릴리즈를 수정하셨습니다.", AlarmDomain.RELEASE);
+        alarmService.produceMessage(projectId, releases.getId(), "릴리즈를 수정하셨습니다.", AlarmDomain.RELEASE, currentMemberId);
         // CQS
     }
 
@@ -151,11 +148,10 @@ public class ReleaseService {
      * @return String
      */
     @Transactional
-    public String deleteRelease(Long projectId, Long categoryId, Long releaseId) {
+    public String deleteRelease(Long projectId, Long categoryId, Long releaseId, Long currentMemberId) {
         if(!categoryRepository.existsByProjectId(projectId)) {
             throw new CategoryNotFoundException();
         }
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 //        List<Long> memberList = memberProjectRepository.findMemberIdByProjectId(projectId);
         List<Long> memberList = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!memberList.contains(currentMemberId)) {
@@ -164,7 +160,7 @@ public class ReleaseService {
         Releases releases = releaseRepository.findByCategoryIdAndReleaseId(categoryId, releaseId)
                 .orElseThrow(() ->  new ReleasesNotFoundException("해당 카테고리에 속하는 릴리즈가 없습니다."));
         releaseRepository.delete(releases);
-        alarmService.produceMessage(projectId, 0L, "릴리즈를 삭제하셨습니다.", AlarmDomain.RELEASE);
+        alarmService.produceMessage(projectId, 0L, "릴리즈를 삭제하셨습니다.", AlarmDomain.RELEASE, currentMemberId);
         return "deleted";
     }
 

@@ -46,8 +46,7 @@ public class CategoryService {
      * @return String
      */
     @Transactional
-    public Long saveCategory(CategorySaveRequest categorySaveRequest, Long projectId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public Long saveCategory(CategorySaveRequest categorySaveRequest, Long projectId, Long currentMemberId) {
 //        List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(projectId);
         List<Long> memberListByProjectId = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!memberListByProjectId.contains(currentMemberId)) {
@@ -57,7 +56,7 @@ public class CategoryService {
         Category category = categorySaveRequest.toEntity(project);
         Category savedCategory = categoryRepository.save(category);
 
-        alarmService.produceMessage(project.getId(), category.getId(), "카테고리를 생성하셨습니다.", AlarmDomain.CATEGORY);
+        alarmService.produceMessage(project.getId(), category.getId(), "카테고리를 생성하셨습니다.", AlarmDomain.CATEGORY, currentMemberId);
 
         return savedCategory.getId();
     }
@@ -141,8 +140,7 @@ public class CategoryService {
      * @return String
      */
     @Transactional
-    public String deleteCategory(Long categoryId, Long projectId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public String deleteCategory(Long categoryId, Long projectId, Long currentMemberId) {
         List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
@@ -151,14 +149,13 @@ public class CategoryService {
         releaseRepository.deleteAll(releaseList);
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         categoryRepository.delete(category);
-        alarmService.produceMessage(projectId, 0L,"카테고리를 삭제하셨습니다.", AlarmDomain.CATEGORY);
+        alarmService.produceMessage(projectId, 0L,"카테고리를 삭제하셨습니다.", AlarmDomain.CATEGORY, currentMemberId);
         return "deleted";
     }
 
 
     @Transactional
-    public void modifyCategory(CategoryModifyRequestDto modifyRequestDto, Long categoryId, Long projectId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public void modifyCategory(CategoryModifyRequestDto modifyRequestDto, Long categoryId, Long projectId, Long currentMemberId) {
         List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectId);
         if(!members.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
@@ -167,7 +164,7 @@ public class CategoryService {
         category.setTitle(modifyRequestDto.getTitle());
         category.setDescription(modifyRequestDto.getDescription());
         category.setDetail(modifyRequestDto.getDetail());
-        alarmService.produceMessage(projectId,  category.getId(), "카테고리를 수정하셨습니다.", AlarmDomain.CATEGORY);
+        alarmService.produceMessage(projectId,  category.getId(), "카테고리를 수정하셨습니다.", AlarmDomain.CATEGORY, currentMemberId);
         // 커맨드와 쿼리를 분리
     }
 

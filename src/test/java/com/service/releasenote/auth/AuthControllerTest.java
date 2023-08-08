@@ -7,6 +7,7 @@ import com.service.releasenote.domain.member.application.EmailVerificationServic
 import com.service.releasenote.domain.member.model.Authority;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.member.model.MemberLoginType;
+import com.service.releasenote.global.annotations.WithMockCustomUser;
 import com.service.releasenote.global.jwt.JwtFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -168,7 +169,7 @@ public class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(s))
-                .andExpect(content().string("")) //httpHeaders 들어가야함
+                .andExpect(content().string("로그인 되었습니다.")) //httpHeaders 들어가야함
                 .andExpect(status().isOk());
     }
 
@@ -205,6 +206,7 @@ public class AuthControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 : 회원 탈퇴 테스트")
     public void withdrawalForSuccess() throws Exception {
         //given
@@ -223,6 +225,7 @@ public class AuthControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 : 비밀번호 변경 테스트 - 로그인 유저")
     public void updatePasswordByLoggedInUserForSuccess() throws Exception {
         //given
@@ -296,6 +299,7 @@ public class AuthControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 : 사용자 정보 불러오기 테스트")
     public void findMemberByMemberIdForSuccess() throws Exception {
         //given

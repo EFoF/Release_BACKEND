@@ -88,7 +88,8 @@ public class AuthController {
     })
     @PatchMapping("/withdrawal")
     public ResponseEntity<String> withdrawal(HttpServletRequest request, @RequestBody WithDrawalDTO withDrawalDTO) {
-        authService.withdrawal(request, withDrawalDTO);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        authService.withdrawal(request, withDrawalDTO, currentMemberId);
         return ResponseEntity.ok("회원 탈퇴 처리되었습니다.");
     }
 
@@ -103,7 +104,8 @@ public class AuthController {
     })
     @PatchMapping("/update/password")
     public ResponseEntity<String> updatePasswordByLoggedInUser(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest) {
-        authService.updatePasswordByLoggedInUser(updatePasswordRequest);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        authService.updatePasswordByLoggedInUser(updatePasswordRequest, currentMemberId);
         return ResponseEntity.ok("비밀번호가 변경 되었습니다.");
     }
 
@@ -150,7 +152,8 @@ public class AuthController {
     })
     @GetMapping("/member/info")
     public ResponseEntity<MemberResponseDTO> findMemberByMemberId(){
-        return ResponseEntity.ok(authService.findMemberByMemberId());
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return ResponseEntity.ok(authService.findMemberByMemberId(currentMemberId));
     }
 
     // 현재 로그인 된 멤버의 pk값 - test 용

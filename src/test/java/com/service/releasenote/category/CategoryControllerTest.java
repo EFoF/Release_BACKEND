@@ -7,6 +7,7 @@ import com.service.releasenote.domain.category.application.CategoryService;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.project.model.Project;
+import com.service.releasenote.global.annotations.WithMockCustomUser;
 import com.service.releasenote.global.jwt.JwtFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -133,16 +134,18 @@ public class CategoryControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 카테고리 생성 테스트")
     public void saveCategoryForSuccess() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
         CategorySaveRequest categorySaveRequest = createCategorySaveRequest();
 
         //when
-        when(categoryService.saveCategory(any(), any())).thenReturn(category.getId());
+        when(categoryService.saveCategory(any(), any(), any())).thenReturn(category.getId());
 
         //then
         mockMvc.perform(post("/companies/projects/{project_id}/categories", 1L)
@@ -226,6 +229,7 @@ public class CategoryControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 카테고리 수정")
     public void modifyCategoryForSuccess() throws Exception {
         //given
@@ -245,15 +249,17 @@ public class CategoryControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 카테고리 삭제")
     public void deleteCategoryForSuccess() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
 
         //when
-        when(categoryService.deleteCategory(project.getId(), category.getId()))
+        when(categoryService.deleteCategory(project.getId(), category.getId(), currentMemberId))
                 .thenReturn("deleted");
 
         //then

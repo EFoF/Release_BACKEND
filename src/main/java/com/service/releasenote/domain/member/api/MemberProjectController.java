@@ -42,8 +42,9 @@ public class MemberProjectController {
 
         // currentMemberId: 초대하는 사람
         // member_id: 초대되는 사람
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
         AddProjectMemberResponseDto addProjectMember
-                = memberProjectService.addProjectMember(addProjectMemberRequestDto, project_id);
+                = memberProjectService.addProjectMember(addProjectMemberRequestDto, project_id, currentMemberId);
 
         return new ResponseEntity<>(addProjectMember, HttpStatus.CREATED);
     }
@@ -83,7 +84,8 @@ public class MemberProjectController {
             @PathVariable Long project_id,
             @RequestHeader("email") String memberEmail) {
 
-        memberProjectService.deleteProjectMember(project_id, memberEmail);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        memberProjectService.deleteProjectMember(project_id, memberEmail, currentMemberId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

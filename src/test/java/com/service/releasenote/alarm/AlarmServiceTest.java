@@ -153,7 +153,6 @@ public class AlarmServiceTest {
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 아이디로 알람 조회")
     public void getAlarmDetailByProjectIdForSuccess() throws Exception {
         //given
@@ -172,13 +171,12 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(alarms);
 
         //then
-        AlarmInfoDto alarmInfoDto = alarmService.getAlarmDetailByProjectId(project.getId());
+        AlarmInfoDto alarmInfoDto = alarmService.getAlarmDetailByProjectId(project.getId(), currentMemberId);
         assertThat(alarmInfoDto.getAlarmInfoDtoList()).extracting("message")
                 .contains("test alarm 1", "test alarm 2", "test alarm 3", "test alarm 4", "test alarm 5");
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 프로젝트 아이디로 알람 조회 - 비어있는 알람 리스트")
     public void getAlarmDetailByProjectIdForSuccessWithEmptyResult() throws Exception {
         //given
@@ -197,34 +195,12 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(new ArrayList<>());
 
         //then
-        AlarmInfoDto alarmInfoDto = alarmService.getAlarmDetailByProjectId(project.getId());
+        AlarmInfoDto alarmInfoDto = alarmService.getAlarmDetailByProjectId(project.getId(), currentMemberId);
         assertThat(alarmInfoDto.getAlarmInfoDtoList()).isEmpty();
     }
 
-    @Test
-    @DisplayName("실패 - 프로젝트 아이디로 알람 조회 - 인증되지 않은 사용자")
-    public void getAlarmDetailByProjectIdForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        Member member = buildMember(currentMemberId);
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        MemberProject memberProject = buildMemberProject(1L, member, project);
-        Category category = buildCategory(project, 1L);
-        Message message = buildMessage(1L, category.getId(), member.getId(), project.getId(), AlarmDomain.CATEGORY);
-        List<Alarm> alarms = buildAlarmList(5, memberProject, member, message);
-
-        //when
-        when(memberProjectRepository.findByMemberIdAndProjectId(member.getId(), project.getId()))
-                .thenReturn(Optional.ofNullable(memberProject));
-        when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(alarms);
-
-        //then
-        assertThrows(UnAuthorizedException.class, () -> alarmService.getAlarmDetailByProjectId(project.getId()));
-    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 프로젝트 아이디로 알람 조회 - 프로젝트에 속하지 않은 사용자")
     public void getAlarmDetailByProjectIdForFailureByNonProjectMember() throws Exception {
         //given
@@ -243,11 +219,10 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(alarms);
 
         //then
-        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.getAlarmDetailByProjectId(project.getId()));
+        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.getAlarmDetailByProjectId(project.getId(), currentMemberId));
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 알람 읽음 처리")
     public void readAlarmForSuccess() throws Exception {
         //given
@@ -266,34 +241,11 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId())).thenReturn(alarms);
 
         //then
-        alarmService.readAlarm(project.getId());
+        alarmService.readAlarm(project.getId(), currentMemberId);
         // 데이터가 정상적으로 들어가있을 때, 예외가 발생하지 않는 것을 확인
     }
 
     @Test
-    @DisplayName("실패 - 알람 읽음 처리 - 인증되지 않은 사용자")
-    public void readAlarmForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        Member member = buildMember(currentMemberId);
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        MemberProject memberProject = buildMemberProject(1L, member, project);
-        Category category = buildCategory(project, 1L);
-        Message message = buildMessage(1L, category.getId(), member.getId(), project.getId(), AlarmDomain.CATEGORY);
-        List<Alarm> alarms = buildAlarmList(5, memberProject, member, message);
-
-        //when
-        when(memberProjectRepository.findByMemberIdAndProjectId(member.getId(), project.getId()))
-                .thenReturn(Optional.ofNullable(memberProject));
-        when(alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId())).thenReturn(alarms);
-
-        //then
-        assertThrows(UnAuthorizedException.class, () -> alarmService.readAlarm(project.getId()));
-    }
-
-    @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 알람 읽음 처리 - 프로젝트에 속하지 않은 사용자")
     public void readAlarmForFailureByNonProjectMember() throws Exception {
         //given
@@ -312,11 +264,10 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId())).thenReturn(alarms);
 
         //then
-        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.readAlarm(project.getId()));
+        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.readAlarm(project.getId(), currentMemberId));
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 알람 삭제")
     public void deleteAlarmForSuccess() throws Exception {
         //given
@@ -337,36 +288,12 @@ public class AlarmServiceTest {
         when(alarmRepository.findById(deleteTarget.getId())).thenReturn(Optional.ofNullable(deleteTarget));
 
         //then
-        alarmService.deleteAlarm(project.getId(), deleteTarget.getId());
+        alarmService.deleteAlarm(project.getId(), deleteTarget.getId(), currentMemberId);
     }
 
-    @Test
-    @DisplayName("실패 - 알람 삭제 - 인증되지 않은 사용자")
-    public void deleteAlarmForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        Member member = buildMember(currentMemberId);
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        MemberProject memberProject = buildMemberProject(1L, member, project);
-        Category category = buildCategory(project, 1L);
-        Message message = buildMessage(1L, category.getId(), member.getId(), project.getId(), AlarmDomain.CATEGORY);
-        List<Alarm> alarms = buildAlarmList(5, memberProject, member, message);
-        Alarm deleteTarget = alarms.get(2);
-
-        //when
-        when(memberProjectRepository.findByMemberIdAndProjectId(member.getId(), project.getId()))
-                .thenReturn(Optional.ofNullable(memberProject));
-        when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(alarms);
-        when(alarmRepository.findById(deleteTarget.getId())).thenReturn(Optional.ofNullable(deleteTarget));
-
-        //then
-        assertThrows(UnAuthorizedException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId()));
-    }
 
     @Test
-    @WithMockCustomUser
-    @DisplayName("실패 - 알람 삭제 - 인증되지 않은 사용자")
+    @DisplayName("실패 - 알람 삭제 - 프로젝트에 속하지 않은 사용자")
     public void deleteAlarmForFailureByNonProjectMember() throws Exception {
         //given
         Long currentMemberId = 1L;
@@ -386,11 +313,10 @@ public class AlarmServiceTest {
         when(alarmRepository.findById(deleteTarget.getId())).thenReturn(Optional.ofNullable(deleteTarget));
 
         //then
-        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId()));
+        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId(), currentMemberId));
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 알람 삭제 - 존재하지 않는 알람")
     public void deleteAlarmForFailureByNotExistsAlarm() throws Exception {
         //given
@@ -411,6 +337,6 @@ public class AlarmServiceTest {
         when(alarmRepository.findById(deleteTarget.getId())).thenReturn(Optional.empty());
 
         //then
-        assertThrows(AlarmNotFoundException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId()));
+        assertThrows(AlarmNotFoundException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId(), currentMemberId));
     }
 }

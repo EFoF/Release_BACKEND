@@ -52,8 +52,7 @@ public class AlarmService {
      * @param projectId
      * @param content
      */
-    public void produceMessage(Long projectId, Long domainId, String content, AlarmDomain alarmDomain) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public void produceMessage(Long projectId, Long domainId, String content, AlarmDomain alarmDomain, Long currentMemberId) {
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
         Member author = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
         Message message = Message.builder()
@@ -100,8 +99,7 @@ public class AlarmService {
      * @param projectId
      * @return AlarmInfoDto
      */
-    public AlarmInfoDto getAlarmDetailByProjectId(Long projectId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public AlarmInfoDto getAlarmDetailByProjectId(Long projectId, Long currentMemberId) {
         MemberProject memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
                 .orElseThrow(MemberProjectNotFoundException::new);
         List<Alarm> alarmList = alarmRepository.findByMemberProjectId(memberProject.getId());
@@ -116,8 +114,7 @@ public class AlarmService {
      * @param projectId
      * @return AlarmInfoDto
      */
-    public AlarmInfoDto getAlarmDetailWithNotReadByProjectId(Long projectId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public AlarmInfoDto getAlarmDetailWithNotReadByProjectId(Long projectId, Long currentMemberId) {
         MemberProject memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
                 .orElseThrow(MemberProjectNotFoundException::new);
         List<Alarm> alarmList = alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId());
@@ -132,8 +129,7 @@ public class AlarmService {
      * @param projectId
      */
     @Transactional
-    public void readAlarm(Long projectId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public void readAlarm(Long projectId, Long currentMemberId) {
         MemberProject memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
                 .orElseThrow(MemberProjectNotFoundException::new);
         List<Alarm> alarmList = alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId());
@@ -143,8 +139,7 @@ public class AlarmService {
     }
 
     @Transactional
-    public void deleteAlarm(Long projectId, Long alarmId) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public void deleteAlarm(Long projectId, Long alarmId, Long currentMemberId) {
         MemberProject memberProject = memberProjectRepository.findByMemberIdAndProjectId(currentMemberId, projectId)
                 .orElseThrow(MemberProjectNotFoundException::new);
         List<Alarm> alarmList = alarmRepository.findByMemberProjectId(memberProject.getId());

@@ -159,39 +159,13 @@ public class ReleaseServiceTest {
         when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
 
         //then
-        Long savedId = releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId());
+        Long savedId = releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId);
         assertThat(savedId).isEqualTo(releases.getId());
 
     }
 
-    @Test
-    @DisplayName("실패 - 릴리즈 생성 테스트 - 인증되지 않은 사용자")
-    public void saveReleaseForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        List<Long> preparedMemberList = new ArrayList<>();
-        preparedMemberList.add(currentMemberId);
-
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        Category category = buildCategory(project, 1L);
-        Releases releases = buildReleases(category, 1L);
-        SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
-
-        //when
-        when(projectRepository.existsById(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
-        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
-        when(releaseRepository.save(any())).thenReturn(releases);
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
-
-    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 생성 테스트 - 프로젝트에 속하지 않은 사용자")
     public void saveReleaseForFailureByNonProjectMember() throws Exception {
         //given
@@ -213,12 +187,11 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
+                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId));
 
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 생성 테스트 - 존재하지 않는 프로젝트")
     public void saveReleasesForFailureByNotExistsProject() throws Exception {
         //given
@@ -240,12 +213,11 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectNotFoundException.class,
-                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
+                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId));
 
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 생성 - 존재하지 않는 카테고리")
     public void saveReleaseForFailureByNotExistsCategory() throws Exception {
         //given
@@ -267,7 +239,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId()));
+                () -> releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId));
 
     }
 
@@ -372,33 +344,8 @@ public class ReleaseServiceTest {
 
     }
 
-    @Test
-    @DisplayName("실패 - 릴리즈 수정 테스트 - 인증되지 않은 사용자")
-    public void modifyReleaseForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        List<Long> preparedMemberList = new ArrayList<>();
-        preparedMemberList.add(currentMemberId);
-
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        Category category = buildCategory(project, 1L);
-        Releases releases = buildReleases(category, 1L);
-        ReleaseModifyRequestDto modifyRequest = createModifyRequest();
-
-        //when
-        when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
-        when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
-                .thenReturn(Optional.ofNullable(releases));
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId()));
-    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 수정 테스트 - 프로젝트에 속하지 않은 사용자")
     public void modifyReleaseForFailureByNonProjectMember() throws Exception {
         //given
@@ -420,11 +367,10 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId(), currentMemberId));
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 수정 테스트 - 존재하지 않는 카테고리")
     public void modifyReleaseForFailureByNotExistsCategory() throws Exception {
         //given
@@ -446,11 +392,10 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId(), currentMemberId));
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 수정 테스트 - 존재하지 않는 릴리즈")
     public void modifyReleaseForFailureByNotExistsRelease() throws Exception {
         //given
@@ -472,37 +417,11 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ReleasesNotFoundException.class,
-                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.modifyReleases(modifyRequest, project.getId(), category.getId(), releases.getId(), currentMemberId));
     }
 
 
     @Test
-    @DisplayName("실패 - 릴리즈 삭제 테스트 - 인증되지 않은 사용자")
-    public void deletReleaseForFailureByUnAuthorizedUesr() throws Exception {
-        //given
-        Long currentMemberId = 1L;
-        List<Long> preparedMemberList = new ArrayList<>();
-        preparedMemberList.add(currentMemberId);
-
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        Category category = buildCategory(project, 1L);
-        Releases releases = buildReleases(category, 1L);
-
-        //when
-        when(categoryRepository.existsByProjectId(project.getId())).thenReturn(true);
-        when(memberProjectRepository.findMemberIdByProjectId(currentMemberId)).thenReturn(preparedMemberList);
-        when(releaseRepository.findByCategoryIdAndReleaseId(category.getId(), releases.getId()))
-                .thenReturn(Optional.ofNullable(releases));
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
-
-    }
-
-    @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 삭제 테스트 - 프로젝트에 속하지 않은 사용자")
     public void deletReleaseForFailureByNonProjectMember() throws Exception {
         //given
@@ -523,12 +442,11 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId(), currentMemberId));
 
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 삭제 테스트 - 존재하지 않는 카테고리")
     public void deletReleaseForFailureByNotExistsCategory() throws Exception {
         //given
@@ -549,12 +467,11 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId(), currentMemberId));
 
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 삭제 테스트 - 존재하지 않는 릴리즈")
     public void deletReleaseForFailureByNotExistsRelease() throws Exception {
         //given
@@ -575,7 +492,7 @@ public class ReleaseServiceTest {
 
         //then
         Assertions.assertThrows(ReleasesNotFoundException.class,
-                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId()));
+                () -> releaseService.deleteRelease(project.getId(), category.getId(), releases.getId(), currentMemberId));
 
     }
 

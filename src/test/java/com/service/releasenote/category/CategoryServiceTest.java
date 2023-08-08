@@ -109,7 +109,6 @@ public class CategoryServiceTest {
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 카테고리 생성 테스트")
     public void saveCategoryForSuccess() throws Exception {
         //given
@@ -130,34 +129,16 @@ public class CategoryServiceTest {
         when(categoryRepository.save(any())).thenReturn(category);
 
         //then
-        Long categoryId = categoryService.saveCategory(categorySaveRequest, project.getId());
+        Long categoryId = categoryService.saveCategory(categorySaveRequest, project.getId(), currentMemberId);
         assertThat(categoryId).isEqualTo(category.getId());
     }
 
-    @Test
-    @DisplayName("실패 - 카테고리 생성 테스트 - 인증되지 않은 사용자")
-    public void saveCategoryForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        Category category = buildCategory(project, 1L);
-        CategorySaveRequest categorySaveRequest = createCategorySaveRequest();
-
-        //when
-        when(projectRepository.findById(project.getId())).thenReturn(Optional.ofNullable(project));
-        when(categoryRepository.save(any())).thenReturn(category);
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> categoryService.saveCategory(categorySaveRequest, project.getId()));
-
-    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 카테고리 생성 테스트 - 프로젝트에 속하지 않은 사용자")
     public void saveCategoryForFailureByNonProjectMember() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
@@ -170,12 +151,11 @@ public class CategoryServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> categoryService.saveCategory(categorySaveRequest, project.getId()));
+                () -> categoryService.saveCategory(categorySaveRequest, project.getId(), currentMemberId));
 
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 카테고리 생성 테스트 - 존재하지 않는 프로젝트")
     public void saveCategoryForFailureByNotExistsProject() throws Exception {
         //given
@@ -195,12 +175,11 @@ public class CategoryServiceTest {
 
         //then
         Assertions.assertThrows(ProjectNotFoundException.class,
-                () -> categoryService.saveCategory(categorySaveRequest, project.getId()));
+                () -> categoryService.saveCategory(categorySaveRequest, project.getId(), currentMemberId));
 
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 - 카테고리 조회 테스트 - 프로젝트로 조회하기")
     public void getCategoriesWithProjectForSuccess () throws Exception {
         //given
@@ -313,29 +292,12 @@ public class CategoryServiceTest {
 
     }
 
-    @Test
-    @DisplayName("실패 - 카테고리 수정 테스트 - 인증되지 않은 사용자")
-    public void updateCategoryForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        Category category = buildCategory(project, 1L);
-        CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
-
-        //when
-        when(memberProjectRepository.findMemberIdByProjectId(any())).thenReturn(new ArrayList<>());
-        when(categoryRepository.findById(category.getId())).thenReturn(Optional.ofNullable(category));
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> categoryService.modifyCategory(categoryModifyRequest, category.getId(), project.getId()));
-    }
     
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 카테고리 수정 테스트 - 프로젝트에 속하지 않은 사용자")
     public void updateCategoryForFailureByNonProjectMember() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
@@ -347,11 +309,10 @@ public class CategoryServiceTest {
         
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> categoryService.modifyCategory(categoryModifyRequest, category.getId(), project.getId()));
+                () -> categoryService.modifyCategory(categoryModifyRequest, category.getId(), project.getId(), currentMemberId));
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 카테고리 수정 테스트 - 존재하지 않는 카테고리")
     public void updateCategoryForFailureByNotExistsCategory() throws Exception {
         //given
@@ -370,27 +331,15 @@ public class CategoryServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> categoryService.modifyCategory(categoryModifyRequest, category.getId(), project.getId()));
+                () -> categoryService.modifyCategory(categoryModifyRequest, category.getId(), project.getId(), currentMemberId));
     }
 
-    @Test
-    @DisplayName("실패 - 카테고리 삭제 테스트 - 인증되지 않은 사용자")
-    public void deleteCategoryForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Company company = buildCompany(1L);
-        Project project = buildProject(company, 1L);
-        Category category = buildCategory(project, 1L);
-
-        //when & then
-        Assertions.assertThrows(UnAuthorizedException.class,
-                () -> categoryService.deleteCategory(category.getId(), project.getId()));
-    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 카테고리 삭제 테스트 - 프로젝트에 속하지 않은 사용자")
     public void deleteCategoryForFailureByNonProjectMember() throws Exception {
         //given
+        Long currentMemberId = 1L;
         Company company = buildCompany(1L);
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
@@ -400,12 +349,11 @@ public class CategoryServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> categoryService.deleteCategory(category.getId(), project.getId()));
+                () -> categoryService.deleteCategory(category.getId(), project.getId(), currentMemberId));
 
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 - 카테고리 삭제 테스트 - 존재하지 않는 카테고리")
     public void deleteCategoryForFailureByNotExistsCategory() throws Exception {
         //given
@@ -424,7 +372,7 @@ public class CategoryServiceTest {
 
         //then
         Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> categoryService.deleteCategory(category.getId(), project.getId()));
+                () -> categoryService.deleteCategory(category.getId(), project.getId(), currentMemberId));
 
     }
 
