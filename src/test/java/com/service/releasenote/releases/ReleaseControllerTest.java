@@ -9,6 +9,7 @@ import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.exception.ReleasesNotFoundException;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
+import com.service.releasenote.global.annotations.WithMockCustomUser;
 import com.service.releasenote.global.error.exception.UnAuthorizedException;
 import com.service.releasenote.global.jwt.JwtFilter;
 import org.junit.jupiter.api.BeforeAll;
@@ -187,6 +188,7 @@ public class ReleaseControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 릴리즈 생성 테스트")
     public void saveReleaseForSuccess() throws Exception {
         //given
@@ -231,7 +233,7 @@ public class ReleaseControllerTest {
                         post("/companies/projects/{projectId}/categories/{categoryId}/releases", 1L, 1L)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(saveReleaseRequest)))
-                .andExpect(status().is2xxSuccessful())
+                .andExpect(status().is4xxClientError())
                 .andDo(print());
     }
 
@@ -303,6 +305,7 @@ public class ReleaseControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 릴리즈 수정 테스트")
     public void modifyReleaseForSuccess() throws Exception {
         //given
@@ -329,6 +332,7 @@ public class ReleaseControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("실패 - 릴리즈 수정 테스트 - 존재하지 않는 릴리즈")
     public void modifyReleaseForFailureByNotExistsRelease() throws Exception {
         //given
@@ -357,6 +361,7 @@ public class ReleaseControllerTest {
     }
 
     @Test
+    @WithMockCustomUser
     @DisplayName("성공 - 릴리즈 삭제 테스트")
     public void deleteReleaseForSuccess() throws Exception {
         //given
