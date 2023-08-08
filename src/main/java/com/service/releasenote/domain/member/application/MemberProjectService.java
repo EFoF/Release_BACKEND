@@ -83,7 +83,7 @@ public class MemberProjectService {
         // member_project에 저장 (role은 MEMBER)
         MemberProject newMemberProject = addProjectMemberRequestDto.toEntity(project, member);
         MemberProject saveMemberProject = memberProjectRepository.save(newMemberProject);
-        alarmService.produceMessage(projectId, member.getId(), member.getUserName() + " 님을 초대하셨습니다.", AlarmDomain.MEMBER);
+        alarmService.produceMessage(projectId, member.getId(), member.getUserName() + " 님을 초대하셨습니다.", AlarmDomain.MEMBER, currentMemberId);
         return new AddProjectMemberResponseDto().toResponseDto(saveMemberProject);
     }
 
@@ -120,7 +120,7 @@ public class MemberProjectService {
             alarmRepository.delete(alarm);
         }
         memberProjectRepository.delete(deletedMember);
-        alarmService.produceMessage(projectId, member.getId(), member.getUserName() + " 님을 추방하셨습니다.", AlarmDomain.MEMBER);
+        alarmService.produceMessage(projectId, member.getId(), member.getUserName() + " 님을 추방하셨습니다.", AlarmDomain.MEMBER, currentMemberId);
     }
 
     public FindMemberListByProjectId findProjectMemberList(Long projectId) {

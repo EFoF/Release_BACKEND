@@ -172,7 +172,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(alarms);
 
         //then
-        AlarmInfoDto alarmInfoDto = alarmService.getAlarmDetailByProjectId(project.getId());
+        AlarmInfoDto alarmInfoDto = alarmService.getAlarmDetailByProjectId(project.getId(), currentMemberId);
         assertThat(alarmInfoDto.getAlarmInfoDtoList()).extracting("message")
                 .contains("test alarm 1", "test alarm 2", "test alarm 3", "test alarm 4", "test alarm 5");
     }
@@ -197,7 +197,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(new ArrayList<>());
 
         //then
-        AlarmInfoDto alarmInfoDto = alarmService.getAlarmDetailByProjectId(project.getId());
+        AlarmInfoDto alarmInfoDto = alarmService.getAlarmDetailByProjectId(project.getId(), currentMemberId);
         assertThat(alarmInfoDto.getAlarmInfoDtoList()).isEmpty();
     }
 
@@ -220,7 +220,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(alarms);
 
         //then
-        assertThrows(UnAuthorizedException.class, () -> alarmService.getAlarmDetailByProjectId(project.getId()));
+        assertThrows(UnAuthorizedException.class, () -> alarmService.getAlarmDetailByProjectId(project.getId(), currentMemberId));
     }
 
     @Test
@@ -243,7 +243,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectId(memberProject.getId())).thenReturn(alarms);
 
         //then
-        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.getAlarmDetailByProjectId(project.getId()));
+        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.getAlarmDetailByProjectId(project.getId(), currentMemberId));
     }
 
     @Test
@@ -266,7 +266,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId())).thenReturn(alarms);
 
         //then
-        alarmService.readAlarm(project.getId());
+        alarmService.readAlarm(project.getId(), currentMemberId);
         // 데이터가 정상적으로 들어가있을 때, 예외가 발생하지 않는 것을 확인
     }
 
@@ -289,7 +289,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId())).thenReturn(alarms);
 
         //then
-        assertThrows(UnAuthorizedException.class, () -> alarmService.readAlarm(project.getId()));
+        assertThrows(UnAuthorizedException.class, () -> alarmService.readAlarm(project.getId(), currentMemberId));
     }
 
     @Test
@@ -312,7 +312,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findByMemberProjectIdAndIsCheckedFalse(memberProject.getId())).thenReturn(alarms);
 
         //then
-        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.readAlarm(project.getId()));
+        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.readAlarm(project.getId(), currentMemberId));
     }
 
     @Test
@@ -337,7 +337,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findById(deleteTarget.getId())).thenReturn(Optional.ofNullable(deleteTarget));
 
         //then
-        alarmService.deleteAlarm(project.getId(), deleteTarget.getId());
+        alarmService.deleteAlarm(project.getId(), deleteTarget.getId(), currentMemberId);
     }
 
     @Test
@@ -361,7 +361,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findById(deleteTarget.getId())).thenReturn(Optional.ofNullable(deleteTarget));
 
         //then
-        assertThrows(UnAuthorizedException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId()));
+        assertThrows(UnAuthorizedException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId(), currentMemberId));
     }
 
     @Test
@@ -386,7 +386,7 @@ public class AlarmServiceTest {
         when(alarmRepository.findById(deleteTarget.getId())).thenReturn(Optional.ofNullable(deleteTarget));
 
         //then
-        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId()));
+        assertThrows(MemberProjectNotFoundException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId(), currentMemberId));
     }
 
     @Test
@@ -411,6 +411,6 @@ public class AlarmServiceTest {
         when(alarmRepository.findById(deleteTarget.getId())).thenReturn(Optional.empty());
 
         //then
-        assertThrows(AlarmNotFoundException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId()));
+        assertThrows(AlarmNotFoundException.class, () -> alarmService.deleteAlarm(project.getId(), deleteTarget.getId(), currentMemberId));
     }
 }

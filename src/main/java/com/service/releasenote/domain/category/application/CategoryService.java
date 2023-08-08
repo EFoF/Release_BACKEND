@@ -57,7 +57,7 @@ public class CategoryService {
         Category category = categorySaveRequest.toEntity(project);
         Category savedCategory = categoryRepository.save(category);
 
-        alarmService.produceMessage(project.getId(), category.getId(), "카테고리를 생성하셨습니다.", AlarmDomain.CATEGORY);
+        alarmService.produceMessage(project.getId(), category.getId(), "카테고리를 생성하셨습니다.", AlarmDomain.CATEGORY, currentMemberId);
 
         return savedCategory.getId();
     }
@@ -151,7 +151,7 @@ public class CategoryService {
         releaseRepository.deleteAll(releaseList);
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         categoryRepository.delete(category);
-        alarmService.produceMessage(projectId, 0L,"카테고리를 삭제하셨습니다.", AlarmDomain.CATEGORY);
+        alarmService.produceMessage(projectId, 0L,"카테고리를 삭제하셨습니다.", AlarmDomain.CATEGORY, currentMemberId);
         return "deleted";
     }
 
@@ -167,7 +167,7 @@ public class CategoryService {
         category.setTitle(modifyRequestDto.getTitle());
         category.setDescription(modifyRequestDto.getDescription());
         category.setDetail(modifyRequestDto.getDetail());
-        alarmService.produceMessage(projectId,  category.getId(), "카테고리를 수정하셨습니다.", AlarmDomain.CATEGORY);
+        alarmService.produceMessage(projectId,  category.getId(), "카테고리를 수정하셨습니다.", AlarmDomain.CATEGORY, currentMemberId);
         // 커맨드와 쿼리를 분리
     }
 
