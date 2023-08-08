@@ -31,16 +31,16 @@ public class MemberCompanyDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AddMemberResponseDTO {
-        private Long member_id;
-        private Long company_id;
+        private Long memberId;
+        private Long companyId;
         private Role role;
 
         private String name;
 
         public AddMemberResponseDTO toResponseDTO(MemberCompany memberCompany) {
             return AddMemberResponseDTO.builder()
-                    .member_id(memberCompany.getMember().getId())
-                    .company_id(memberCompany.getCompany().getId())
+                    .memberId(memberCompany.getMember().getId())
+                    .companyId(memberCompany.getCompany().getId())
                     .role(memberCompany.getRole())
                     .name(memberCompany.getMember().getUserName())
                     .build();
