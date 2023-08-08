@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.company.api;
 
 import com.service.releasenote.domain.company.application.CompanyService;
+import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,8 @@ public class CompanyController {
     public Long createCompany (
             @RequestPart(value="image", required = false) MultipartFile image,
             @RequestPart(value="name") String name) throws IOException {
-        Long companyId = companyService.createCompany(image, name);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Long companyId = companyService.createCompany(image, name, currentMemberId);
 
         // TODO: 반환 데이터 협의
         return companyId;
@@ -47,7 +49,8 @@ public class CompanyController {
     @GetMapping(value = "/companies/member/companies")
     public Page<CompanyResponseDTO> findCompanyByMemberId(Pageable pageable) {
         // TODO: MemberCompany 고려
-        Page<CompanyResponseDTO> companyList = companyService.findCompaniesByMemberId(pageable);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Page<CompanyResponseDTO> companyList = companyService.findCompaniesByMemberId(pageable, currentMemberId);
 
         // TODO: 반환 데이터
         return companyList;
@@ -57,7 +60,8 @@ public class CompanyController {
     public UpdateCompanyResponseDTO updateCompany(@PathVariable Long company_id,
                                                   @RequestPart(value="image", required = false) MultipartFile image,
                                                   @RequestPart(value="name", required = false) String name) throws IOException {
-        UpdateCompanyResponseDTO updateCompany = companyService.updateCompany(company_id, image, name);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        UpdateCompanyResponseDTO updateCompany = companyService.updateCompany(company_id, image, name, currentMemberId);
 
         // TODO: 반환 데이터 협의
         return updateCompany;
@@ -65,7 +69,8 @@ public class CompanyController {
 
     @DeleteMapping("/companies/{company_id}")
     public Long deleteCompany(@PathVariable Long company_id) {
-        Long deleteCompanyId = companyService.deleteCompany(company_id);
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        Long deleteCompanyId = companyService.deleteCompany(company_id, currentMemberId);
 
         // TODO: 반환 데이터 협의
         return deleteCompanyId;

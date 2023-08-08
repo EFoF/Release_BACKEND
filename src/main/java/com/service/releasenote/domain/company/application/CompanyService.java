@@ -59,10 +59,8 @@ public class CompanyService {
     private final S3Config s3Uploader;
 
     @Transactional
-    public Long createCompany(MultipartFile inputImage, String inputName) throws IOException {
+    public Long createCompany(MultipartFile inputImage, String inputName, Long currentMemberId) throws IOException {
         String imageUrl = s3Uploader.upload(inputImage, DIRECTORY);
-
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
         // 로그인 되지 않은 경우
         // TODO: exception 추가 후 수정
@@ -97,8 +95,7 @@ public class CompanyService {
         return collect;
     }
 
-    public Page<CompanyResponseDTO> findCompaniesByMemberId(Pageable pageable) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public Page<CompanyResponseDTO> findCompaniesByMemberId(Pageable pageable, Long currentMemberId) {
 
         // 로그인 되지 않은 경우
         // TODO: exception 추가 후 수정
@@ -119,8 +116,7 @@ public class CompanyService {
     }
 
     @Transactional
-    public UpdateCompanyResponseDTO updateCompany(Long company_id, MultipartFile inputImage, String inputName) throws IOException {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public UpdateCompanyResponseDTO updateCompany(Long company_id, MultipartFile inputImage, String inputName, Long currentMemberId) throws IOException {
 
         // 로그인 되지 않은 경우
         // TODO: exception 추가 후 수정
@@ -147,8 +143,7 @@ public class CompanyService {
     }
 
     @Transactional
-    public Long deleteCompany(Long company_id) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public Long deleteCompany(Long company_id, Long currentMemberId) {
 
         // TODO: exception 추가 후 수정
         memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
