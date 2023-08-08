@@ -435,7 +435,7 @@ public class AuthServiceTest {
         when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
 
         //then
-        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.withdrawal(request, withDrawalDTO));
+        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.withdrawal(request, withDrawalDTO, 1L));
     }
 
     @Test
@@ -459,7 +459,7 @@ public class AuthServiceTest {
         when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
 
         //then
-        Assertions.assertThrows(InvalidPasswordException.class, () -> authService.withdrawal(request, withDrawalDTO));
+        Assertions.assertThrows(InvalidPasswordException.class, () -> authService.withdrawal(request, withDrawalDTO, 1L));
     }
 
     @Test
@@ -503,7 +503,7 @@ public class AuthServiceTest {
         when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(false);
 
         //then
-        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
+        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest, 1L));
     }
 
     @Test
@@ -526,7 +526,7 @@ public class AuthServiceTest {
         when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(false);
 
         //then
-        Assertions.assertThrows(InvalidPasswordException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
+        Assertions.assertThrows(InvalidPasswordException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest, 1L));
     }
 
     @Test
@@ -549,7 +549,7 @@ public class AuthServiceTest {
         when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(true);
 
         //then
-        Assertions.assertThrows(DuplicatedPasswordException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest));
+        Assertions.assertThrows(DuplicatedPasswordException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest, 1L));
     }
 
     @Test

@@ -46,10 +46,7 @@ public class MemberProjectService {
 
     @Transactional
     public AddProjectMemberResponseDto addProjectMember
-            (AddProjectMemberRequestDto addProjectMemberRequestDto, Long projectId) {
-
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+            (AddProjectMemberRequestDto addProjectMemberRequestDto, Long projectId, Long currentMemberId) {
 
         // 프로젝트가 없으면 예외 처리
         Project project = projectRepository.findById(projectId)
@@ -88,9 +85,7 @@ public class MemberProjectService {
     }
 
     @Transactional
-    public void deleteProjectMember(Long projectId, String memberEmail) {
-        // 현재 멤버의 아이디를 가져옴
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+    public void deleteProjectMember(Long projectId, String memberEmail, Long currentMemberId) {
 
         Member currentMember = memberRepository.findById(currentMemberId)
                 .orElseThrow(UserNotFoundException::new);

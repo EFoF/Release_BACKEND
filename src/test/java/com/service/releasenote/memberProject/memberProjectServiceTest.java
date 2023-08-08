@@ -149,7 +149,7 @@ public class memberProjectServiceTest {
         when(memberProjectRepository.save(any())).thenReturn(memberProject2);
 
         //then
-        AddProjectMemberResponseDto addProjectMemberResponseDto = memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId());
+        AddProjectMemberResponseDto addProjectMemberResponseDto = memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId(), currentMemberId);
         assertThat(addProjectMemberResponseDto.getMember_id()).isEqualTo(2L);
         assertThat(addProjectMemberResponseDto.getProject_id()).isEqualTo(1L);
         assertThat(addProjectMemberResponseDto.getName()).isEqualTo("test_user_name 2");
@@ -176,7 +176,7 @@ public class memberProjectServiceTest {
 
         //then
         Assertions.assertThrows(UnAuthorizedException.class,
-                () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId()));
+                () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId(), currentMemberId));
     }
 
     @Test
@@ -202,7 +202,7 @@ public class memberProjectServiceTest {
 
         //then
         Assertions.assertThrows(ProjectNotFoundException.class,
-                () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId()));
+                () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId(), currentMemberId));
     }
 
     @Test
@@ -231,7 +231,7 @@ public class memberProjectServiceTest {
 
         //then
         Assertions.assertThrows(ProjectPermissionDeniedException.class,
-                () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId()));
+                () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId(), currentMemberId));
     }
 
     @Test
@@ -261,7 +261,7 @@ public class memberProjectServiceTest {
 
         //then
         Assertions.assertThrows(DuplicatedProjectMemberException.class,
-                () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId()));
+                () -> memberProjectService.addProjectMember(addProjectMemberRequestDto, project.getId(), currentMemberId));
     }
 
     @Test
@@ -310,7 +310,7 @@ public class memberProjectServiceTest {
 
         //when & then
         Assertions.assertThrows(UnAuthorizedException.class,
-                () -> memberProjectService.deleteProjectMember(project.getId(), member2.getEmail()));
+                () -> memberProjectService.deleteProjectMember(project.getId(), member2.getEmail(), currentMemberId));
     }
 
     @Test
@@ -334,7 +334,7 @@ public class memberProjectServiceTest {
 
         //then
         Assertions.assertThrows(ProjectNotFoundException.class,
-                () -> memberProjectService.deleteProjectMember(project.getId(), member2.getEmail()));
+                () -> memberProjectService.deleteProjectMember(project.getId(), member2.getEmail(), currentMemberId));
     }
 
     @Test
@@ -363,7 +363,7 @@ public class memberProjectServiceTest {
 
         //then
         Assertions.assertThrows(UserNotFoundException.class,
-                () -> memberProjectService.deleteProjectMember(project.getId(), member2.getEmail()));
+                () -> memberProjectService.deleteProjectMember(project.getId(), member2.getEmail(), currentMemberId));
     }
 
 }

@@ -149,7 +149,7 @@ public class memberProjectControllerTest {
         AddProjectMemberResponseDto addProjectMemberResponseDto = SaveProjectMemberResponseDto();
 
         //when
-        when(memberProjectService.addProjectMember(any(), any())).thenReturn(addProjectMemberResponseDto);
+        when(memberProjectService.addProjectMember(any(), any(), any())).thenReturn(addProjectMemberResponseDto);
 
         //then
         mockMvc.perform(post("/companies/projects/{project_id}/members", 1L)
