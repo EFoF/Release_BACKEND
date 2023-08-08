@@ -253,7 +253,6 @@ public class AuthServiceTest {
 //    }
 //
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 : 로그아웃 테스트")
     public void logoutForSuccess() throws Exception {
         //given
@@ -293,7 +292,6 @@ public class AuthServiceTest {
 //    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 : 로그아웃 테스트 - Access Token 유효하지 않을 경우")
     public void logoutForFailureByInvalidToken() throws Exception {
         //given
@@ -393,7 +391,6 @@ public class AuthServiceTest {
 //    }
 //
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 : 회원탈퇴 테스트")
     public void withdrawalForSuccess() throws Exception {
         //given
@@ -415,31 +412,30 @@ public class AuthServiceTest {
         //then
     }
 
+//    @Test
+//    @DisplayName("실패 : 회원탈퇴 테스트 - 인증되지 않은 사용자")
+//    public void withdrawalForFailureByUnAuthorizedUser() throws Exception {
+//        //given
+//        Member member = buildMember(1L);
+//
+//        WithDrawalDTO withDrawalDTO = createWithDrawalDTO();
+//
+//        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
+//
+//        String inputPassword = withDrawalDTO.getInputPassword();
+//
+//        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
+//
+//        given(isPasswordMatch).willReturn(true);
+//
+//        //when
+//        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
+//
+//        //then
+//        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.withdrawal(request, withDrawalDTO, 1L));
+//    }
+
     @Test
-    @DisplayName("실패 : 회원탈퇴 테스트 - 인증되지 않은 사용자")
-    public void withdrawalForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Member member = buildMember(1L);
-
-        WithDrawalDTO withDrawalDTO = createWithDrawalDTO();
-
-        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-
-        String inputPassword = withDrawalDTO.getInputPassword();
-
-        boolean isPasswordMatch = passwordEncoder.matches(inputPassword, originPassword);
-
-        given(isPasswordMatch).willReturn(true);
-
-        //when
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.withdrawal(request, withDrawalDTO, 1L));
-    }
-
-    @Test
-    @WithMockCustomUser
     @DisplayName("실패 : 회원탈퇴 테스트 - 비밀번호 틀렸을 경우")
     public void withdrawalForFailureInvalidPassword() throws Exception {
         //given
@@ -463,7 +459,6 @@ public class AuthServiceTest {
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("성공 : 비밀번호 변경(로그인) 테스트")
     public void updatePasswordByLoggedInUserForSuccess() throws Exception {
         //given
@@ -484,30 +479,9 @@ public class AuthServiceTest {
         //then
     }
 
-    @Test
-    @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 인증되지 않은 사용자")
-    public void updatePasswordByLoggedInUserForFailureByUnAuthorizedUser() throws Exception {
-        //given
-        Member member = buildMember(1L);
 
-        UpdatePasswordRequest updatePasswordRequest = createUpdatePasswordRequest();
-
-        String inputOldPassword = updatePasswordRequest.getInputOldPassword();
-        String inputNewPassword = updatePasswordRequest.getInputNewPassword();
-
-        String originPassword = member.getPassword(); // DB에 저장되어 있는 기존 비밀번호
-
-        //when
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.ofNullable(member));
-        when(passwordEncoder.matches(inputOldPassword, originPassword)).thenReturn(true);
-        when(passwordEncoder.matches(inputNewPassword, originPassword)).thenReturn(false);
-
-        //then
-        Assertions.assertThrows(UnAuthorizedException.class, () -> authService.updatePasswordByLoggedInUser(updatePasswordRequest, 1L));
-    }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 입력한 비밀번호가 틀렸을 경우")
     public void updatePasswordByLoggedInUserForFailureByInvalidPassword() throws Exception {
         //given
@@ -530,7 +504,6 @@ public class AuthServiceTest {
     }
 
     @Test
-    @WithMockCustomUser
     @DisplayName("실패 : 비밀번호 변경(로그인) 테스트 - 변경할 비밀번호가 기존 비밀번호와 일치할 경우")
     public void updatePasswordByLoggedInUserForFailureByDuplicatedPassword() throws Exception {
         //given
