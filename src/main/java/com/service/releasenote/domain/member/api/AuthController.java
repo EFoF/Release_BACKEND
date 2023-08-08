@@ -50,9 +50,9 @@ public class AuthController {
             @ApiResponse(code=409, message = "아이디/비밀번호 불일치")
     })
     @PostMapping("/signin")
-    public ResponseEntity<HttpHeaders> signin(@Valid @RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<Void> signin(@Valid @RequestBody LoginDTO loginDTO) {
         HttpHeaders httpHeaders = authService.signin(loginDTO);
-        return ResponseEntity.ok(httpHeaders);
+        return ResponseEntity.ok().headers(httpHeaders).build();
     }
 
     @ApiOperation("API for logout")
