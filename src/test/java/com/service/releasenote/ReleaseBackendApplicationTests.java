@@ -8,6 +8,7 @@ class ReleaseBackendApplicationTests {
 
 	@Test
 	void contextLoads() {
+
 	}
 
 }
