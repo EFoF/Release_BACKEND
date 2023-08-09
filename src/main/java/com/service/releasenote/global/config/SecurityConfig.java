@@ -18,11 +18,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -46,7 +41,8 @@ public class SecurityConfig {
         http
                 /** 토큰 방식을 사용하기 때문에 csrf disable */
                 .csrf().disable()
-
+                .cors();
+        http
                 /** 401, 403 Exception 핸들링 */
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
@@ -75,6 +71,7 @@ public class SecurityConfig {
 //                .antMatchers("/auth/getMemberId").permitAll() // getCurrentId 를 위한 api
                 .antMatchers("/auth/update/password/anonymous").permitAll() // 비로그인 유저를 위한 api
                 .antMatchers(HttpMethod.GET, "/companies/**").permitAll() // company로 시작하는 GET 방식만 허용
+                .antMatchers(HttpMethod.POST, "/companies/**").permitAll() // company로 시작하는 POST 방식만 허용
                 .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // swagger를 위한 주소
                 .antMatchers("/swagger-resources/**").permitAll() // swagger를 위한 주소
                 .anyRequest().authenticated() // 나머지 요청들은 모두 인증을 받아야 함
