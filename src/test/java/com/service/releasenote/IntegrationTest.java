@@ -21,9 +21,7 @@ import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -89,21 +87,24 @@ public class IntegrationTest {
 
 
     @BeforeEach
-    private void clearAll() {
-        alarmRepository.deleteAll();
-        releaseRepository.deleteAll();
-        categoryRepository.deleteAll();
-        memberProjectRepository.deleteAll();
-        projectRepository.deleteAll();
-        memberCompanyRepository.deleteAll();
-        companyRepository.deleteAll();
-        memberRepository.deleteAll();
+    private void set() {
         try {
             setup();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // memberProject, memberCompany, Alarm은 어떡할지 생각 좀 해보기
+    }
+
+    @AfterEach
+    private void clean() {
+//        alarmRepository.deleteAll();
+//        releaseRepository.deleteAll();
+//        categoryRepository.deleteAll();
+//        memberProjectRepository.deleteAll();
+//        projectRepository.deleteAll();
+//        memberCompanyRepository.deleteAll();
+//        companyRepository.deleteAll();
+//        memberRepository.deleteAll();
     }
 
     // 사용자의 회원가입에 사용되는 dto를 생성하는 메서드
@@ -527,10 +528,129 @@ public class IntegrationTest {
          */
 
     @Test
-    @DisplayName("통합테스트1")
+    @DisplayName("통합테스트 - 공통 데이터 검증")
     public void integrationTest1() throws Exception {
+        // given
 
-    
+        // 오너의 ID
+        Long AOwner = 1L; Long BOwner = 5L; Long COwner = 8L; Long DOwner = 13L; Long EOwner = 16L;
+
+        // 전체 회사 ID
+        Long ACompanyId = 1L; Long BCompanyId = 2L; Long CCompanyId = 3L;
+        Long DCompanyId = 4L; Long ECompanyId = 5L;
+        // 전체 프로젝트 ID
+        Long AP1 = 1L; Long AP2 = 2L; Long AP3 = 3L; Long AP4 = 4L;
+        Long BP1 = 5L; Long BP2 = 6L; Long BP3 = 7L; Long CP1 = 8L;
+        Long CP2 = 9L; Long DP1 = 10L; Long DP2 = 11L; Long EP1 = 12L; Long EP2 = 13L;
+
+        Long AP1C1 = 1L; Long AP1C2 = 2L; Long AP2C1 = 3L; Long AP2C2 = 4L; Long AP2C3 = 5L;
+        Long AP3C1 = 6L; Long AP3C2 = 7L; Long AP3C3 = 8L; Long AP4C1 = 9L; Long AP4C2 = 10L;
+        Long AP4C3 = 11L;
+        Long BP1C1 = 12L; Long BP1C2 = 13L; Long BP1C3 = 14L; Long BP2C1 = 15L; Long BP2C2 = 16L;
+        Long BP2C3 = 17L; Long BP2C4 = 18L; Long BP3C1 = 19L; Long BP3C2 = 20L; Long BP3C3 = 21L;
+        Long CP1C1 = 22L; Long CP1C2 = 23L; Long CP1C3 = 24L;
+        Long DP1C1 = 25L; Long DP1C2 = 26L; Long DP1C3 = 27L; Long DP2C1 = 28L;
+        Long EP1C1 = 29L; Long EP1C2 = 30L; Long EP1C3 = 31L;
+        Long EP2C1 = 32L; Long EP2C2 = 33L; Long EP2C3 = 34L;
+
+        // when
+        // 모든 회원, 총 20명
+        List<Member> members = memberRepository.findAll();
+        // 모든 회사, 총 5개
+        List<Company> companies = companyRepository.findAll();
+        // 모든 프로젝트, 총 13개
+        List<Project> projects = projectRepository.findAll();
+        // 모든 릴리즈, 총 75개
+        List<Releases> releases = releaseRepository.findAll();
+
+        // 오너의 memberProject
+        MemberCompany AMemberCompany = memberCompanyRepository.findByMemberAndCompany(ACompanyId, AOwner);
+        MemberCompany BMemberCompany = memberCompanyRepository.findByMemberAndCompany(BCompanyId, BOwner);
+        MemberCompany CMemberCompany = memberCompanyRepository.findByMemberAndCompany(CCompanyId, COwner);
+        MemberCompany DMemberCompany = memberCompanyRepository.findByMemberAndCompany(DCompanyId, DOwner);
+        MemberCompany EMemberCompany = memberCompanyRepository.findByMemberAndCompany(ECompanyId, EOwner);
+
+        // 각 회사에 속한 사용자
+        List<MemberCompany> ACompanyMembers = memberCompanyRepository.findByCompanyId(ACompanyId);
+        List<MemberCompany> BCompanyMembers = memberCompanyRepository.findByCompanyId(BCompanyId);
+        List<MemberCompany> CCompanyMembers = memberCompanyRepository.findByCompanyId(CCompanyId);
+        List<MemberCompany> DCompanyMembers = memberCompanyRepository.findByCompanyId(DCompanyId);
+        List<MemberCompany> ECompanyMembers = memberCompanyRepository.findByCompanyId(ECompanyId);
+
+        // 각 프로젝트에 속한 사용자
+        List<MemberProject> AP1Members = memberProjectRepository.findByProjectId(AP1);
+        List<MemberProject> AP2Members = memberProjectRepository.findByProjectId(AP2);
+        List<MemberProject> AP3Members = memberProjectRepository.findByProjectId(AP3);
+        List<MemberProject> AP4Members = memberProjectRepository.findByProjectId(AP4);
+        List<MemberProject> BP1Members = memberProjectRepository.findByProjectId(BP1);
+        List<MemberProject> BP2Members = memberProjectRepository.findByProjectId(BP2);
+        List<MemberProject> BP3Members = memberProjectRepository.findByProjectId(BP3);
+        List<MemberProject> CP1Members = memberProjectRepository.findByProjectId(CP1);
+        List<MemberProject> CP2Members = memberProjectRepository.findByProjectId(CP2);
+        List<MemberProject> DP1Members = memberProjectRepository.findByProjectId(DP1);
+        List<MemberProject> DP2Members = memberProjectRepository.findByProjectId(DP2);
+        List<MemberProject> EP1Members = memberProjectRepository.findByProjectId(EP1);
+        List<MemberProject> EP2Members = memberProjectRepository.findByProjectId(EP2);
+
+        // 각 프로젝트에 속한 카테고리
+        List<Category> AP1Categories = categoryRepository.findByProject(AP1);
+        List<Category> AP2Categories = categoryRepository.findByProject(AP2);
+        List<Category> AP3Categories = categoryRepository.findByProject(AP3);
+        List<Category> AP4Categories = categoryRepository.findByProject(AP4);
+        List<Category> BP1Categories = categoryRepository.findByProject(BP1);
+        List<Category> BP2Categories = categoryRepository.findByProject(BP2);
+        List<Category> BP3Categories = categoryRepository.findByProject(BP3);
+        List<Category> CP1Categories = categoryRepository.findByProject(CP1);
+        List<Category> CP2Categories = categoryRepository.findByProject(CP2);
+        List<Category> DP1Categories = categoryRepository.findByProject(DP1);
+        List<Category> DP2Categories = categoryRepository.findByProject(DP2);
+        List<Category> EP1Categories = categoryRepository.findByProject(EP1);
+        List<Category> EP2Categories = categoryRepository.findByProject(EP2);
+
+        // 각 카테괴리에 속한 릴리즈
+        List<Releases> AP1C1s = releaseRepository.findByCategoryId(AP1C1);
+        List<Releases> AP1C2s = releaseRepository.findByCategoryId(AP1C2);
+        List<Releases> AP2C1s = releaseRepository.findByCategoryId(AP2C1);
+        List<Releases> AP2C2s = releaseRepository.findByCategoryId(AP2C2);
+        List<Releases> AP2C3s = releaseRepository.findByCategoryId(AP2C3);
+        List<Releases> AP3C1s = releaseRepository.findByCategoryId(AP3C1);
+        List<Releases> AP3C2s = releaseRepository.findByCategoryId(AP3C2);
+        List<Releases> AP3C3s = releaseRepository.findByCategoryId(AP3C3);
+        List<Releases> AP4C1s = releaseRepository.findByCategoryId(AP4C1);
+        List<Releases> AP4C2s = releaseRepository.findByCategoryId(AP4C2);
+        List<Releases> AP4C3s = releaseRepository.findByCategoryId(AP4C3);
+        List<Releases> BP1C1s = releaseRepository.findByCategoryId(BP1C1);
+        List<Releases> BP1C2s = releaseRepository.findByCategoryId(BP1C2);
+        List<Releases> BP1C3s = releaseRepository.findByCategoryId(BP1C3);
+        List<Releases> BP2C1s = releaseRepository.findByCategoryId(BP2C1);
+        List<Releases> BP2C2s = releaseRepository.findByCategoryId(BP2C2);
+        List<Releases> BP2C3s = releaseRepository.findByCategoryId(BP2C3);
+        List<Releases> BP2C4s = releaseRepository.findByCategoryId(BP2C4);
+        List<Releases> BP3C1s = releaseRepository.findByCategoryId(BP3C1);
+        List<Releases> BP3C2s = releaseRepository.findByCategoryId(BP3C2);
+        List<Releases> BP3C3s = releaseRepository.findByCategoryId(BP3C3);
+        List<Releases> CP1C1s = releaseRepository.findByCategoryId(CP1C1);
+        List<Releases> CP1C2s = releaseRepository.findByCategoryId(CP1C2);
+        List<Releases> CP1C3s = releaseRepository.findByCategoryId(CP1C3);
+        List<Releases> DP1C1s = releaseRepository.findByCategoryId(DP1C1);
+        List<Releases> DP1C2s = releaseRepository.findByCategoryId(DP1C2);
+        List<Releases> DP1C3s = releaseRepository.findByCategoryId(DP1C3);
+        List<Releases> DP2C1s = releaseRepository.findByCategoryId(DP2C1);
+        List<Releases> EP1C1s = releaseRepository.findByCategoryId(EP1C1);
+        List<Releases> EP1C2s = releaseRepository.findByCategoryId(EP1C2);
+        List<Releases> EP1C3s = releaseRepository.findByCategoryId(EP1C3);
+        List<Releases> EP2C1s = releaseRepository.findByCategoryId(EP2C1);
+        List<Releases> EP2C2s = releaseRepository.findByCategoryId(EP2C2);
+        List<Releases> EP2C3s = releaseRepository.findByCategoryId(EP2C3);
+
+
+        // then
+        assertThat(members.size()).isEqualTo(20);
+        assertThat(companies.size()).isEqualTo(5);
+
+        assertThat(projects.size()).isEqualTo(13);
+        assertThat(releases.size()).isEqualTo(75);
+
     }
 
 
