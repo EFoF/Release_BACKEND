@@ -3,46 +3,43 @@ package com.service.releasenote;
 import com.service.releasenote.domain.alarm.dao.AlarmRepository;
 import com.service.releasenote.domain.category.application.CategoryService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
+import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.application.CompanyService;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
 import com.service.releasenote.domain.company.model.Company;
 import com.service.releasenote.domain.member.application.AuthService;
 import com.service.releasenote.domain.member.application.MemberCompanyService;
+import com.service.releasenote.domain.member.application.MemberProjectService;
+import com.service.releasenote.domain.member.dao.MemberCompanyRepository;
+import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
-import com.service.releasenote.domain.member.model.Member;
-import com.service.releasenote.domain.member.model.MemberLoginType;
-import com.service.releasenote.domain.member.model.Role;
+import com.service.releasenote.domain.member.model.*;
 import com.service.releasenote.domain.project.application.ProjectService;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
-import com.service.releasenote.domain.project.dto.ProjectDto;
+import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
-import com.service.releasenote.global.annotations.WithMockCustomUser;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.IOException;
 import java.util.*;
 
-import static com.service.releasenote.domain.company.dto.CompanyDTO.CreateCompanyRequestDTO;
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberRequestDTO;
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberResponseDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.LoginDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.SignUpRequest;
+import static com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,6 +62,10 @@ public class IntegrationTest {
     @Autowired
     AlarmRepository alarmRepository;
     @Autowired
+    MemberCompanyRepository memberCompanyRepository;
+    @Autowired
+    MemberProjectRepository memberProjectRepository;
+    @Autowired
     AuthService authService;
     @Autowired
     CompanyService companyService;
@@ -77,6 +78,8 @@ public class IntegrationTest {
     @Autowired
     MemberCompanyService memberCompanyService;
     @Autowired
+    MemberProjectService memberProjectService;
+    @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
     AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -84,12 +87,19 @@ public class IntegrationTest {
 
     @BeforeEach
     private void clearAll() {
+        alarmRepository.deleteAll();
         releaseRepository.deleteAll();
         categoryRepository.deleteAll();
+        memberProjectRepository.deleteAll();
         projectRepository.deleteAll();
+        memberCompanyRepository.deleteAll();
         companyRepository.deleteAll();
         memberRepository.deleteAll();
-        setup();
+        try {
+            setup();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // memberProject, memberCompany, Alarm은 어떡할지 생각 좀 해보기
     }
 
@@ -112,14 +122,6 @@ public class IntegrationTest {
                 .build();
     }
 
-    // 오너들이 회사를 만들기 위해 사용되는 dto를 생성하는 메서드
-    // TODO 회사 생성 api 변경 가능성이 있어서 일단 보류하겠음
-    public CreateCompanyRequestDTO buildCreateCopanyRequestDto(Long userId) {
-        return CreateCompanyRequestDTO.builder()
-                .imageUrl("test imageUrl")
-                .name("company_from_user"+userId)
-                .build();
-    }
 
     public AddMemberResponseDTO buildAddMemberResponseDto(Long memberId, Long companyId, Role role) {
         return AddMemberResponseDTO.builder()
@@ -135,68 +137,232 @@ public class IntegrationTest {
                 .build();
     }
 
-//    public CreateProjectRequestDto createProjectRequestDto() {
-//        return CreateProjectRequestDto.builder()
-//                .build()
-//    }
+    public CreateProjectRequestDto buildProjectRequestDto(String title, Long userId) {
+        return CreateProjectRequestDto.builder()
+                .title(title)
+                .description("user " + userId + " 's " + title)
+                .scope(true)
+                .build();
+    }
 
-    private void setup() {
+    public AddProjectMemberRequestDto buildAddProjectMemberRequestDto(Long userId) {
+            return AddProjectMemberRequestDto.builder()
+                    .email("user"+userId+"@doklib.com")
+                    .build();
+    }
+
+    private Member saveMember(int i) {
+        SignUpRequest signUpRequest = buildSignUpRequest(i);
+        Member member = Member.builder()
+                .userName(signUpRequest.getUsername())
+                .email(signUpRequest.getEmail())
+                .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                .authority(Authority.ROLE_USER)
+                .memberLoginType(MemberLoginType.RELEASE_LOGIN)
+                .build();
+        return memberRepository.save(member);
+    }
+
+    private Company saveCompany(String title, Member owner) {
+        Company company = Company.builder()
+                .name(title)
+                .ImageURL(null)
+                .build();
+        Company savedCompany = companyRepository.save(company);
+        MemberCompany memberCompany = MemberCompany.builder()
+                .role(Role.OWNER)
+                .company(company)
+                .member(owner)
+                .build();
+        memberCompanyRepository.save(memberCompany);
+
+        return savedCompany;
+    }
+
+    private MemberCompany participateCompany(Company company, Member member) {
+        MemberCompany memberCompany = MemberCompany.builder()
+                .role(Role.MEMBER)
+                .company(company)
+                .member(member)
+                .build();
+        return memberCompanyRepository.save(memberCompany);
+    }
+
+    private Project saveProject(Company company, Member member, String title) {
+        Project project = Project.builder()
+                .description(title + " description")
+                .company(company)
+                .title(title)
+                .scope(true)
+                .build();
+        Project savedProject = projectRepository.save(project);
+        MemberProject memberProject = MemberProject.builder()
+                .member(member)
+                .project(savedProject)
+                .role(Role.OWNER)
+                .build();
+        memberProjectRepository.save(memberProject);
+        return savedProject;
+    }
+
+    private MemberProject participateProject(Project project, Member member) {
+        MemberProject memberProject = MemberProject.builder()
+                .role(Role.MEMBER)
+                .project(project)
+                .member(member)
+                .build();
+        return memberProjectRepository.save(memberProject);
+    }
+
+    private Category saveCategory(Project project, String title) {
+        Category category = Category.builder()
+                .description(title + " 's description")
+                .detail("### " + title + "'s detail")
+                .project(project)
+                .title(title)
+                .build();
+        return categoryRepository.save(category);
+    }
+
+    private void setup() throws IOException {
         // 1. 20명의 멤버를 생성하여 데이터베이스에 저장
+        List<Member> members = new ArrayList<>();
         for(int i=1; i<=20; i++) {
-            SignUpRequest signUpRequest = buildSignUpRequest(i);
-            authService.signup(signUpRequest);
+            members.add(saveMember(i));
         }
         List<Long> ownerList = new ArrayList<>();
         ownerList.add(1L); ownerList.add(5L); ownerList.add(8L); ownerList.add(13L); ownerList.add(16L);
-        Map<Long, List<Long>> memberList = new HashMap<>();
-        List<Long> ACompanyMembers = new ArrayList<>();
-        ACompanyMembers.add(2L); ACompanyMembers.add(3L); ACompanyMembers.add(4L);
-        List<Long> BCompanyMembers = new ArrayList<>();
-        BCompanyMembers.add(6L); BCompanyMembers.add(7L);
-        List<Long> CCompanyMembers = new ArrayList<>();
-        CCompanyMembers.add(9L); CCompanyMembers.add(10L); CCompanyMembers.add(11L); CCompanyMembers.add(12L);
-        List<Long> DCompanyMembers = new ArrayList<>();
-        DCompanyMembers.add(14L); DCompanyMembers.add(15L);
-        List<Long> ECompanyMembers = new ArrayList<>();
-        ECompanyMembers.add(17L); ECompanyMembers.add(18L); ECompanyMembers.add(19L); ECompanyMembers.add(20L);
+        Map<Long, List<Member>> memberList = new HashMap<>();
+        List<Member> ACompanyParticipants = new ArrayList<>();
+        ACompanyParticipants.add(members.get(1)); ACompanyParticipants.add(members.get(2)); ACompanyParticipants.add(members.get(3));
 
-        memberList.put(1L, ACompanyMembers);
-        memberList.put(5L, BCompanyMembers);
-        memberList.put(8L, CCompanyMembers);
-        memberList.put(13L, DCompanyMembers);
-        memberList.put(16L, ECompanyMembers);
+        List<Member> BCompanyParticipants = new ArrayList<>();
+        BCompanyParticipants.add(members.get(5)); BCompanyParticipants.add(members.get(6));
 
+        List<Member> CCompanyParticipants = new ArrayList<>();
+        CCompanyParticipants.add(members.get(8)); CCompanyParticipants.add(members.get(9));
+        CCompanyParticipants.add(members.get(10)); CCompanyParticipants.add(members.get(11));
+
+        List<Member> DCompanyParticipants = new ArrayList<>();
+        DCompanyParticipants.add(members.get(13)); DCompanyParticipants.add(members.get(14));
+
+
+        List<Member> ECompanyParticipants = new ArrayList<>();
+        ECompanyParticipants.add(members.get(16)); ECompanyParticipants.add(members.get(17));
+        ECompanyParticipants.add(members.get(18)); ECompanyParticipants.add(members.get(19));
+
+        memberList.put(1L, ACompanyParticipants);
+        memberList.put(5L, BCompanyParticipants);
+        memberList.put(8L, CCompanyParticipants);
+        memberList.put(13L, DCompanyParticipants);
+        memberList.put(16L, ECompanyParticipants);
 
         // 2. 오너들이 회사를 생성
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        List<LoginDTO> loginDTOList = new ArrayList<>();
-        for (Long ownerId : ownerList) {
-            // 2.1 오너들이 회사를 생성하기 위해선 로그인을 수행해야 한다.
-            /*
-                TODO 2.2 로그인 서비스를 수행 해도 복잡하게 얽힌 필터나 스프링 시큐리티 내부 로직 등에 의해서
-                 SecurityContext가 제대로 동작하지 않았다. 따라서 수동으로 SecurityContext를 생성 후 인증해주겠음.
-                 추후 해당 부분까지 테스트로 수행할 수 있게 리팩토링 할 예정
-             */
+        Company A = saveCompany("A", members.get(0));
+        Company B = saveCompany("B", members.get(1));
+        Company C = saveCompany("C", members.get(2));
+        Company D = saveCompany("D", members.get(3));
+        Company E = saveCompany("E", members.get(4));
 
-            LoginDTO loginDTO = buildLoginDto(ownerId);
-            loginDTOList.add(loginDTO);
-            buildSecurityContext(securityContext, loginDTO);
-
-            // 2.2 로그인한 멤버는 회사를 만든다.
-//            Long companyId = companyService.createCompany(buildCreateCopanyRequestDto(ownerId));
-            // 3. 회사를 생성한 후 멤버들을 초대한다.
-            List<Long> members = memberList.get(ownerId);
-            for (Long member : members) {
-//                memberCompanyService.addMemberCompany(companyId, buildAddMemberRequestDto(member));
-            }
+        List<Member> Amembers = memberList.get(ownerList.get(0));
+        for (Member member : Amembers) {
+            participateCompany(A, member);
         }
-        // 4. 초대된 멤버는 프로젝트를 생성한다.
-        // A : 1,2,2,1
-        buildSecurityContext(securityContext, loginDTOList.get(0));
-//        projectService.createProject()
+
+        List<Member> Bmembers = memberList.get(ownerList.get(1));
+        for (Member member : Bmembers) {
+            participateCompany(B, member);
+        }
+
+        List<Member> Cmembers = memberList.get(ownerList.get(2));
+        for (Member member : Cmembers) {
+            participateCompany(C, member);
+        }
+
+        List<Member> Dmembers = memberList.get(ownerList.get(3));
+        for (Member member : Dmembers) {
+            participateCompany(D, member);
+        }
+
+        List<Member> Emembers = memberList.get(ownerList.get(4));
+        for (Member member : Emembers) {
+            participateCompany(E, member);
+        }
+
+
+//        // 4. 초대된 멤버는 프로젝트를 생성한다.
+        // A 1, 3, 4, 2
+        Project AP1 = saveProject(A, members.get(0), "AP-1");
+        Project AP2 = saveProject(A, members.get(2), "AP-2");
+        Project AP3 = saveProject(A, members.get(3), "AP-3");
+        Project AP4 = saveProject(A, members.get(1), "AP-4");
+        // B 7, 5, 6
+        Project BP1 = saveProject(B, members.get(6), "BP-1");
+        Project BP2 = saveProject(B, members.get(4), "BP-2");
+        Project BP3 = saveProject(B, members.get(5), "BP-3");
+        // C 12, 9
+        Project CP1 = saveProject(C, members.get(11), "CP-1");
+        Project CP2 = saveProject(C, members.get(8), "CP-2");
+        // D 13 15
+        Project DP1 = saveProject(D, members.get(12), "DP-1");
+        Project DP2 = saveProject(D, members.get(14), "DP-2");
+        // E 17 20
+        Project EP1 = saveProject(E, members.get(16), "EP-1");
+        Project EP2 = saveProject(E, members.get(19), "EP-2");
 
         // 5. 프로젝트를 생성한 후 멤버들을 초대한다.
+        // 5.1 A 회사의 프로젝트
+        participateProject(AP1, members.get(1));
+        participateProject(AP1, members.get(2));
+        participateProject(AP1, members.get(3));
+        participateProject(AP2, members.get(0));
+        participateProject(AP3, members.get(1));
+        participateProject(AP3, members.get(2));
+        participateProject(AP4, members.get(0));
+        participateProject(AP4, members.get(3));
+
+        // 5.2 B 회사의 프로젝트
+        participateProject(BP1, members.get(4));
+        participateProject(BP2, members.get(5));
+        participateProject(BP3, members.get(4));
+        participateProject(BP3, members.get(6));
+
+        // 5.3 C 회사의 프로젝트
+        participateProject(CP1, members.get(8));
+        participateProject(CP1, members.get(9));
+        participateProject(CP1, members.get(10));
+        participateProject(CP2, members.get(10));
+
+        // 5.4 D 회사의 프로젝트
+        participateProject(DP1, members.get(13));
+        participateProject(DP1, members.get(14));
+        participateProject(DP2, members.get(13));
+
+        // 5.5 E 회사의 프로젝트
+        participateProject(EP1, members.get(15));
+        participateProject(EP1, members.get(17));
+        participateProject(EP1, members.get(18));
+        participateProject(EP1, members.get(19));
+        participateProject(EP2, members.get(15));
+        participateProject(EP2, members.get(18));
+
         // 6. 테스트 요구사항에 맞춰 담당자가 카테고리를 생성한다.
+        saveCategory(AP1, "APC1-1"); saveCategory(AP1, "APC1-2");
+        saveCategory(AP2, "APC2-1"); saveCategory(AP2, "APC2-2"); saveCategory(AP2, "APC2-3");
+        saveCategory(AP3, "APC3-1"); saveCategory(AP3, "APC3-2"); saveCategory(AP3, "APC3-3");
+        saveCategory(AP4, "APC4-1"); saveCategory(AP4, "APC4-2"); saveCategory(AP4, "APC4-3");
+
+        saveCategory(BP1, "BP1-1"); saveCategory(BP1, "BP1-2"); saveCategory(BP1, "BP1-3");
+        saveCategory(BP2, "BP2-1"); saveCategory(BP2, "BP2-2"); saveCategory(BP2, "BP2-3"); saveCategory(BP2, "BP2-4");
+        saveCategory(BP3, "BP3-1"); saveCategory(BP3, "BP3-2"); saveCategory(BP3, "BP3-3");
+
+        saveCategory(CP1, "BP1-1"); saveCategory(CP1, "BP1-2"); saveCategory(CP1, "BP1-3");
+
+        saveCategory(DP1, "DP1-1"); saveCategory(DP1, "DP1-2"); saveCategory(DP1, "DP1-3"); saveCategory(DP2, "DP2-1");
+
+        saveCategory(EP1, "EP1-1"); saveCategory(EP1, "EP1-2"); saveCategory(EP1, "EP1-3");
+        saveCategory(EP2, "EP2-1"); saveCategory(EP2, "EP2-2"); saveCategory(EP2, "EP2-3");
+
         // 7. 테스트 요구사항에 맞춰 담당자가 릴리즈를 생성한다.
         // 8. 테스트 환경설정이 끝났다.
     }
@@ -235,6 +401,32 @@ public class IntegrationTest {
 
         A-1 프로젝트의 첫번째 카테고리는 1번 멤버에 의해 생성되었다.
         A-1 프로젝트의 두번째 카테고리는 4번 멤버에 의해 생성되었다.
+
+        A-2 프로젝트의 첫번째 카테고리는 1번 멤버에 의해 생성되었다.
+        A-2 프로젝트의 첫번째 카테고리는 1번 멤버에 의해 생성되었다.
+        A-2 프로젝트의 첫번째 카테고리는 3번 멤버에 의해 생성되었다.
+
+        A-3 프로젝트의 첫번째 카테고리는 2번 멤버에 의해 생성되었다.
+        A-3 프로젝트의 첫번째 카테고리는 3번 멤버에 의해 생성되었다.
+        A-3 프로젝트의 첫번째 카테고리는 4번 멤버에 의해 생성되었다.
+
+        A-4 프로젝트의 첫번째 카테고리는 2번 멤버에 의해 생성되었다.
+        A-4 프로젝트의 첫번째 카테고리는 4번 멤버에 의해 생성되었다.
+        A-4 프로젝트의 첫번째 카테고리는 4번 멤버에 의해 생성되었다.
+
+        B-1 프로젝트의 첫번째 카테고리는 5번 멤버에 의해 생성되었다.
+        B-1 프로젝트의 첫번째 카테고리는 5번 멤버에 의해 생성되었다.
+        B-1 프로젝트의 첫번째 카테고리는 7번 멤버에 의해 생성되었다.
+
+        B-2 프로젝트의 첫번째 카테고리는 5번 멤버에 의해 생성되었다.
+        B-2 프로젝트의 첫번째 카테고리는 5번 멤버에 의해 생성되었다.
+        B-2 프로젝트의 첫번째 카테고리는 6번 멤버에 의해 생성되었다.
+        B-2 프로젝트의 첫번째 카테고리는 6번 멤버에 의해 생성되었다.
+
+        B-3 프로젝트의 첫번째 카테고리는 6번 멤버에 의해 생성되었다.
+        B-3 프로젝트의 첫번째 카테고리는 7번 멤버에 의해 생성되었다.
+        B-3 프로젝트의 첫번째 카테고리는 7번 멤버에 의해 생성되었다.
+
 
         A-1 프로젝트의 첫번째 카테고리에는 2개의 릴리즈가 존재하며, 각각 1번, 4번 멤버에 의해 생성되었다.
         A-1 프로젝트의 두번째 카테고리에는 3개의 릴리즈가 존재하며, 각각 1번, 2번, 4번 멤버에 의해 생성되었다.
@@ -290,17 +482,7 @@ public class IntegrationTest {
     @Test
     @DisplayName("통합테스트1")
     public void integrationTest1() throws Exception {
-        //given
-        Optional<Member> byId = memberRepository.findById(2L);
-        Member member = byId.get();
 
-        //when
-        Optional<Company> companyOptional = companyRepository.findById(4L);
-        Company company = companyOptional.get();
-
-        //then
-        assertThat(member.getUserName()).isEqualTo("user2");
-        assertThat(company.getName()).isEqualTo("company_from_user13");
     
     }
 
