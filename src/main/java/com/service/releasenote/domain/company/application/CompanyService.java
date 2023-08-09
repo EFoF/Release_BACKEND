@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
-import static com.service.releasenote.global.config.S3Constants.DIRECTORY;
+import static com.service.releasenote.global.constants.S3Constants.DIRECTORY;
 
 @Slf4j
 @Service

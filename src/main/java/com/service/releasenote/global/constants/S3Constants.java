@@ -1,4 +1,4 @@
-package com.service.releasenote.global.config;
+package com.service.releasenote.global.constants;
 
 public class S3Constants {
     public static final String DIRECTORY ="company";

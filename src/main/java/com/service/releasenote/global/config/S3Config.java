@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.service.releasenote.global.config.S3Constants.DIRECTORY;
-import static com.service.releasenote.global.config.S3Constants.PREFIX;
+import static com.service.releasenote.global.constants.S3Constants.DIRECTORY;
+import static com.service.releasenote.global.constants.S3Constants.PREFIX;
 
 
 @Slf4j
