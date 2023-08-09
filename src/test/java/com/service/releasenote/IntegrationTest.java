@@ -19,6 +19,8 @@ import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
+import com.service.releasenote.domain.release.model.Releases;
+import com.service.releasenote.domain.release.model.Tag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberRequestDTO;
@@ -224,6 +227,17 @@ public class IntegrationTest {
         return categoryRepository.save(category);
     }
 
+    private Releases saveRelease(Category category, String version) {
+        Releases releases = Releases.builder()
+                .message(category.getTitle() + " release version :: " + version)
+                .releaseDate(LocalDateTime.now())
+                .category(category)
+                .version(version)
+                .tag(Tag.NEW)
+                .build();
+        return releaseRepository.save(releases);
+    }
+
     private void setup() throws IOException {
         // 1. 20명의 멤버를 생성하여 데이터베이스에 저장
         List<Member> members = new ArrayList<>();
@@ -312,58 +326,91 @@ public class IntegrationTest {
 
         // 5. 프로젝트를 생성한 후 멤버들을 초대한다.
         // 5.1 A 회사의 프로젝트
-        participateProject(AP1, members.get(1));
-        participateProject(AP1, members.get(2));
-        participateProject(AP1, members.get(3));
-        participateProject(AP2, members.get(0));
-        participateProject(AP3, members.get(1));
-        participateProject(AP3, members.get(2));
-        participateProject(AP4, members.get(0));
-        participateProject(AP4, members.get(3));
+        participateProject(AP1, members.get(1));participateProject(AP1, members.get(2));participateProject(AP1, members.get(3));
+        participateProject(AP2, members.get(0));participateProject(AP3, members.get(1));participateProject(AP3, members.get(2));
+        participateProject(AP4, members.get(0));participateProject(AP4, members.get(3));
 
         // 5.2 B 회사의 프로젝트
-        participateProject(BP1, members.get(4));
-        participateProject(BP2, members.get(5));
-        participateProject(BP3, members.get(4));
+        participateProject(BP1, members.get(4));participateProject(BP2, members.get(5));participateProject(BP3, members.get(4));
         participateProject(BP3, members.get(6));
 
         // 5.3 C 회사의 프로젝트
-        participateProject(CP1, members.get(8));
-        participateProject(CP1, members.get(9));
-        participateProject(CP1, members.get(10));
+        participateProject(CP1, members.get(8));participateProject(CP1, members.get(9));participateProject(CP1, members.get(10));
         participateProject(CP2, members.get(10));
 
         // 5.4 D 회사의 프로젝트
-        participateProject(DP1, members.get(13));
-        participateProject(DP1, members.get(14));
-        participateProject(DP2, members.get(13));
+        participateProject(DP1, members.get(13));participateProject(DP1, members.get(14));participateProject(DP2, members.get(13));
 
         // 5.5 E 회사의 프로젝트
-        participateProject(EP1, members.get(15));
-        participateProject(EP1, members.get(17));
-        participateProject(EP1, members.get(18));
-        participateProject(EP1, members.get(19));
-        participateProject(EP2, members.get(15));
-        participateProject(EP2, members.get(18));
+        participateProject(EP1, members.get(15));participateProject(EP1, members.get(17));participateProject(EP1, members.get(18));
+        participateProject(EP1, members.get(19));participateProject(EP2, members.get(15));participateProject(EP2, members.get(18));
 
         // 6. 테스트 요구사항에 맞춰 담당자가 카테고리를 생성한다.
-        saveCategory(AP1, "APC1-1"); saveCategory(AP1, "APC1-2");
-        saveCategory(AP2, "APC2-1"); saveCategory(AP2, "APC2-2"); saveCategory(AP2, "APC2-3");
-        saveCategory(AP3, "APC3-1"); saveCategory(AP3, "APC3-2"); saveCategory(AP3, "APC3-3");
-        saveCategory(AP4, "APC4-1"); saveCategory(AP4, "APC4-2"); saveCategory(AP4, "APC4-3");
+        Category AP1C1 = saveCategory(AP1, "APC1-1"); Category AP1C2 = saveCategory(AP1, "APC1-2");
+        Category AP2C1 = saveCategory(AP2, "APC2-1"); Category AP2C2 = saveCategory(AP2, "APC2-2");
+        Category AP2C3 = saveCategory(AP2, "APC2-3"); Category AP3C1 = saveCategory(AP3, "APC3-1");
+        Category AP3C2 = saveCategory(AP3, "APC3-2"); Category AP3C3 = saveCategory(AP3, "APC3-3");
+        Category AP4C1 = saveCategory(AP4, "APC4-1"); Category AP4C2 = saveCategory(AP4, "APC4-2");
+        Category AP4C3 = saveCategory(AP4, "APC4-3");
 
-        saveCategory(BP1, "BP1-1"); saveCategory(BP1, "BP1-2"); saveCategory(BP1, "BP1-3");
-        saveCategory(BP2, "BP2-1"); saveCategory(BP2, "BP2-2"); saveCategory(BP2, "BP2-3"); saveCategory(BP2, "BP2-4");
-        saveCategory(BP3, "BP3-1"); saveCategory(BP3, "BP3-2"); saveCategory(BP3, "BP3-3");
+        Category BP1C1 = saveCategory(BP1, "BP1-1"); Category BP1C2 = saveCategory(BP1, "BP1-2");
+        Category BP1C3 = saveCategory(BP1, "BP1-3"); Category BP2C1 = saveCategory(BP2, "BP2-1");
+        Category BP2C2 = saveCategory(BP2, "BP2-2"); Category BP2C3 = saveCategory(BP2, "BP2-3");
+        Category BP2C4 = saveCategory(BP2, "BP2-4"); Category BP3C1 = saveCategory(BP3, "BP3-1");
+        Category BP3C2 = saveCategory(BP3, "BP3-2"); Category BP3C3 = saveCategory(BP3, "BP3-3");
 
-        saveCategory(CP1, "BP1-1"); saveCategory(CP1, "BP1-2"); saveCategory(CP1, "BP1-3");
+        Category CP1C1 = saveCategory(CP1, "CP1-1"); Category CP1C2 = saveCategory(CP1, "CP1-2");
+        Category CP1C3 = saveCategory(CP1, "CP1-3");
 
-        saveCategory(DP1, "DP1-1"); saveCategory(DP1, "DP1-2"); saveCategory(DP1, "DP1-3"); saveCategory(DP2, "DP2-1");
+        Category DP1C1 = saveCategory(DP1, "DP1-1"); Category DP1C2 = saveCategory(DP1, "DP1-2");
+        Category DP1C3 = saveCategory(DP1, "DP1-3"); Category DP2C1 = saveCategory(DP2, "DP2-1");
 
-        saveCategory(EP1, "EP1-1"); saveCategory(EP1, "EP1-2"); saveCategory(EP1, "EP1-3");
-        saveCategory(EP2, "EP2-1"); saveCategory(EP2, "EP2-2"); saveCategory(EP2, "EP2-3");
+        Category EP1C1 = saveCategory(EP1, "EP1-1"); Category EP1C2 = saveCategory(EP1, "EP1-2");
+        Category EP1C3 = saveCategory(EP1, "EP1-3"); Category EP2C1 = saveCategory(EP2, "EP2-1");
+        Category EP2C2 = saveCategory(EP2, "EP2-2"); Category EP2C3 = saveCategory(EP2, "EP2-3");
 
         // 7. 테스트 요구사항에 맞춰 담당자가 릴리즈를 생성한다.
+        saveRelease(AP1C1,"1.0.0"); saveRelease(AP1C1,"1.0.1");
+        saveRelease(AP1C2,"1.0.0"); saveRelease(AP1C2,"1.0.1"); saveRelease(AP1C2,"1.0.2");
+        saveRelease(AP2C1,"1.0.0"); saveRelease(AP2C1,"1.0.1"); saveRelease(AP2C1,"1.0.2");
+        saveRelease(AP2C2,"1.0.0"); saveRelease(AP2C2,"1.0.1");
+        saveRelease(AP2C3,"1.0.0");
+        saveRelease(AP3C1,"1.0.0");
+        saveRelease(AP3C2,"1.0.0"); saveRelease(AP3C2,"1.0.1");
+        saveRelease(AP3C3,"1.0.0"); saveRelease(AP3C3,"1.0.1");
+        saveRelease(AP4C1,"1.0.0"); saveRelease(AP4C1,"1.0.1"); saveRelease(AP4C1,"1.0.2"); saveRelease(AP4C1,"1.0.3");
+        saveRelease(AP4C2,"1.0.0"); saveRelease(AP4C2,"1.0.1");
+        saveRelease(AP4C3,"1.0.0");
+
+        saveRelease(BP1C1,"1.0.0"); saveRelease(BP1C1,"1.0.1"); saveRelease(BP1C1,"1.0.2");
+        saveRelease(BP1C2,"1.0.0"); saveRelease(BP1C2,"1.0.1");
+        saveRelease(BP1C3,"1.0.0"); saveRelease(BP1C3,"1.0.1");
+        saveRelease(BP2C1, "1.0.0");
+        saveRelease(BP2C2, "1.0.0"); saveRelease(BP2C2, "1.0.1");
+        saveRelease(BP2C3, "1.0.0"); saveRelease(BP2C3, "1.0.1");
+        saveRelease(BP2C4, "1.0.0");
+        saveRelease(BP3C1, "1.0.0"); saveRelease(BP3C1, "1.0.1");
+        saveRelease(BP3C2, "1.0.0"); saveRelease(BP3C1, "1.0.1");
+        saveRelease(BP3C3, "1.0.0"); saveRelease(BP3C1, "1.0.1");
+
+        saveRelease(CP1C1, "1.0.0"); saveRelease(CP1C1, "1.0.1"); saveRelease(CP1C1, "1.0.2");
+        saveRelease(CP1C1, "1.0.3");
+        saveRelease(CP1C2, "1.0.0"); saveRelease(CP1C2, "1.0.1");
+        saveRelease(CP1C3, "1.0.0"); saveRelease(CP1C3, "1.0.1"); saveRelease(CP1C3, "1.0.2");
+
+
+        saveRelease(DP1C1, "1.0.0"); saveRelease(DP1C1, "1.0.1"); saveRelease(DP1C1, "1.0.2");
+        saveRelease(DP1C2, "1.0.0"); saveRelease(DP1C2, "1.0.1");
+        saveRelease(DP1C3, "1.0.0"); saveRelease(DP1C3, "1.0.1"); saveRelease(DP1C3, "1.0.2");
+        saveRelease(DP1C3, "1.0.3");
+        saveRelease(DP2C1, "1.0.0"); saveRelease(DP2C1, "1.0.1");
+
+        saveRelease(EP1C1, "1.0.0"); saveRelease(EP1C1, "1.0.1"); saveRelease(EP1C1, "1.0.2");
+        saveRelease(EP1C2, "1.0.0"); saveRelease(EP1C2, "1.0.1"); saveRelease(EP1C2, "1.0.2");
+        saveRelease(EP1C3, "1.0.0"); saveRelease(EP1C3, "1.0.1"); saveRelease(EP1C3, "1.0.2");
+        saveRelease(EP2C1, "1.0.0");
+        saveRelease(EP2C2, "1.0.0"); saveRelease(EP2C2, "1.0.1");
+        saveRelease(EP2C3, "1.0.0");
         // 8. 테스트 환경설정이 끝났다.
     }
 
