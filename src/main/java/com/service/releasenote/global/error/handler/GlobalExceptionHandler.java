@@ -18,6 +18,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotSignInException.class)
     protected final ResponseEntity<String> handleNotSignInException(NotSignInException ex){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 }
