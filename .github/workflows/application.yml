@@ -42,6 +42,7 @@ jobs:
         mysql user: 'root'
         mysql password: ${{ secrets.MYSQL_PASSWORD }}
 
+
     - uses: actions/checkout@v3
 
     - name: make main application.yml
