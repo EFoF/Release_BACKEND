@@ -78,6 +78,7 @@ jobs:
         key: ${{ secrets.WAS_PEM_KEY }}
         port: 22
         script: |
+          chmod 400 ${{ secrets.WAS_PEM_KEY }}
           ssh -tt ubuntu@${{ secrets.SSH_WAS_KEY }} << EOF
           sudo docker kill release_backend
           sudo docker container prune -f
