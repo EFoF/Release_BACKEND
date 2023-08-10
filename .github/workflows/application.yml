@@ -35,9 +35,10 @@ jobs:
       uses: samin/mysql-action@v1
       with:
         character set server: 'utf8'
+        mysql version: '8.0'
         mysql database: 'releasedb_test'
         mysql user: 'root'
-        mysql password: 'admin'
+        mysql password: ${{ secrets.MYSQL_PASSWORD }}
 
     - uses: actions/checkout@v3
 
