@@ -41,9 +41,11 @@ jobs:
         
         # application.yml 파일 생성
         touch ./application.yml
+        touch ./key.yml
       
         # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
         echo "${{ secrets.WAS1_APPLICATION }}" >> ./application.yml
+        echo "${{ secrets.WAS1_APPLICATION_KEY }}" >> ./key.yml
       shell: bash
 
     - name: make test application.yml
