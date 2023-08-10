@@ -32,11 +32,7 @@ jobs:
    - name: make application.yml
      run: |
        # create application.yml
-#       cd ./src/main/resources
-       cd ./src/main/
-            
-       touch resources/
-       cd ./resources
+       cd ./src/main/resources
         
        # application.yml 파일 생성
        touch ./application.yml
@@ -49,7 +45,14 @@ jobs:
    - name: Build with Gradle
      run: |
        ./gradlew build
-   - name: Build with Gradle
-     uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
-     with:
-       arguments: build
+
+   - name: web docker build and push
+     run: |
+       docker login -u ${{ secrets.WAS1_DOCKER_USERNAME }} -p ${{ secrets.WAS1_DOCKER_PASSWORD }}
+       docker build -t ${{ secrets.WAS1_DOCKER_REPO }}/Release_BACKEND .
+       docker push ${{ secrets.WAS1_DOCKER_REPO }}/Release_BACKEND
+
+#   - name: Build with Gradle
+#     uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
+#     with:
+#       arguments: build
