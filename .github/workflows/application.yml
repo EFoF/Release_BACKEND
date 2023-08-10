@@ -68,6 +68,7 @@ jobs:
         docker build -t ${{ secrets.WAS1_DOCKER_REPO }}/release_backend .
         docker push ${{ secrets.WAS1_DOCKER_REPO }}/release_backend 
 
+
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@v0.1.7
       with:
