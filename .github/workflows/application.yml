@@ -86,6 +86,7 @@ jobs:
           docker kill release_backend
           docker container prune -f
           docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
+          docker rmi $(docker images -f "dangling=true" -q)
           docker run -d -p 8080:8080 --name release_backend ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
 
   
