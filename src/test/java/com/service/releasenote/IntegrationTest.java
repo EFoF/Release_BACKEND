@@ -870,6 +870,7 @@ public class IntegrationTest {
     @DisplayName("통합 테스트 - 새로운 회사 및 멤버 추가 시나리오")
     public void companyAddScenario() throws Exception {
         //given
+        // 기존 e회사의 오너가 f회사를 생성
         // 3번, 15번, 20번 사용자를 초대
         // 15번 사용자가 프로젝트 생성, 구성원은 동일
         // 이후 각 사용자가 카테고리를 하나씩 만들고, 각각 3개의 릴리즈를 추가
