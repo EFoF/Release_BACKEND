@@ -57,7 +57,17 @@ jobs:
         echo "${{ secrets.WAS1_APPLICATION_KEY }}" >> ./key.yml
       shell: bash
 
+    - name: make test application.yml
+      run: |
+        # create application.yml
+        cd ./src/test/resources
 
+        # application.yml 파일 생성
+        touch ./application.yml
+
+        # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
+        echo "${{ secrets.WAS1_APPLICATION_TEST }}" >> ./application.yml
+      shell: bash
 
     - name: Build with Gradle
       run: |
