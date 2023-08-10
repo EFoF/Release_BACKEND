@@ -885,7 +885,7 @@ public class IntegrationTest {
     }
 
     @Test
-    @DisplayName("통합 테스트 - 새로운 회사 및 멤버 추가 시나리오")
+    @DisplayName("통합 테스트 - 새로운 회사 및 멤버, 프로젝트, 카테고리, 릴리즈 추가 시나리오")
     public void companyAddScenario() throws Exception {
         //given
         // 기존 e회사의 오너가 f회사를 생성
@@ -1014,6 +1014,24 @@ public class IntegrationTest {
         assertThat(fp4c2r.getReleaseDtoList().size()).isEqualTo(2);
         assertThat(fp4c2r.getReleaseDtoList()).extracting("content")
                 .contains("FP4C2 release version :: 1.0.0", "FP4C2 release version :: 1.1.0");
+
+    }
+
+    @Test
+    @DisplayName("통합 테스트 - 프로젝트, 카테고리, 릴리즈 수정 시나리오")
+    public void modifyScenario() throws Exception {
+        //given
+        // 1, 3, 4, 2
+//        Project AP1 = saveProject(A, members.get(0), "AP-1");
+//        Project AP2 = saveProject(A, members.get(2), "AP-2");
+//        Project AP3 = saveProject(A, members.get(3), "AP-3");
+//        Project AP4 = saveProject(A, members.get(1), "AP-4");
+
+
+
+        //when
+
+        //then
 
     }
 

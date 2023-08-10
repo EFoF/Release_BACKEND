@@ -36,6 +36,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
@@ -50,6 +51,7 @@ import static org.assertj.core.api.Assertions.*;
 import static com.service.releasenote.domain.member.dto.MemberDTO.*;
 
 @SpringBootTest // Spring Security 때문에 넣어야함, 전체 컨텍스트를 로드함.
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class) // JUnit 5에서 사용되는 어노테이션, 테스트 확장을 지원, Mockito 를 사용하겠다는 뜻.
 public class AuthServiceTest {
     @MockBean
