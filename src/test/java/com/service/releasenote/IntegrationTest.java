@@ -36,11 +36,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberRequestDTO;
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberResponseDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.LoginDTO;
@@ -60,6 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class IntegrationTest {
 
     @Autowired
@@ -173,9 +173,9 @@ public class IntegrationTest {
     }
 
     public AddProjectMemberRequestDto buildAddProjectMemberRequestDto(Long userId) {
-            return AddProjectMemberRequestDto.builder()
-                    .email("user"+userId+"@doklib.com")
-                    .build();
+        return AddProjectMemberRequestDto.builder()
+                .email("user"+userId+"@doklib.com")
+                .build();
     }
 
     private Member saveMember(int i) {
@@ -894,9 +894,13 @@ public class IntegrationTest {
         projectService.createProject(buildCreateProjectRequestDto("FP2", 19L), fCompany, tester.getId());
         projectService.createProject(buildCreateProjectRequestDto("FP3", 20L), fCompany, participant2.getId());
         projectService.createProject(buildCreateProjectRequestDto("FP4", 15L), fCompany, participant3.getId());
+
         Company company = companyRepository.findById(fCompany).get();
         List<Company> companies = companyRepository.findAll();
         List<MemberCompany> fCompanyMembers = memberCompanyRepository.findByCompanyId(fCompany);
+        // f 회사의 projectList
+        FindProjectListByCompanyResponseDto projectListByCompany =
+                projectService.findProjectListByCompany(fCompany, PageRequest.of(0, 20), tester.getId());
 
 
         //then
@@ -904,6 +908,7 @@ public class IntegrationTest {
         assertThat(fCompanyMembers.size()).isEqualTo(4);
         assertThat(fCompanyMembers.stream().map(cm -> cm.getMember().getId()))
                 .contains(tester.getId(), participant1.getId(), participant2.getId(), participant3.getId());
+        assertThat(projectListByCompany.getFindProjectListResponseDtos().getSize()).isEqualTo(4);
 
     }
 
@@ -911,3 +916,4 @@ public class IntegrationTest {
 // TODO 정연 사용자 존재 검증 쪽 : id로 존재하는지 보는거 + isDeleted
 
 }
+
