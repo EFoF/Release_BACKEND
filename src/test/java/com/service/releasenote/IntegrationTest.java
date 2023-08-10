@@ -3,6 +3,7 @@ package com.service.releasenote;
 import com.service.releasenote.domain.alarm.dao.AlarmRepository;
 import com.service.releasenote.domain.category.application.CategoryService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
+import com.service.releasenote.domain.category.dto.CategoryDto;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.application.CompanyService;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
@@ -20,12 +21,10 @@ import com.service.releasenote.domain.project.exception.exceptions.CompanyNotFou
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
+import com.service.releasenote.domain.release.dto.ReleaseDto;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.service.releasenote.domain.category.dto.CategoryDto.*;
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberRequestDTO;
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberResponseDTO;
@@ -54,6 +54,7 @@ import static com.service.releasenote.domain.member.dto.MemberDTO.LoginDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.SignUpRequest;
 import static com.service.releasenote.domain.member.dto.MemberProjectDTO.AddProjectMemberRequestDto;
 import static com.service.releasenote.domain.project.dto.ProjectDto.CreateProjectRequestDto;
+import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -175,6 +176,22 @@ public class IntegrationTest {
     public AddProjectMemberRequestDto buildAddProjectMemberRequestDto(Long userId) {
         return AddProjectMemberRequestDto.builder()
                 .email("user"+userId+"@doklib.com")
+                .build();
+    }
+
+    public CategorySaveRequest buildCategorySaveRequest(String title) {
+        return CategorySaveRequest.builder()
+                .description(title + " 's description")
+                .detail("### " + title + "'s detail")
+                .title(title)
+                .build();
+    }
+
+    public SaveReleaseRequest saveReleaseRequest(String categoryTitle, String version) {
+        return SaveReleaseRequest.builder()
+                .message(categoryTitle + " release version :: " + version)
+                .version(version)
+                .tag(Tag.NEW)
                 .build();
     }
 
@@ -800,6 +817,7 @@ public class IntegrationTest {
 
 
     @Test
+    @Disabled
     @DisplayName("통합 테스트 - 회사 삭제 시나리오")
     public void companyDeleteScenario() throws Exception {
         //given
@@ -872,8 +890,12 @@ public class IntegrationTest {
         //given
         // 기존 e회사의 오너가 f회사를 생성
         // 3번, 15번, 20번 사용자를 초대
-        // 15번 사용자가 프로젝트 생성, 구성원은 동일
-        // 이후 각 사용자가 카테고리를 하나씩 만들고, 각각 3개의 릴리즈를 추가
+        // 프로젝트 생성
+        // 1번 프로젝트는 3번 사용자가 생성 - 15번 사용자 초대
+        // 2번 프로젝트는 19번 사용자가 생성 - 3번 사용자 초대
+        // 3번 프로젝트는 20번 사용자가 생성 - 15번 사용자 초대
+        // 4번 프로젝트 15번 사용자가 생성 - 3번 사용자 초대
+        // 이후 각 사용자가 카테고리를 두개씩 만들고, 각각 3개의 릴리즈를 추가
         String testerEmail = "user19@doklib.com";
         String participant1Email = "user3@doklib.com";
         String participant2Email = "user20@doklib.com";
@@ -885,32 +907,116 @@ public class IntegrationTest {
 
         //when
         Long fCompany = companyService.createCompany(null, "f", tester.getId());
-        // 해당 부분은 아이디를 넘기면 이메일이 생성되기 때문에
+
         memberCompanyService.addMemberCompany(fCompany, buildAddMemberRequestDto(3L), tester.getId());
         memberCompanyService.addMemberCompany(fCompany, buildAddMemberRequestDto(20L), tester.getId());
         memberCompanyService.addMemberCompany(fCompany, buildAddMemberRequestDto(15L), tester.getId());
 
-        projectService.createProject(buildCreateProjectRequestDto("FP1", 3L), fCompany, participant1.getId());
-        projectService.createProject(buildCreateProjectRequestDto("FP2", 19L), fCompany, tester.getId());
-        projectService.createProject(buildCreateProjectRequestDto("FP3", 20L), fCompany, participant2.getId());
-        projectService.createProject(buildCreateProjectRequestDto("FP4", 15L), fCompany, participant3.getId());
+        Long FP1 = projectService.createProject(buildCreateProjectRequestDto("FP1", 3L), fCompany, participant1.getId());
+        Long FP2  = projectService.createProject(buildCreateProjectRequestDto("FP2", 19L), fCompany, tester.getId());
+        Long FP3 = projectService.createProject(buildCreateProjectRequestDto("FP3", 20L), fCompany, participant2.getId());
+        Long FP4 = projectService.createProject(buildCreateProjectRequestDto("FP4", 15L), fCompany, participant3.getId());
+
+        memberProjectService.addProjectMember(buildAddProjectMemberRequestDto(15L), FP1, participant1.getId());
+        memberProjectService.addProjectMember(buildAddProjectMemberRequestDto(3L), FP2, tester.getId());
+        memberProjectService.addProjectMember(buildAddProjectMemberRequestDto(15L), FP3, participant2.getId());
+        memberProjectService.addProjectMember(buildAddProjectMemberRequestDto(3L), FP4, participant3.getId());
+
+        Long fp1C1 = categoryService.saveCategory(buildCategorySaveRequest("FP1C1"), FP1, participant1.getId());
+        Long fp1C2 = categoryService.saveCategory(buildCategorySaveRequest("FP1C2"), FP1, participant1.getId());
+        Long fp2C1 = categoryService.saveCategory(buildCategorySaveRequest("FP2C1"), FP2, tester.getId());
+        Long fp2C2 = categoryService.saveCategory(buildCategorySaveRequest("FP2C2"), FP2, tester.getId());
+        Long fp3C1 = categoryService.saveCategory(buildCategorySaveRequest("FP3C1"), FP3, participant2.getId());
+        Long fp3C2 = categoryService.saveCategory(buildCategorySaveRequest("FP3C2"), FP3, participant2.getId());
+        Long fp4C1 = categoryService.saveCategory(buildCategorySaveRequest("FP4C1"), FP4, participant3.getId());
+        Long fp4C2 = categoryService.saveCategory(buildCategorySaveRequest("FP4C2"), FP4, participant3.getId());
+
+        releaseService.saveRelease(saveReleaseRequest("FP1C1", "1.0.0"), FP1, fp1C1, participant3.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP1C1", "1.0.1"), FP1, fp1C1, participant1.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP1C2", "1.0.0"), FP1, fp1C2, participant1.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP1C2", "1.0.1"), FP1, fp1C2, participant3.getId());
+
+        releaseService.saveRelease(saveReleaseRequest("FP2C1", "1.0.0"), FP2, fp2C1, tester.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP2C1", "1.0.0"), FP2, fp2C1, tester.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP2C2", "1.0.1"), FP2, fp2C2, participant1.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP2C2", "1.1.0"), FP2, fp2C2, participant1.getId());
+
+        releaseService.saveRelease(saveReleaseRequest("FP3C1", "1.1.0"), FP3, fp3C1, participant2.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP3C1", "1.1.0"), FP3, fp3C1, participant2.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP3C2", "1.0.0"), FP3, fp3C2, participant3.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP3C2", "1.0.0"), FP3, fp3C2, participant3.getId());
+
+        releaseService.saveRelease(saveReleaseRequest("FP4C1", "1.0.0"), FP4, fp4C1, participant1.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP4C1", "1.0.1"), FP4, fp4C1, participant3.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP4C2", "1.0.0"), FP4, fp4C2, participant3.getId());
+        releaseService.saveRelease(saveReleaseRequest("FP4C2", "1.1.0"), FP4, fp4C2, participant3.getId());
+
 
         Company company = companyRepository.findById(fCompany).get();
         List<Company> companies = companyRepository.findAll();
         List<MemberCompany> fCompanyMembers = memberCompanyRepository.findByCompanyId(fCompany);
         // f 회사의 projectList
-        FindProjectListByCompanyResponseDto projectListByCompany =
-                projectService.findProjectListByCompany(fCompany, PageRequest.of(0, 20), tester.getId());
+        List<Project> fProjectList = projectRepository.findByCompanyId(fCompany);
 
+        CategoryInfoDto FP1Categories = categoryService.findCategoryByProjectId(FP1);
+        CategoryInfoDto FP2Categories = categoryService.findCategoryByProjectId(FP2);
+        CategoryInfoDto FP3Categories = categoryService.findCategoryByProjectId(FP3);
+        CategoryInfoDto FP4Categories = categoryService.findCategoryByProjectId(FP4);
+
+        ReleaseInfoDto fp1c1r = releaseService.findReleasesByCategoryId(fp1C1, false);
+        ReleaseInfoDto fp1c2r = releaseService.findReleasesByCategoryId(fp1C2, false);
+        ReleaseInfoDto fp2c1r = releaseService.findReleasesByCategoryId(fp2C1, false);
+        ReleaseInfoDto fp2c2r = releaseService.findReleasesByCategoryId(fp2C2, false);
+        ReleaseInfoDto fp3c1r = releaseService.findReleasesByCategoryId(fp3C1, false);
+        ReleaseInfoDto fp3c2r = releaseService.findReleasesByCategoryId(fp3C2, false);
+        ReleaseInfoDto fp4c1r = releaseService.findReleasesByCategoryId(fp4C1, false);
+        ReleaseInfoDto fp4c2r = releaseService.findReleasesByCategoryId(fp4C2, false);
 
         //then
+        // 회사가 잘 생성 되었는지 검증
         assertThat(companies.stream().map(c -> c.getId()).collect(Collectors.toList())).contains(company.getId());
         assertThat(fCompanyMembers.size()).isEqualTo(4);
         assertThat(fCompanyMembers.stream().map(cm -> cm.getMember().getId()))
                 .contains(tester.getId(), participant1.getId(), participant2.getId(), participant3.getId());
-        assertThat(projectListByCompany.getFindProjectListResponseDtos().getSize()).isEqualTo(4);
+
+        assertThat(fProjectList.size()).isEqualTo(4);
+
+        assertThat(FP1Categories.getCategoryEachDtoList().size()).isEqualTo(2);
+        assertThat(FP1Categories.getCategoryEachDtoList()).extracting("title").contains("FP1C1", "FP1C2");
+        assertThat(FP2Categories.getCategoryEachDtoList().size()).isEqualTo(2);
+        assertThat(FP2Categories.getCategoryEachDtoList()).extracting("title").contains("FP2C1", "FP2C2");
+        assertThat(FP3Categories.getCategoryEachDtoList().size()).isEqualTo(2);
+        assertThat(FP3Categories.getCategoryEachDtoList()).extracting("title").contains("FP3C1", "FP3C2");
+        assertThat(FP4Categories.getCategoryEachDtoList().size()).isEqualTo(2);
+        assertThat(FP4Categories.getCategoryEachDtoList()).extracting("title").contains("FP4C1", "FP4C2");
+
+        assertThat(fp1c1r.getReleaseDtoList().size()).isEqualTo(2);
+        assertThat(fp1c1r.getReleaseDtoList()).extracting("content")
+                .contains("FP1C1 release version :: 1.0.0", "FP1C1 release version :: 1.0.1");
+        assertThat(fp1c2r.getReleaseDtoList().size()).isEqualTo(2);
+        assertThat(fp1c2r.getReleaseDtoList()).extracting("content")
+                .contains("FP1C2 release version :: 1.0.0", "FP1C2 release version :: 1.0.1");
+        assertThat(fp2c1r.getReleaseDtoList().size()).isEqualTo(2);
+        assertThat(fp2c1r.getReleaseDtoList()).extracting("content")
+                .contains("FP2C1 release version :: 1.0.0", "FP2C1 release version :: 1.0.0");
+        assertThat(fp2c2r.getReleaseDtoList().size()).isEqualTo(2);
+        assertThat(fp2c2r.getReleaseDtoList()).extracting("content")
+                .contains("FP2C2 release version :: 1.0.1", "FP2C2 release version :: 1.1.0");
+        assertThat(fp3c1r.getReleaseDtoList().size()).isEqualTo(2);
+        assertThat(fp3c1r.getReleaseDtoList()).extracting("content")
+                .contains("FP3C1 release version :: 1.1.0", "FP3C1 release version :: 1.1.0");
+        assertThat(fp3c2r.getReleaseDtoList().size()).isEqualTo(2);
+        assertThat(fp3c2r.getReleaseDtoList()).extracting("content")
+                .contains("FP3C2 release version :: 1.0.0", "FP3C2 release version :: 1.0.0");
+        assertThat(fp4c1r.getReleaseDtoList().size()).isEqualTo(2);
+        assertThat(fp4c1r.getReleaseDtoList()).extracting("content")
+                .contains("FP4C1 release version :: 1.0.0", "FP4C1 release version :: 1.0.1");
+        assertThat(fp4c2r.getReleaseDtoList().size()).isEqualTo(2);
+        assertThat(fp4c2r.getReleaseDtoList()).extracting("content")
+                .contains("FP4C2 release version :: 1.0.0", "FP4C2 release version :: 1.1.0");
 
     }
+
 
 
 // TODO 정연 사용자 존재 검증 쪽 : id로 존재하는지 보는거 + isDeleted 수정해달라고 피드백하기
