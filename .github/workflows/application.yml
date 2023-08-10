@@ -79,7 +79,6 @@ jobs:
         port: 22
         script: |
           chmod 400 gcu-master.pem
-          ssh -i ubuntu@${{ secrets.SSH_WAS_KEY }}
           sudo docker kill release_backend
           sudo docker container prune -f
           sudo docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
