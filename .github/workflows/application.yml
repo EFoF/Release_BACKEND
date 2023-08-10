@@ -38,7 +38,7 @@ jobs:
         container port: 3306
         character set server: 'utf8'
         mysql database: 'releasedb_test'
-        mysql user: 'root'
+        mysql user: 'test'
         mysql password: ${{ secrets.MYSQL_PASSWORD }}
 
     - uses: actions/checkout@v3
