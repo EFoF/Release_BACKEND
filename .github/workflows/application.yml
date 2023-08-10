@@ -48,6 +48,7 @@ jobs:
         echo "${{ secrets.WAS1_APPLICATION_KEY }}" >> ./key.yml
       shell: bash
 
+
     - name: make test application.yml
       run: |
         # create application.yml
