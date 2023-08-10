@@ -65,8 +65,9 @@ jobs:
     - name: web docker build and push
       run: |
         docker login -u ${{ secrets.WAS1_DOCKER_USERNAME }} -p ${{ secrets.WAS1_DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.WAS1_DOCKER_REPO }}/release_backend .
-        docker push ${{ secrets.WAS1_DOCKER_REPO }}/release_backend 
+        docker build -t ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend .
+#        docker push ${{ secrets.WAS1_DOCKER_REPO }}/release_backend
+        docker push ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend
 
 
     - name: executing remote ssh commands using password
