@@ -30,13 +30,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -160,7 +164,7 @@ public class IntegrationTest {
                 .build();
     }
 
-    public CreateProjectRequestDto buildProjectRequestDto(String title, Long userId) {
+    public CreateProjectRequestDto buildCreateProjectRequestDto(String title, Long userId) {
         return CreateProjectRequestDto.builder()
                 .title(title)
                 .description("user " + userId + " 's " + title)
@@ -257,6 +261,7 @@ public class IntegrationTest {
                 .build();
         return releaseRepository.save(releases);
     }
+
 
     private void setup() throws IOException {
         // 1. 20명의 멤버를 생성하여 데이터베이스에 저장
@@ -796,9 +801,10 @@ public class IntegrationTest {
 
     @Test
     @DisplayName("통합 테스트 - 회사 삭제 시나리오")
-    public void eCompanyDeleteScenario() throws Exception {
+    public void companyDeleteScenario() throws Exception {
         //given
-        Long tester = 19L;
+        String testerEmail = "user19@doklib.com";
+
         Member aOwner = memberRepository.findByEmail("user1@doklib.com").get();
         Company aCompany = companyRepository.findByName("A").get();
         Member bOwner = memberRepository.findByEmail("user5@doklib.com").get();
@@ -809,6 +815,7 @@ public class IntegrationTest {
         Company dCompany = companyRepository.findByName("D").get();
         Member eOwner = memberRepository.findByEmail("user16@doklib.com").get();
         Company eCompany = companyRepository.findByName("E").get();
+        Member tester = memberRepository.findByEmail(testerEmail).get();
         //when
         companyService.deleteCompany(aCompany.getId(), aOwner.getId());
         companyService.deleteCompany(bCompany.getId(), bOwner.getId());
@@ -823,15 +830,15 @@ public class IntegrationTest {
         assertThrows(CompanyNotFoundException.class, () -> companyService.deleteCompany(eCompany.getId(), eOwner.getId()));
 
         assertThrows(CompanyNotFoundException.class,
-                () -> projectService.findProjectListByCompany(aCompany.getId(), PageRequest.of(0, 3), tester));
+                () -> projectService.findProjectListByCompany(aCompany.getId(), PageRequest.of(0, 3), tester.getId()));
         assertThrows(CompanyNotFoundException.class,
-                () -> projectService.findProjectListByCompany(bCompany.getId(), PageRequest.of(0, 3), tester));
+                () -> projectService.findProjectListByCompany(bCompany.getId(), PageRequest.of(0, 3), tester.getId()));
         assertThrows(CompanyNotFoundException.class,
-                () -> projectService.findProjectListByCompany(cCompany.getId(), PageRequest.of(0, 3), tester));
+                () -> projectService.findProjectListByCompany(cCompany.getId(), PageRequest.of(0, 3), tester.getId()));
         assertThrows(CompanyNotFoundException.class,
-                () -> projectService.findProjectListByCompany(dCompany.getId(), PageRequest.of(0, 3), tester));
+                () -> projectService.findProjectListByCompany(dCompany.getId(), PageRequest.of(0, 3), tester.getId()));
         assertThrows(CompanyNotFoundException.class,
-                () -> projectService.findProjectListByCompany(eCompany.getId(), PageRequest.of(0, 3), tester));
+                () -> projectService.findProjectListByCompany(eCompany.getId(), PageRequest.of(0, 3), tester.getId()));
         // 하위 데이터들도 모두 사라졌는지 레포지토리로 검증
 
 
@@ -858,6 +865,48 @@ public class IntegrationTest {
         assertThat(memberProjects.isEmpty()).isTrue();
 
     }
+
+    @Test
+    @DisplayName("통합 테스트 - 새로운 회사 및 멤버 추가 시나리오")
+    public void companyAddScenario() throws Exception {
+        //given
+        // e 회사에 속한 사용자가 f 회사 생성
+        // 3번, 15번, 20번 사용자를 초대
+        // 15번 사용자가 프로젝트 생성, 구성원은 동일
+        // 이후 각 사용자가 카테고리를 하나씩 만들고, 각각 3개의 릴리즈를 추가
+        String testerEmail = "user19@doklib.com";
+        String participant1Email = "user3@doklib.com";
+        String participant2Email = "user20@doklib.com";
+        String participant3Email = "user15@doklib.com";
+        Member tester = memberRepository.findByEmail(testerEmail).get();
+        Member participant1 = memberRepository.findByEmail(participant1Email).get();
+        Member participant2 = memberRepository.findByEmail(participant2Email).get();
+        Member participant3 = memberRepository.findByEmail(participant3Email).get();
+
+        //when
+        Long fCompany = companyService.createCompany(null, "f", tester.getId());
+        // 해당 부분은 아이디를 넘기면 이메일이 생성되기 때문에
+        memberCompanyService.addMemberCompany(fCompany, buildAddMemberRequestDto(3L), tester.getId());
+        memberCompanyService.addMemberCompany(fCompany, buildAddMemberRequestDto(20L), tester.getId());
+        memberCompanyService.addMemberCompany(fCompany, buildAddMemberRequestDto(15L), tester.getId());
+
+        projectService.createProject(buildCreateProjectRequestDto("FP1", 3L), fCompany, participant1.getId());
+        projectService.createProject(buildCreateProjectRequestDto("FP2", 19L), fCompany, tester.getId());
+        projectService.createProject(buildCreateProjectRequestDto("FP3", 20L), fCompany, participant2.getId());
+        projectService.createProject(buildCreateProjectRequestDto("FP4", 15L), fCompany, participant3.getId());
+        Company company = companyRepository.findById(fCompany).get();
+        List<Company> companies = companyRepository.findAll();
+        List<MemberCompany> fCompanyMembers = memberCompanyRepository.findByCompanyId(fCompany);
+
+
+        //then
+        assertThat(companies.stream().map(c -> c.getId()).collect(Collectors.toList())).contains(company.getId());
+        assertThat(fCompanyMembers.size()).isEqualTo(4);
+        assertThat(fCompanyMembers.stream().map(cm -> cm.getMember().getId()))
+                .contains(tester.getId(), participant1.getId(), participant2.getId(), participant3.getId());
+
+    }
+
 
 // TODO 정연 사용자 존재 검증 쪽 : id로 존재하는지 보는거 + isDeleted
 
