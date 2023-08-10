@@ -41,6 +41,14 @@ jobs:
         mysql user: 'test'
         mysql password: ${{ secrets.MYSQL_PASSWORD }}
 
+    - name: Setup RabbitMQ
+      uses: getong/rabbitmq-action@v1.2
+      with:
+        rabbitmq version: '3.8.2-management-alpine'
+        host port: 5672
+        rabbitmq user: 'admin'
+        rabbitmq password: ${{ secrets.MYSQL_PASSWORD }}
+        rabbitmq vhost: 'vhost-01'
 
     - uses: actions/checkout@v3
 
