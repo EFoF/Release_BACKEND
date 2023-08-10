@@ -913,7 +913,7 @@ public class IntegrationTest {
     }
 
 
-// TODO 정연 사용자 존재 검증 쪽 : id로 존재하는지 보는거 + isDeleted
+// TODO 정연 사용자 존재 검증 쪽 : id로 존재하는지 보는거 + isDeleted 수정해달라고 피드백하기
 
 }
 
