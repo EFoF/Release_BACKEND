@@ -81,8 +81,8 @@ jobs:
           sudo ${{ secrets.SSH_WAS_KEY }}
           sudo docker kill release_backend
           sudo docker container prune -f
-          sudo docker pull ${{ secrets.WAS1_DOCKER_REPO }}/release_backend 
-          sudo docker run -d -p 8080:8080 --name release_backend ${{ secrets.WAS1_DOCKER_REPO }}/release_backend 
+          sudo docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
+          sudo docker run -d -p 8080:8080 --name release_backend ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
 
   
           
