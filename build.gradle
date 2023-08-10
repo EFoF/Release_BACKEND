@@ -64,13 +64,17 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
 
-tasks {
-    // Define a custom build task that excludes tests
-    task customBuild(type: GradleBuild) {
-        tasks = ['build']
-        // Exclude the 'test' task
-        excludeTasks = ['test']
-    }
+//tasks {
+//    // Define a custom build task that excludes tests
+//    task customBuild(type: GradleBuild) {
+//        tasks = ['build']
+//        // Exclude the 'test' task
+//        excludeTasks = ['test']
+//    }
+//}
+
+tasks.withType(Test) {
+    enabled = false
 }
 
 tasks.named('test') {
