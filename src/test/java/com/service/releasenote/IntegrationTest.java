@@ -16,15 +16,20 @@ import com.service.releasenote.domain.member.dao.MemberRepository;
 import com.service.releasenote.domain.member.model.*;
 import com.service.releasenote.domain.project.application.ProjectService;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
+import com.service.releasenote.domain.project.exception.exceptions.CompanyNotFoundException;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.application.ReleaseService;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
 import com.service.releasenote.domain.release.model.Releases;
 import com.service.releasenote.domain.release.model.Tag;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -34,15 +39,20 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberRequestDTO;
 import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberResponseDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.LoginDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.SignUpRequest;
-import static com.service.releasenote.domain.member.dto.MemberProjectDTO.*;
-import static com.service.releasenote.domain.project.dto.ProjectDto.*;
+import static com.service.releasenote.domain.member.dto.MemberProjectDTO.AddProjectMemberRequestDto;
+import static com.service.releasenote.domain.project.dto.ProjectDto.CreateProjectRequestDto;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -97,14 +107,23 @@ public class IntegrationTest {
 
     @AfterEach
     private void clean() {
-//        alarmRepository.deleteAll();
-//        releaseRepository.deleteAll();
-//        categoryRepository.deleteAll();
-//        memberProjectRepository.deleteAll();
-//        projectRepository.deleteAll();
-//        memberCompanyRepository.deleteAll();
-//        companyRepository.deleteAll();
-//        memberRepository.deleteAll();
+        alarmRepository.deleteAll();
+        releaseRepository.deleteAll();
+        categoryRepository.deleteAll();
+        memberProjectRepository.deleteAll();
+        projectRepository.deleteAll();
+        memberCompanyRepository.deleteAll();
+        companyRepository.deleteAll();
+        memberRepository.deleteAll();
+        // id 이슈 : 아래의 코드로 auto-increment를 초기화할 수 있지만, @Transactional 이 없는 환경에서는 불가능하다.
+//        entityManager.createNativeQuery("ALERT TABLE alarm AUTO_INCREMENT 1").executeUpdate();
+//        entityManager.createNativeQuery("ALERT TABLE category AUTO_INCREMENT 1").executeUpdate();
+//        entityManager.createNativeQuery("ALERT TABLE company AUTO_INCREMENT 1").executeUpdate();
+//        entityManager.createNativeQuery("ALERT TABLE member AUTO_INCREMENT 1").executeUpdate();
+//        entityManager.createNativeQuery("ALERT TABLE member_company AUTO_INCREMENT 1").executeUpdate();
+//        entityManager.createNativeQuery("ALERT TABLE member_project AUTO_INCREMENT 1").executeUpdate();
+//        entityManager.createNativeQuery("ALERT TABLE project AUTO_INCREMENT 1").executeUpdate();
+//        entityManager.createNativeQuery("ALERT TABLE releases AUTO_INCREMENT 1").executeUpdate();
     }
 
     // 사용자의 회원가입에 사용되는 dto를 생성하는 메서드
@@ -170,7 +189,7 @@ public class IntegrationTest {
     private Company saveCompany(String title, Member owner) {
         Company company = Company.builder()
                 .name(title)
-                .ImageURL(null)
+                .ImageURL("empty image")
                 .build();
         Company savedCompany = companyRepository.save(company);
         MemberCompany memberCompany = MemberCompany.builder()
@@ -274,10 +293,10 @@ public class IntegrationTest {
 
         // 2. 오너들이 회사를 생성
         Company A = saveCompany("A", members.get(0));
-        Company B = saveCompany("B", members.get(1));
-        Company C = saveCompany("C", members.get(2));
-        Company D = saveCompany("D", members.get(3));
-        Company E = saveCompany("E", members.get(4));
+        Company B = saveCompany("B", members.get(4));
+        Company C = saveCompany("C", members.get(7));
+        Company D = saveCompany("D", members.get(12));
+        Company E = saveCompany("E", members.get(15));
 
         List<Member> Amembers = memberList.get(ownerList.get(0));
         for (Member member : Amembers) {
@@ -391,8 +410,8 @@ public class IntegrationTest {
         saveRelease(BP2C3, "1.0.0"); saveRelease(BP2C3, "1.0.1");
         saveRelease(BP2C4, "1.0.0");
         saveRelease(BP3C1, "1.0.0"); saveRelease(BP3C1, "1.0.1");
-        saveRelease(BP3C2, "1.0.0"); saveRelease(BP3C1, "1.0.1");
-        saveRelease(BP3C3, "1.0.0"); saveRelease(BP3C1, "1.0.1");
+        saveRelease(BP3C2, "1.0.0"); saveRelease(BP3C2, "1.0.1");
+        saveRelease(BP3C3, "1.0.0"); saveRelease(BP3C3, "1.0.1");
 
         saveRelease(CP1C1, "1.0.0"); saveRelease(CP1C1, "1.0.1"); saveRelease(CP1C1, "1.0.2");
         saveRelease(CP1C1, "1.0.3");
@@ -529,7 +548,7 @@ public class IntegrationTest {
 
     @Test
     @DisplayName("통합테스트 - 공통 데이터 검증")
-    public void integrationTest1() throws Exception {
+    public void environmentVerification() throws Exception {
         // given
 
         // 오너의 ID
@@ -645,13 +664,201 @@ public class IntegrationTest {
 
 
         // then
+        // 전체 회원이 20명인지 검증
         assertThat(members.size()).isEqualTo(20);
+        // 전체 회사가 5개인지 검증
         assertThat(companies.size()).isEqualTo(5);
 
+        // 전체 프로젝트가 13개인지 검증
         assertThat(projects.size()).isEqualTo(13);
+
+        // 전체 릴리즈가 75개인지 검증
         assertThat(releases.size()).isEqualTo(75);
+
+        // 각 회사의 Owner를 검증
+        assertThat(AMemberCompany.getMember().getId()).isEqualTo(AOwner);
+        assertThat(AMemberCompany.getRole()).isEqualTo(Role.OWNER);
+        assertThat(BMemberCompany.getMember().getId()).isEqualTo(BOwner);
+        assertThat(BMemberCompany.getRole()).isEqualTo(Role.OWNER);
+        assertThat(CMemberCompany.getMember().getId()).isEqualTo(COwner);
+        assertThat(CMemberCompany.getRole()).isEqualTo(Role.OWNER);
+        assertThat(DMemberCompany.getMember().getId()).isEqualTo(DOwner);
+        assertThat(DMemberCompany.getRole()).isEqualTo(Role.OWNER);
+        assertThat(EMemberCompany.getMember().getId()).isEqualTo(EOwner);
+        assertThat(EMemberCompany.getRole()).isEqualTo(Role.OWNER);
+
+        // 각 회사에 속한 사용자를 검증
+        assertThat(ACompanyMembers.stream().map(cm -> cm.getMember().getId()).collect(Collectors.toList()))
+                .contains(1L, 2L, 3L, 4L);
+        assertThat(BCompanyMembers.stream().map(cm -> cm.getMember().getId()).collect(Collectors.toList()))
+                .contains(5L, 6L, 7L);
+        assertThat(CCompanyMembers.stream().map(cm -> cm.getMember().getId()).collect(Collectors.toList()))
+                .contains(8L, 9L, 10L, 11L, 12L);
+        assertThat(DCompanyMembers.stream().map(cm -> cm.getMember().getId()).collect(Collectors.toList()))
+                .contains(13L, 14L, 15L);
+        assertThat(ECompanyMembers.stream().map(cm -> cm.getMember().getId()).collect(Collectors.toList()))
+                .contains(16L, 17L, 18L, 19L, 20L);
+
+        // 각 프로젝트에 속한 사용자
+        assertThat(AP1Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(1L, 2L, 3L, 4L);
+        assertThat(AP1Members.size()).isEqualTo(4);
+        assertThat(AP2Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(1L, 3L);
+        assertThat(AP2Members.size()).isEqualTo(2);
+        assertThat(AP3Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(2L, 3L, 4L);
+        assertThat(AP3Members.size()).isEqualTo(3);
+        assertThat(AP4Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(1L, 2L, 4L);
+        assertThat(AP3Members.size()).isEqualTo(3);
+        assertThat(BP1Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(5L, 7L);
+        assertThat(BP1Members.size()).isEqualTo(2);
+        assertThat(BP2Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(5L, 6L);
+        assertThat(BP2Members.size()).isEqualTo(2);
+        assertThat(BP3Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(5L, 6L, 7L);
+        assertThat(BP3Members.size()).isEqualTo(3);
+        assertThat(CP1Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(9L, 10L, 11L, 12L);
+        assertThat(CP1Members.size()).isEqualTo(4);
+        assertThat(CP2Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(9L, 11L);
+        assertThat(CP2Members.size()).isEqualTo(2);
+        assertThat(DP1Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(13L, 14L, 15L);
+        assertThat(DP1Members.size()).isEqualTo(3);
+        assertThat(DP2Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(14L, 15L);
+        assertThat(DP2Members.size()).isEqualTo(2);
+        assertThat(EP1Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(16L, 17L, 18L, 19L, 20L);
+        assertThat(EP1Members.size()).isEqualTo(5);
+        assertThat(EP2Members.stream().map(pm -> pm.getMember().getId()).collect(Collectors.toList()))
+                .contains(16L, 19L, 20L);
+        assertThat(EP2Members.size()).isEqualTo(3);
+
+
+        // 각 프로젝트에 속한 카테고리
+        assertThat(AP1Categories.size()).isEqualTo(2);
+        assertThat(AP2Categories.size()).isEqualTo(3);
+        assertThat(AP3Categories.size()).isEqualTo(3);
+        assertThat(AP4Categories.size()).isEqualTo(3);
+        assertThat(BP1Categories.size()).isEqualTo(3);
+        assertThat(BP2Categories.size()).isEqualTo(4);
+        assertThat(BP3Categories.size()).isEqualTo(3);
+        assertThat(CP1Categories.size()).isEqualTo(3);
+        assertThat(CP2Categories.isEmpty()).isTrue();
+        assertThat(DP1Categories.size()).isEqualTo(3);
+        assertThat(DP2Categories.size()).isEqualTo(1);
+        assertThat(EP1Categories.size()).isEqualTo(3);
+        assertThat(EP2Categories.size()).isEqualTo(3);
+
+        // 각 카테고리에 속한 릴리즈
+        assertThat(AP1C1s.size()).isEqualTo(2);
+        assertThat(AP1C2s.size()).isEqualTo(3);
+        assertThat(AP2C1s.size()).isEqualTo(3);
+        assertThat(AP2C2s.size()).isEqualTo(2);
+        assertThat(AP2C3s.size()).isEqualTo(1);
+        assertThat(AP3C1s.size()).isEqualTo(1);
+        assertThat(AP3C2s.size()).isEqualTo(2);
+        assertThat(AP3C3s.size()).isEqualTo(2);
+        assertThat(AP4C1s.size()).isEqualTo(4);
+        assertThat(AP4C2s.size()).isEqualTo(2);
+        assertThat(AP4C3s.size()).isEqualTo(1);
+        assertThat(BP1C1s.size()).isEqualTo(3);
+        assertThat(BP1C2s.size()).isEqualTo(2);
+        assertThat(BP1C3s.size()).isEqualTo(2);
+        assertThat(BP2C1s.size()).isEqualTo(1);
+        assertThat(BP2C2s.size()).isEqualTo(2);
+        assertThat(BP2C3s.size()).isEqualTo(2);
+        assertThat(BP2C4s.size()).isEqualTo(1);
+        assertThat(BP3C1s.size()).isEqualTo(2);
+        assertThat(BP3C2s.size()).isEqualTo(2);
+        assertThat(BP3C3s.size()).isEqualTo(2);
+        assertThat(CP1C1s.size()).isEqualTo(4);
+        assertThat(CP1C2s.size()).isEqualTo(2);
+        assertThat(CP1C3s.size()).isEqualTo(3);
+        assertThat(DP1C1s.size()).isEqualTo(3);
+        assertThat(DP1C2s.size()).isEqualTo(2);
+        assertThat(DP1C3s.size()).isEqualTo(4);
+        assertThat(DP2C1s.size()).isEqualTo(2);
+        assertThat(EP1C1s.size()).isEqualTo(3);
+        assertThat(EP1C2s.size()).isEqualTo(3);
+        assertThat(EP1C3s.size()).isEqualTo(3);
+        assertThat(EP2C1s.size()).isEqualTo(1);
+        assertThat(EP2C2s.size()).isEqualTo(2);
+        assertThat(EP2C3s.size()).isEqualTo(1);
+    }
+
+
+    @Test
+    @DisplayName("통합 테스트 - 회사 삭제 시나리오")
+    public void eCompanyDeleteScenario() throws Exception {
+        //given
+        Long tester = 19L;
+        Member aOwner = memberRepository.findByEmail("user1@doklib.com").get();
+        Company aCompany = companyRepository.findByName("A").get();
+        Member bOwner = memberRepository.findByEmail("user5@doklib.com").get();
+        Company bCompany = companyRepository.findByName("B").get();
+        Member cOwner = memberRepository.findByEmail("user8@doklib.com").get();
+        Company cCompany = companyRepository.findByName("C").get();
+        Member dOwner = memberRepository.findByEmail("user13@doklib.com").get();
+        Company dCompany = companyRepository.findByName("D").get();
+        Member eOwner = memberRepository.findByEmail("user16@doklib.com").get();
+        Company eCompany = companyRepository.findByName("E").get();
+        //when
+        companyService.deleteCompany(aCompany.getId(), aOwner.getId());
+        companyService.deleteCompany(bCompany.getId(), bOwner.getId());
+        companyService.deleteCompany(cCompany.getId(), cOwner.getId());
+        companyService.deleteCompany(dCompany.getId(), dOwner.getId());
+        companyService.deleteCompany(eCompany.getId(), eOwner.getId());
+        //then
+        assertThrows(CompanyNotFoundException.class, () -> companyService.deleteCompany(aCompany.getId(), aOwner.getId()));
+        assertThrows(CompanyNotFoundException.class, () -> companyService.deleteCompany(bCompany.getId(), bOwner.getId()));
+        assertThrows(CompanyNotFoundException.class, () -> companyService.deleteCompany(cCompany.getId(), cOwner.getId()));
+        assertThrows(CompanyNotFoundException.class, () -> companyService.deleteCompany(dCompany.getId(), dOwner.getId()));
+        assertThrows(CompanyNotFoundException.class, () -> companyService.deleteCompany(eCompany.getId(), eOwner.getId()));
+
+        assertThrows(CompanyNotFoundException.class,
+                () -> projectService.findProjectListByCompany(aCompany.getId(), PageRequest.of(0, 3), tester));
+        assertThrows(CompanyNotFoundException.class,
+                () -> projectService.findProjectListByCompany(bCompany.getId(), PageRequest.of(0, 3), tester));
+        assertThrows(CompanyNotFoundException.class,
+                () -> projectService.findProjectListByCompany(cCompany.getId(), PageRequest.of(0, 3), tester));
+        assertThrows(CompanyNotFoundException.class,
+                () -> projectService.findProjectListByCompany(dCompany.getId(), PageRequest.of(0, 3), tester));
+        assertThrows(CompanyNotFoundException.class,
+                () -> projectService.findProjectListByCompany(eCompany.getId(), PageRequest.of(0, 3), tester));
+        // 하위 데이터들도 모두 사라졌는지 레포지토리로 검증
+
+
+        List<Project> aProjects = projectRepository.findByCompanyId(aCompany.getId());
+        List<Project> bProjects = projectRepository.findByCompanyId(bCompany.getId());
+        List<Project> cProjects = projectRepository.findByCompanyId(cCompany.getId());
+        List<Project> dProjects = projectRepository.findByCompanyId(dCompany.getId());
+        List<Project> eProjects = projectRepository.findByCompanyId(eCompany.getId());
+        assertThat(aProjects.isEmpty()).isTrue();
+        assertThat(bProjects.isEmpty()).isTrue();
+        assertThat(cProjects.isEmpty()).isTrue();
+        assertThat(dProjects.isEmpty()).isTrue();
+        assertThat(eProjects.isEmpty()).isTrue();
+
+        List<Project> projects = projectRepository.findAll();
+        List<Category> categories = categoryRepository.findAll();
+        List<Releases> releases = releaseRepository.findAll();
+        List<MemberCompany> memberCompanies = memberCompanyRepository.findAll();
+        List<MemberProject> memberProjects = memberProjectRepository.findAll();
+        assertThat(projects.isEmpty()).isTrue();
+        assertThat(categories.isEmpty()).isTrue();
+        assertThat(releases.isEmpty()).isTrue();
+        assertThat(memberCompanies.isEmpty()).isTrue();
+        assertThat(memberProjects.isEmpty()).isTrue();
 
     }
 
+// TODO 정연 사용자 존재 검증 쪽 : id로 존재하는지 보는거 + isDeleted
 
 }
