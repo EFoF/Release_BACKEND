@@ -61,10 +61,22 @@ dependencies {
     // email 인증 의존성 추가
     implementation 'org.springframework.boot:spring-boot-starter-mail:2.7.1'
 
+    // mockito 의존성 추가
+//    implementation 'junit:junit:4.13.1'
+//    implementation 'org.mockito:mockito-core:3.7.7'
+
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
 
-tasks.named('test') {
+//tasks.withType(Test) {
+//    enabled = false
+//}
+
+//tasks.named('test') {
+//    useJUnitPlatform()
+//}
+
+test {
     useJUnitPlatform()
 }
 

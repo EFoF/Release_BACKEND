@@ -1,0 +1,104 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+name: doklib
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  issues: write
+  checks: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Setup MySQL
+      uses: samin/mysql-action@v1
+      with:
+        host port: 3306
+        container port: 3306
+        character set server: 'utf8'
+        mysql database: 'releasedb_test'
+        mysql user: 'test'
+        mysql password: ${{ secrets.MYSQL_PASSWORD }}
+
+    - name: Setup RabbitMQ
+      uses: getong/rabbitmq-action@v1.2
+      with:
+        rabbitmq version: '3.8.2-management-alpine'
+        host port: 5672
+        rabbitmq user: 'admin'
+        rabbitmq password: ${{ secrets.MYSQL_PASSWORD }}
+        rabbitmq vhost: 'vhost-01'
+
+    - uses: actions/checkout@v3
+
+    - name: make main application.yml
+      run: |
+        # create application.yml
+        cd ./src/main/resources
+        
+        # application.yml 파일 생성
+        touch ./application.yml
+        touch ./key.yml
+      
+        # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
+        echo "${{ secrets.WAS1_APPLICATION }}" >> ./application.yml
+        echo "${{ secrets.WAS1_APPLICATION_KEY }}" >> ./key.yml
+      shell: bash
+
+    - name: make test application.yml
+      run: |
+        # create application.yml
+        cd ./src/test/resources
+
+        # application.yml 파일 생성
+        touch ./application.yml
+
+        # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
+        echo "${{ secrets.WAS1_APPLICATION_TEST }}" >> ./application.yml
+      shell: bash
+
+    - name: Build with Gradle
+      run: |
+        ./gradlew build
+
+
+    - name: web docker build and push
+      run: |
+        docker login -u ${{ secrets.WAS1_DOCKER_USERNAME }} -p ${{ secrets.WAS1_DOCKER_PASSWORD }}
+        docker build -t ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend .
+        docker push ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
+
+
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_BASTION_KEY }}
+        username: ubuntu
+        key: ${{ secrets.WAS_PEM_KEY }}
+        port: 22
+        script: |
+          chmod 400 ${{ secrets.WAS_PEM_NAME }}
+          ssh -T -i ${{ secrets.WAS_PEM_NAME }} ubuntu@${{ secrets.SSH_WAS_KEY }} << EOF
+          docker kill release_backend
+          docker container prune -f
+          docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
+          docker run -d -p 8080:8080 --name release_backend ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
