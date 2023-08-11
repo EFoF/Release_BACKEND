@@ -96,7 +96,7 @@ jobs:
         script: |
           chmod 400 ${{ secrets.WAS_PEM_NAME }}
           ssh -T -i ${{ secrets.WAS_PEM_NAME }} ubuntu@${{ secrets.SSH_WAS_KEY }} << EOF
-          docker kill release_backend
+          docker kill doklib_was1
           docker container prune -f
           docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
           docker run -d -p 8080:8080 --name doklib_was1 ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend
@@ -111,7 +111,7 @@ jobs:
         script: |
           chmod 400 ${{ secrets.WAS_PEM_NAME }}
           ssh -T -i ${{ secrets.WAS_PEM_NAME }} ubuntu@${{ secrets.SSH_WAS2_KEY }} << EOF
-          docker kill release_backend
+          docker kill doklib_was2
           docker container prune -f
           docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
           docker run -d -p 8080:8080 --name doklib_was2 ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend
