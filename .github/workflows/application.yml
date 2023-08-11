@@ -87,7 +87,7 @@ jobs:
         docker build -t ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend .
         docker push ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
 
-    - name: executing remote ssh commands using password
+    - name: executing remote was1 using password
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: ${{ secrets.SSH_BASTION_KEY }}
@@ -101,10 +101,19 @@ jobs:
           docker container prune -f
           docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
           docker run -d -p 8080:8080 --name release_backend ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend
-          exit
+
+    - name: executing remote was2 using password
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_BASTION_KEY }}
+        username: ubuntu
+        key: ${{ secrets.WAS_PEM_KEY }}
+        port: 22
+        script: |
           chmod 400 ${{ secrets.WAS_PEM_NAME }}
           ssh -T -i ${{ secrets.WAS_PEM_NAME }} ubuntu@${{ secrets.SSH_WAS2_KEY }} << EOF
           docker kill release_backend
           docker container prune -f
           docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
           docker run -d -p 8080:8080 --name release_backend ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend
+          
