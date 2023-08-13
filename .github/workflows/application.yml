@@ -37,7 +37,7 @@ jobs:
         character set server: 'utf8'
         mysql database: 'releasedb_test'
         mysql user: 'test'
-        mysql password: ${{ secrets.MYSQL_PASSWORD }}
+        mysql password: ${{ secrets.MYSQL_RMQ_PASSWORD }}
 
     - name: Setup RabbitMQ
       uses: getong/rabbitmq-action@v1.2
@@ -45,7 +45,7 @@ jobs:
         rabbitmq version: '3.8.2-management-alpine'
         host port: 5672
         rabbitmq user: 'admin'
-        rabbitmq password: ${{ secrets.MYSQL_PASSWORD }}
+        rabbitmq password: ${{ secrets.MYSQL_RMQ_PASSWORD }}
         rabbitmq vhost: 'vhost-01'
 
     - uses: actions/checkout@v3
@@ -60,8 +60,8 @@ jobs:
         touch ./key.yml
       
         # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
-        echo "${{ secrets.WAS1_APPLICATION }}" >> ./application.yml
-        echo "${{ secrets.WAS1_APPLICATION_KEY }}" >> ./key.yml
+        echo "${{ secrets.MAIN_APPLICATION_YML }}" >> ./application.yml
+        echo "${{ secrets.MAIN_KEY_YML }}" >> ./key.yml
       shell: bash
 
     - name: make test application.yml
@@ -73,7 +73,7 @@ jobs:
         touch ./application.yml
 
         # GitHub-Actions 에서 설정한 값을 application.yml 파일에 쓰기
-        echo "${{ secrets.WAS1_APPLICATION_TEST }}" >> ./application.yml
+        echo "${{ secrets.TEST_APPLICATION_YML }}" >> ./application.yml
       shell: bash
 
     - name: Build with Gradle
@@ -82,37 +82,37 @@ jobs:
 
     - name: web docker build and push
       run: |
-        docker login -u ${{ secrets.WAS1_DOCKER_USERNAME }} -p ${{ secrets.WAS1_DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend .
-        docker push ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/release_backend .
+        docker push ${{ secrets.DOCKER_USERNAME }}/release_backend 
 
     - name: executing remote was1 using password
       uses: appleboy/ssh-action@v0.1.7
       with:
-        host: ${{ secrets.SSH_BASTION_KEY }}
+        host: ${{ secrets.SSH_BASTION_HOST }}
         username: ubuntu
-        key: ${{ secrets.WAS_PEM_KEY }}
+        key: ${{ secrets.PEM_KEY }}
         port: 22
         script: |
-          chmod 400 ${{ secrets.WAS_PEM_NAME }}
-          ssh -T -i ${{ secrets.WAS_PEM_NAME }} ubuntu@${{ secrets.SSH_WAS_KEY }} << EOF
+          chmod 400 ${{ secrets.PEM_NAME }}
+          ssh -T -i ${{ secrets.PEM_NAME }} ubuntu@${{ secrets.SSH_WAS1_HOST }} << EOF
           docker kill doklib_was1
           docker container prune -f
-          docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
-          docker run -d -p 8080:8080 --name doklib_was1 ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend
+          docker pull ${{ secrets.DOCKER_USERNAME }}/release_backend 
+          docker run -d -p 8080:8080 --name doklib_was1 ${{ secrets.DOCKER_USERNAME }}/release_backend
 
     - name: executing remote was2 using password
       uses: appleboy/ssh-action@v0.1.7
       with:
-        host: ${{ secrets.SSH_BASTION_KEY }}
+        host: ${{ secrets.SSH_BASTION_HOST }}
         username: ubuntu
-        key: ${{ secrets.WAS_PEM_KEY }}
+        key: ${{ secrets.PEM_KEY }}
         port: 22
         script: |
-          chmod 400 ${{ secrets.WAS_PEM_NAME }}
-          ssh -T -i ${{ secrets.WAS_PEM_NAME }} ubuntu@${{ secrets.SSH_WAS2_KEY }} << EOF
+          chmod 400 ${{ secrets.PEM_NAME }}
+          ssh -T -i ${{ secrets.PEM_NAME }} ubuntu@${{ secrets.SSH_WAS2_HOST }} << EOF
           docker kill doklib_was2
           docker container prune -f
-          docker pull ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend 
-          docker run -d -p 8080:8080 --name doklib_was2 ${{ secrets.WAS1_DOCKER_USERNAME }}/release_backend
+          docker pull ${{ secrets.DOCKER_USERNAME }}/release_backend 
+          docker run -d -p 8080:8080 --name doklib_was2 ${{ secrets.DOCKER_USERNAME }}/release_backend
           
