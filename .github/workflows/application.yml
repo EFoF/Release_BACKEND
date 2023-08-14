@@ -101,7 +101,6 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/release_backend 
           docker run -d -p 8080:8080 --name doklib_was1 ${{ secrets.DOCKER_USERNAME }}/release_backend
 
-
     - name: executing remote was2 using password
       uses: appleboy/ssh-action@v0.1.7
       with:
