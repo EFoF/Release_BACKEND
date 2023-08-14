@@ -25,4 +25,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, Project
             "where c.company_id = :company_id " +
             "and m.member_id = :member_id", nativeQuery = true)
     Slice<Project> findProjectsByCompanyIdAndMemberId(@Param("company_id") Long company_id, @Param("member_id") Long member_id, Pageable pageable);
+
 }
