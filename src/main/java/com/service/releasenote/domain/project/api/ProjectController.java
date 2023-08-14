@@ -41,16 +41,19 @@ public class ProjectController {
     /**
      * 특정 회사의 프로젝트 조회 Api
      * @param company_id
-     * @param pageable
-     * @return ResponseEntity<FindProjectListByCompanyResponseDto>
+     * @return ResponseEntity<projectListByCompany>
      * */
     @ApiOperation("API for project inquiry of specific company")
     @GetMapping(value = "/companies/{company_id}/projects")
-    public ResponseEntity<FindProjectListByCompanyResponseDto> projectListByCompany(@PathVariable Long company_id, Pageable pageable) {
-        Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        FindProjectListByCompanyResponseDto projectListByCompany = projectService.findProjectListByCompany(company_id, pageable, currentMemberId);
+    public ResponseEntity<FindProjectListByCompanyIdResponseDto> projectList(@PathVariable Long company_id) {
+        FindProjectListByCompanyIdResponseDto projectListByCompany = projectService.findProjectListByCompanyId(company_id);
         return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
     }
+//    public ResponseEntity<FindProjectListByCompanyResponseDto> projectListByCompany(@PathVariable Long company_id, Pageable pageable) {
+//        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+//        FindProjectListByCompanyResponseDto projectListByCompany = projectService.findProjectListByCompany(company_id, pageable, currentMemberId);
+//        return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
+//    }
 
     /**
      * 내가 속한 프로젝트 조회 Api

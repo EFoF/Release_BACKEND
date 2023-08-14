@@ -116,6 +116,28 @@ public class ProjectService {
         return new FindProjectListByCompanyResponseDto().toResponseDto(company, map);
     }
 
+    public FindProjectListByCompanyIdResponseDto findProjectListByCompanyId(Long companyId) {
+
+        // company가 없으면 예외 처리
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(CompanyNotFoundException::new);
+
+//        Slice<Project> projectsByCompanyIdAndMemberId =
+//                projectRepository.findProjectsByCompanyIdAndMemberId(companyId, currentMemberId, pageable);
+
+        List<Project> projectList = projectRepository.findByCompanyId(companyId);
+
+
+        // 1. companyId에 속한 프로젝트를 모두 가져온다.
+        // 2. 해당 project에 currentMemberId가 속해 있다면 리스트에 포함한다.
+
+        // 프로젝트를 dto에 담아 리스트화
+//        Slice<FindProjectListResponseDto> map = projectsByCompanyIdAndMemberId
+//                .map(project -> new FindProjectListResponseDto().toResponseDto(project));
+
+        return new FindProjectListByCompanyIdResponseDto().toResponseDto(company, projectList);
+    }
+
     /**
      * 내가 속한 프로젝트 조회 서비스 로직
      * */
