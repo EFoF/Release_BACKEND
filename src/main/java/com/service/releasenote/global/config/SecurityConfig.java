@@ -62,7 +62,7 @@ public class SecurityConfig {
                 /** http 요청 접근 제한 */
                 .and()
                 .authorizeHttpRequests() // http 요청 접근 제한
-                .antMatchers("/", "/error").permitAll() // 에러 코드 확인용
+                .antMatchers("/", "/error", "/favicon.ico").permitAll() // 에러 코드 확인용
                 // 로그인, 회원 가입, reissue 는 토큰이 없는 상태로 요청이 들어오므로 permitAll
                 .antMatchers("/auth/signup").permitAll() // 회원 가입을 위한 api
                 .antMatchers("/auth/signin").permitAll() // 로그인을 위한 api
