@@ -17,6 +17,7 @@ import com.service.releasenote.domain.member.dao.MemberRepository;
 import com.service.releasenote.domain.member.model.*;
 import com.service.releasenote.domain.project.application.ProjectService;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
+import com.service.releasenote.domain.project.dto.ProjectDto;
 import com.service.releasenote.domain.project.exception.exceptions.CompanyNotFoundException;
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.application.ReleaseService;
@@ -53,6 +54,7 @@ import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemb
 import static com.service.releasenote.domain.member.dto.MemberDTO.LoginDTO;
 import static com.service.releasenote.domain.member.dto.MemberDTO.SignUpRequest;
 import static com.service.releasenote.domain.member.dto.MemberProjectDTO.AddProjectMemberRequestDto;
+import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static com.service.releasenote.domain.project.dto.ProjectDto.CreateProjectRequestDto;
 import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -112,9 +114,9 @@ public class IntegrationTest {
 
     @AfterEach
     private void clean() {
-        alarmRepository.deleteAll();
         releaseRepository.deleteAll();
         categoryRepository.deleteAll();
+        alarmRepository.deleteAll();
         memberProjectRepository.deleteAll();
         projectRepository.deleteAll();
         memberCompanyRepository.deleteAll();
@@ -277,6 +279,31 @@ public class IntegrationTest {
                 .tag(Tag.NEW)
                 .build();
         return releaseRepository.save(releases);
+    }
+
+    public UpdateProjectRequestDto buildUpdateProjectRequestDto(String updatedTitle, Boolean scope) {
+        return UpdateProjectRequestDto.builder()
+                .description(updatedTitle + " description")
+                .title(updatedTitle)
+                .scope(scope)
+                .build();
+    }
+
+    public CategoryModifyRequestDto buildCategoryModifyRequestDto(String updatedTitle) {
+        return CategoryModifyRequestDto.builder()
+                .description(updatedTitle + " 's description")
+                .detail("### " + updatedTitle + "'s detail")
+                .title(updatedTitle)
+                .build();
+    }
+
+    public ReleaseModifyRequestDto buildReleaseModifyRequestDto(String titleForMessage, String version, Tag tag) {
+        return ReleaseModifyRequestDto.builder()
+                .message(titleForMessage + " release version :: " + version)
+                .releaseDate(LocalDateTime.now())   // 릴리즈 시간은 현재로 설정하겠음
+                .version(version)
+                .tag(tag)
+                .build();
     }
 
 
@@ -1022,16 +1049,42 @@ public class IntegrationTest {
     public void modifyScenario() throws Exception {
         //given
         // 1, 3, 4, 2
+        Member tester = memberRepository.findByEmail("user3@doklib.com").get();
+        Company A = companyRepository.findByName("A").get();
+        List<Project> APs = projectRepository.findByCompanyId(A.getId());
+        Project target = null;
+        int counter = 1;
+        List<UpdateProjectResponseDto> list = new ArrayList<>();
+        for (Project ap : APs) {
+            List<Long> members = memberProjectRepository.findMemberIdByProjectId(ap.getId());
+            UpdateProjectResponseDto updateProjectResponseDto =
+                    projectService.updateProject(buildUpdateProjectRequestDto(ap.getTitle() + "-UPDATE", true), ap.getId(), members.get(0));
+            list.add(updateProjectResponseDto);
+        }
+        // 프로제트 수정 이후 카테고리 수정
+        for (UpdateProjectResponseDto projectDto : list) {
+            List<Category> category = categoryRepository.findByProject(projectDto.getId());
+            List<Long> members = memberProjectRepository.findMemberIdByProjectId(projectDto.getId());
+            for (Category c : category) {
+                categoryService.modifyCategory(buildCategoryModifyRequestDto(
+                        c.getTitle() + "-UPDATED"), c.getId(), projectDto.getId(), members.get(0));
+            }
+        }
+
 //        Project AP1 = saveProject(A, members.get(0), "AP-1");
 //        Project AP2 = saveProject(A, members.get(2), "AP-2");
 //        Project AP3 = saveProject(A, members.get(3), "AP-3");
 //        Project AP4 = saveProject(A, members.get(1), "AP-4");
-
-
-
         //when
+        List<Category> AP1Categories = categoryRepository.findByProject(list.get(0).getId());
+        List<Category> AP2Categories = categoryRepository.findByProject(list.get(1).getId());
+        List<Category> AP3Categories = categoryRepository.findByProject(list.get(2).getId());
+        List<Category> AP4Categories = categoryRepository.findByProject(list.get(3).getId());
 
         //then
+//        assertThat(AP1Categories.size()).isEqualTo()
+
+
 
     }
 
