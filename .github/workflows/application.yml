@@ -76,6 +76,7 @@ jobs:
         echo "${{ secrets.TEST_APPLICATION_YML }}" >> ./application.yml
       shell: bash
 
+
     - name: Build with Gradle
       run: |
         ./gradlew build
