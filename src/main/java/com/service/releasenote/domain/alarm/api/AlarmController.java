@@ -14,7 +14,7 @@ import static com.service.releasenote.domain.alarm.dto.AlarmDto.*;
 @RestController
 @Api(tags = {"alarm"})
 @RequiredArgsConstructor
-@RequestMapping("/companies/projects")
+@RequestMapping("/api/companies/projects")
 public class AlarmController {
 
     private final AlarmService alarmService;

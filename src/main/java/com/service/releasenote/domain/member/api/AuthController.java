@@ -23,7 +23,7 @@ import static com.service.releasenote.domain.member.dto.MailDTO.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Api(tags = {"auth"})
 public class AuthController {

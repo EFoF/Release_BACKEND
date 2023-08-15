@@ -25,7 +25,7 @@ public class CompanyController {
     private final CompanyService companyService;
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/companies")
+    @PostMapping("/api/companies")
     public Long createCompany (
             @RequestPart(value="image", required = false) MultipartFile image,
             @RequestPart(value="name") String name) throws IOException {
@@ -36,7 +36,7 @@ public class CompanyController {
         return companyId;
     }
 
-    @GetMapping("/companies")
+    @GetMapping("/api/companies")
     public Page<CompanyResponseDTO> searchCompany(@RequestParam(value = "search", required = false, defaultValue = "") String name, Pageable pageable) {
         // 회사 이름이 비어있는 경우는 고려하지 않음
         Page<CompanyResponseDTO> companyList = companyService.findCompaniesByName(name, pageable);
@@ -46,7 +46,7 @@ public class CompanyController {
     }
 
     // TODO: API 수정
-    @GetMapping(value = "/companies/member/companies")
+    @GetMapping(value = "/api/companies/member/companies")
     public Page<CompanyResponseDTO> findCompanyByMemberId(Pageable pageable) {
         // TODO: MemberCompany 고려
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
@@ -56,7 +56,7 @@ public class CompanyController {
         return companyList;
     }
 
-    @PutMapping("/companies/{company_id}")
+    @PutMapping("/api/companies/{company_id}")
     public UpdateCompanyResponseDTO updateCompany(@PathVariable Long company_id,
                                                   @RequestPart(value="image", required = false) MultipartFile image,
                                                   @RequestPart(value="name", required = false) String name) throws IOException {
@@ -67,7 +67,7 @@ public class CompanyController {
         return updateCompany;
     }
 
-    @DeleteMapping("/companies/{company_id}")
+    @DeleteMapping("/api/companies/{company_id}")
     public Long deleteCompany(@PathVariable Long company_id) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Long deleteCompanyId = companyService.deleteCompany(company_id, currentMemberId);

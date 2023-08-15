@@ -33,7 +33,7 @@ public class ReleaseController {
             @ApiResponse(code=404, message = "존재하지 않는 카테고리 또는 존재하지 않는 프로젝트"),
             @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
     })
-    @PostMapping("/companies/projects/{projectId}/categories/{categoryId}/releases")
+    @PostMapping("/api/companies/projects/{projectId}/categories/{categoryId}/releases")
     public Long releaseAdd(
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "categoryId") Long categoryId,
@@ -49,7 +49,7 @@ public class ReleaseController {
      * @return ReleaseInfoDto
      */
     @ApiOperation("api for get releases by category")
-    @GetMapping("/companies/projects/categories/{id}/releases")
+    @GetMapping("/api/companies/projects/categories/{id}/releases")
     @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true, dataType = "Boolean", paramType = "query", defaultValue = "false")
     @ApiResponses({ @ApiResponse(code=200, message="요청 성공")})
     public ReleaseInfoDto releaseListByCategory(
@@ -66,7 +66,7 @@ public class ReleaseController {
     @ApiOperation("api for get releases by project")
     @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true, dataType = "boolean", paramType = "query", defaultValue = "false")
     @ApiResponses({ @ApiResponse(code=201, message="생성 성공"), @ApiResponse(code=404, message = "존재하지 않는 카테고리 또는 존재하지 않는 프로젝트"),})
-    @GetMapping("/companies/projects/{project_id}/categories/releases")
+    @GetMapping("/api/companies/projects/{project_id}/categories/releases")
     public ProjectReleasesDto releaseListByProject(
             @PathVariable(name = "project_id") Long projectId,
             @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) {
@@ -82,7 +82,7 @@ public class ReleaseController {
      * @return ReleaseModifyResponseDto
      */
     @ApiOperation("api for modify releases")
-    @PutMapping("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
+    @PutMapping("/api/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
     @ApiResponses({
             @ApiResponse(code=200, message="요청 성공"),
             @ApiResponse(code=401, message = "인증되지 않은 사용자"),
@@ -108,7 +108,7 @@ public class ReleaseController {
      * @return String
      */
     @ApiOperation("api for delete releases")
-    @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
+    @DeleteMapping("/api/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}")
     @ApiResponses({
             @ApiResponse(code=200, message="요청 성공"),
             @ApiResponse(code=401, message = "인증되지 않은 사용자"),

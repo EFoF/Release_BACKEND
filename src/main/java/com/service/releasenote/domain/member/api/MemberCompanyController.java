@@ -19,7 +19,7 @@ import java.util.List;
 public class MemberCompanyController {
     private final MemberCompanyService memberCompanyService;
 
-    @GetMapping(value = "/companies/{company_id}/members")
+    @GetMapping(value = "/api/companies/{company_id}/members")
     public List<MemberListDTO> findMembersByCompanyId(@PathVariable Long company_id) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         List<MemberListDTO> memberList = memberCompanyService.findMembersByCompanyId(company_id, currentMemberId);
@@ -27,7 +27,7 @@ public class MemberCompanyController {
         return memberList;
     }
 
-    @PostMapping(value = "/companies/{company_id}/members")
+    @PostMapping(value = "/api/companies/{company_id}/members")
     public AddMemberResponseDTO addMemberCompany(@PathVariable Long company_id, @RequestBody AddMemberRequestDTO addMemberRequestDTO) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         AddMemberResponseDTO addMember = memberCompanyService.addMemberCompany(company_id, addMemberRequestDTO, currentMemberId);
@@ -36,7 +36,7 @@ public class MemberCompanyController {
         return addMember;
     }
 
-    @DeleteMapping(value = "/companies/{company_id}/members")
+    @DeleteMapping(value = "/api/companies/{company_id}/members")
     public Long deleteMemberCompany(@PathVariable Long company_id, @RequestHeader("email") String email) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Long deleteMemberId = memberCompanyService.deleteMemberCompany(company_id, email, currentMemberId);

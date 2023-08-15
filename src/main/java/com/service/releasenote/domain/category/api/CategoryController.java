@@ -26,7 +26,7 @@ public class CategoryController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("api for save category")
-    @PostMapping("/companies/projects/{project_id}/categories")
+    @PostMapping("/api/companies/projects/{project_id}/categories")
     @ApiResponses({
             @ApiResponse(code=201, message="생성 성공"),
             @ApiResponse(code=401, message = "인증되지 않은 사용자"),
@@ -46,7 +46,7 @@ public class CategoryController {
      * @return CategoryInfoDto
      */
     @ApiOperation("api for get categories by project id")
-    @GetMapping("/companies/projects/{project_id}/categories")
+    @GetMapping("/api/companies/projects/{project_id}/categories")
     @ApiResponses({ @ApiResponse(code = 200, message = "요청 성공"), @ApiResponse(code = 404, message = "존재하지 않는 프로젝트")})
     public CategoryInfoDto categoryList(@PathVariable(name = "project_id") Long projectId) {
         return categoryService.findCategoryByProjectId(projectId);
@@ -62,7 +62,7 @@ public class CategoryController {
     @ApiOperation("api for get specific category by combination of companyId, projectId, categoryId")
     @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true, dataType = "boolean", paramType = "query", defaultValue = "false")
     @ApiResponses({ @ApiResponse(code=200, message = "요청 성공"), @ApiResponse(code=404, message = "존재하지 않는 카테고리")})
-    @GetMapping("/companies/{company_id}/projects/{project_id}/categories/{category_id}")
+    @GetMapping("/api/companies/{company_id}/projects/{project_id}/categories/{category_id}")
     public CategoryResponseDto categoryDetailsWithCondition (
             @PathVariable(name = "company_id") Long companyId,
             @PathVariable(name = "project_id") Long projectId,
@@ -79,7 +79,7 @@ public class CategoryController {
     @ApiOperation("api for get specific category by category id only")
     @ApiImplicitParam(name = "developer", value = "개발자 모드", required = true, dataType = "boolean", paramType = "query", defaultValue = "false")
     @ApiResponses({ @ApiResponse(code=200, message = "요청 성공"), @ApiResponse(code=404, message = "존재하지 않는 카테고리")})
-    @GetMapping("/categories/{category_id}")
+    @GetMapping("/api/categories/{category_id}")
     public CategoryResponseDto categoryDetails (
             @PathVariable(name = "category_id") Long categoryId,
             @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) {
@@ -99,7 +99,7 @@ public class CategoryController {
             @ApiResponse(code=404, message = "존재하지 않는 카테고리"),
             @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
     })
-    @DeleteMapping("/companies/projects/{project_id}/categories/{category_id}")
+    @DeleteMapping("/api/companies/projects/{project_id}/categories/{category_id}")
     public String categoryRemove(
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId) {
@@ -121,7 +121,7 @@ public class CategoryController {
             @ApiResponse(code=404, message = "존재하지 않는 카테고리"),
             @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
     })
-    @PutMapping("/companies/projects/{project_id}/categories/{category_id}")
+    @PutMapping("/api/companies/projects/{project_id}/categories/{category_id}")
     public CategoryModifyResponseDto categoryModify(
             @PathVariable(name = "project_id")Long projectId,
             @PathVariable(name = "category_id")Long categoryId,
