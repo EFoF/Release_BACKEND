@@ -28,7 +28,7 @@ public class ProjectController {
      * @return ResponseEntity<CreateProjectResponseDto>
      */
     @ApiOperation("API for project creation")
-    @PostMapping("/companies/{company_id}/projects")
+    @PostMapping("/api/companies/{company_id}/projects")
     public ResponseEntity<Long> createProject(
             @RequestBody CreateProjectRequestDto createProjectRequestDto,
             @PathVariable Long company_id) {
@@ -44,7 +44,7 @@ public class ProjectController {
      * @return ResponseEntity<projectListByCompany>
      * */
     @ApiOperation("API for project inquiry of specific company")
-    @GetMapping(value = "/companies/{company_id}/projects")
+    @GetMapping(value = "/api/companies/{company_id}/projects")
     public ResponseEntity<FindProjectListByCompanyIdResponseDto> projectList(@PathVariable Long company_id) {
         FindProjectListByCompanyIdResponseDto projectListByCompany = projectService.findProjectListByCompanyId(company_id);
         return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
@@ -58,7 +58,7 @@ public class ProjectController {
     /**
      * 내가 속한 프로젝트 조회 Api
      * */
-    @GetMapping("/companies/projects")
+    @GetMapping("/api/companies/projects")
     public ProjectPaginationDtoWrapper paginationTest(Pageable pageable) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         return projectService.getProjectPage(pageable, currentMemberId);
@@ -70,7 +70,7 @@ public class ProjectController {
      * @return ResponseEntity
      * */
     @ApiOperation("API for project modification")
-    @PutMapping(value = "/companies/projects/{project_id}")
+    @PutMapping(value = "/api/companies/projects/{project_id}")
     public ResponseEntity updateProject(
             @PathVariable Long project_id,
             @RequestBody UpdateProjectRequestDto updateProjectRequestDto) {
@@ -86,7 +86,7 @@ public class ProjectController {
      * @return ResponseEntity
      * */
     @ApiOperation("API for deleting projects")
-    @DeleteMapping(value = "/companies/{company_id}/projects/{project_id}")
+    @DeleteMapping(value = "/api/companies/{company_id}/projects/{project_id}")
     public ResponseEntity deleteProject(
             @PathVariable Long company_id, @PathVariable Long project_id) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
