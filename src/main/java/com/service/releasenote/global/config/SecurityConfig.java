@@ -64,14 +64,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests() // http 요청 접근 제한
                 .antMatchers("/", "/error", "/favicon.ico").permitAll() // 에러 코드 확인용
                 // 로그인, 회원 가입, reissue 는 토큰이 없는 상태로 요청이 들어오므로 permitAll
-                .antMatchers("/auth/signup").permitAll() // 회원 가입을 위한 api
-                .antMatchers("/auth/signin").permitAll() // 로그인을 위한 api
-                .antMatchers("/auth/reissue").permitAll() // reissue 를 위한 api
-                .antMatchers("/auth/mail/**").permitAll() // Email 인증을 위한 api
+                .antMatchers("/api/auth/signup").permitAll() // 회원 가입을 위한 api
+                .antMatchers("/api/auth/signin").permitAll() // 로그인을 위한 api
+                .antMatchers("/api/auth/reissue").permitAll() // reissue 를 위한 api
+                .antMatchers("/api/auth/mail/**").permitAll() // Email 인증을 위한 api
 //                .antMatchers("/auth/getMemberId").permitAll() // getCurrentId 를 위한 api
-                .antMatchers("/auth/update/password/anonymous").permitAll() // 비로그인 유저를 위한 api
-                .antMatchers(HttpMethod.GET, "/companies/**").permitAll() // company로 시작하는 GET 방식만 허용
-                .antMatchers(HttpMethod.POST, "/companies/**").permitAll() // company로 시작하는 POST 방식만 허용
+                .antMatchers("/api/auth/update/password/anonymous").permitAll() // 비로그인 유저를 위한 api
+                .antMatchers(HttpMethod.GET, "/api/companies/**").permitAll() // company로 시작하는 GET 방식만 허용
+                .antMatchers(HttpMethod.POST, "/api/companies/**").permitAll() // company로 시작하는 POST 방식만 허용
                 .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // swagger를 위한 주소
                 .antMatchers("/swagger-resources/**").permitAll() // swagger를 위한 주소
                 .anyRequest().authenticated() // 나머지 요청들은 모두 인증을 받아야 함
