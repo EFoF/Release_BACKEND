@@ -110,7 +110,7 @@ public class ProjectControllerTest {
         when(projectService.createProject(any(), any(), any())).thenReturn(project.getId());
 
         //then
-        mockMvc.perform(post("/companies/{company_id}/projects", 1L)
+        mockMvc.perform(post("/api/companies/{company_id}/projects", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(projectSaveRequest)))
@@ -128,7 +128,7 @@ public class ProjectControllerTest {
         UpdateProjectRequestDto updateProjectRequestDto = updateProjectRequest();
 
         //when & then
-        mockMvc.perform(put("/companies/projects/{project_id}", 1L)
+        mockMvc.perform(put("/api/companies/projects/{project_id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateProjectRequestDto)))
@@ -145,7 +145,7 @@ public class ProjectControllerTest {
         Project project = buildProject(company, 1L);
 
         //when & then
-        mockMvc.perform(delete("/companies/{company_id}/projects/{project_id}", 1L, 1L)
+        mockMvc.perform(delete("/api/companies/{company_id}/projects/{project_id}", 1L, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

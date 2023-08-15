@@ -113,7 +113,7 @@ public class AlarmControllerTest {
 
         //then
 
-        ResultActions perform = mockMvc.perform(get("/companies/projects/{projectId}/alarms", 1L)
+        ResultActions perform = mockMvc.perform(get("/api/companies/projects/{projectId}/alarms", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .param("onlyNew", "false"));
@@ -141,7 +141,7 @@ public class AlarmControllerTest {
         doThrow(UnAuthorizedException.class).when(alarmService).getAlarmDetailByProjectId(1L, currentMemberId);
 
         //then
-        ResultActions perform = mockMvc.perform(get("/companies/projects/{projectId}/alarms", 1L)
+        ResultActions perform = mockMvc.perform(get("/api/companies/projects/{projectId}/alarms", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .param("onlyNew", "false"));
@@ -179,7 +179,7 @@ public class AlarmControllerTest {
     @DisplayName("성공 - 알람 읽음 처리")
     public void readAlarmForSuccess() throws Exception {
         //then
-        ResultActions perform = mockMvc.perform(post("/companies/projects/{projectId}/alarms", 1L)
+        ResultActions perform = mockMvc.perform(post("/api/companies/projects/{projectId}/alarms", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -195,7 +195,7 @@ public class AlarmControllerTest {
         doThrow(UnAuthorizedException.class).when(alarmService).readAlarm(1L, currentMemberId);
 
         //then
-        ResultActions perform = mockMvc.perform(post("/companies/projects/{projectId}/alarms", 1L)
+        ResultActions perform = mockMvc.perform(post("/api/companies/projects/{projectId}/alarms", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -225,7 +225,7 @@ public class AlarmControllerTest {
     @DisplayName("성공 - 알람 삭제")
     public void deleteAlarmForSuccess() throws Exception {
         //then
-        ResultActions perform = mockMvc.perform(delete("/companies/projects/{projectId}/alarms/{alarmId}", 1L, 1L)
+        ResultActions perform = mockMvc.perform(delete("/api/companies/projects/{projectId}/alarms/{alarmId}", 1L, 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON));
 
@@ -240,7 +240,7 @@ public class AlarmControllerTest {
         doThrow(UnAuthorizedException.class).when(alarmService).deleteAlarm(1L, 1L, currentMemberId);
 
         //then
-        ResultActions perform = mockMvc.perform(delete("/companies/projects/{projectId}/alarms/{alarmId}", 1L, 1L)
+        ResultActions perform = mockMvc.perform(delete("/api/companies/projects/{projectId}/alarms/{alarmId}", 1L, 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON));
 

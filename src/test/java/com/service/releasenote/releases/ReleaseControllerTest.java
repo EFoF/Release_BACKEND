@@ -207,7 +207,7 @@ public class ReleaseControllerTest {
 
         //then
         mockMvc.perform(
-                post("/companies/projects/{projectId}/categories/{categoryId}/releases", 1L, 1L)
+                post("/api/companies/projects/{projectId}/categories/{categoryId}/releases", 1L, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(saveReleaseRequest)))
                 .andDo(print())
@@ -232,7 +232,7 @@ public class ReleaseControllerTest {
 
         //then
         mockMvc.perform(
-                        post("/companies/projects/{projectId}/categories/{categoryId}/releases", 1L, 1L)
+                        post("/api/companies/projects/{projectId}/categories/{categoryId}/releases", 1L, 1L)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(saveReleaseRequest)))
                 .andExpect(status().is4xxClientError())
@@ -255,7 +255,7 @@ public class ReleaseControllerTest {
         when(releaseService.findReleasesByCategoryId(category.getId(), false)).thenReturn(releaseInfoDto);
 
         //then
-        mockMvc.perform(get("/companies/projects/categories/{category_id}/releases", 1L)
+        mockMvc.perform(get("/api/companies/projects/categories/{category_id}/releases", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -284,7 +284,7 @@ public class ReleaseControllerTest {
         when(releaseService.findReleasesByProjectId(project.getId(), false)).thenReturn(projectReleaseDto);
 
         //then
-        mockMvc.perform(get("/companies/projects/{project_id}/categories/releases", 1L)
+        mockMvc.perform(get("/api/companies/projects/{project_id}/categories/releases", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -322,7 +322,7 @@ public class ReleaseControllerTest {
         when(releaseService.findReleaseAndConvert(category.getId())).thenReturn(responseDto);
 
         //then
-        mockMvc.perform(put("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
+        mockMvc.perform(put("/api/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
                 1L, 1L,1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -349,7 +349,7 @@ public class ReleaseControllerTest {
         when(releaseService.findReleaseAndConvert(category.getId())).thenThrow(exception);
 
         //then
-        mockMvc.perform(put("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
+        mockMvc.perform(put("/api/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
                         1L, 1L,1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -378,7 +378,7 @@ public class ReleaseControllerTest {
                 .thenReturn("deleted");
 
         //then
-        mockMvc.perform(delete("/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
+        mockMvc.perform(delete("/api/companies/projects/{project_id}/categories/{category_id}/releases/{release_id}",
                 1L,1L,1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))

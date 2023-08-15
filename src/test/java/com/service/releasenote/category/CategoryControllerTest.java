@@ -150,7 +150,7 @@ public class CategoryControllerTest {
         when(categoryService.saveCategory(any(), any(), any())).thenReturn(category.getId());
 
         //then
-        mockMvc.perform(post("/companies/projects/{project_id}/categories", 1L)
+        mockMvc.perform(post("/api/companies/projects/{project_id}/categories", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(categorySaveRequest)))
@@ -170,7 +170,7 @@ public class CategoryControllerTest {
         when(categoryService.findCategoryByProjectId(project.getId())).thenReturn(categoryInfoDto);
         
         //then
-        mockMvc.perform(get("/companies/projects/{project_id}/categories", 1L)
+        mockMvc.perform(get("/api/companies/projects/{project_id}/categories", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -193,7 +193,7 @@ public class CategoryControllerTest {
                 .thenReturn(categoryResponseDto);
 
         //then
-        mockMvc.perform(get("/companies/{company_id}/projects/{project_id}/categories/{category_id}",
+        mockMvc.perform(get("/api/companies/{company_id}/projects/{project_id}/categories/{category_id}",
                 1L,1L,1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -219,7 +219,7 @@ public class CategoryControllerTest {
         when(categoryService.findCategoryByCategoryId(category.getId(), false)).thenReturn(categoryResponseDto);
 
         //then
-        mockMvc.perform(get("/categories/{category_id}", 1L)
+        mockMvc.perform(get("/api/categories/{category_id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -241,7 +241,7 @@ public class CategoryControllerTest {
         CategoryModifyRequestDto categoryModifyRequest = createCategoryModifyRequest();
 
         //when & then
-        mockMvc.perform(put("/companies/projects/{project_id}/categories/{category_id}", 1L, 1L)
+        mockMvc.perform(put("/api/companies/projects/{project_id}/categories/{category_id}", 1L, 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(categoryModifyRequest)))
@@ -265,7 +265,7 @@ public class CategoryControllerTest {
                 .thenReturn("deleted");
 
         //then
-        mockMvc.perform(delete("/companies/projects/{project_id}/categories/{category_id}", 1L, 1L)
+        mockMvc.perform(delete("/api/companies/projects/{project_id}/categories/{category_id}", 1L, 1L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

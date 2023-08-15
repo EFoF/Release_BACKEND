@@ -203,6 +203,7 @@ public class IntegrationTest {
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
                 .authority(Authority.ROLE_USER)
                 .memberLoginType(MemberLoginType.RELEASE_LOGIN)
+                .isDeleted(false)
                 .build();
         return memberRepository.save(member);
     }
