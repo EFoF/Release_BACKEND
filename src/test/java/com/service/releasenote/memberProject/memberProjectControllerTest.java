@@ -156,7 +156,7 @@ public class memberProjectControllerTest {
         when(memberProjectService.addProjectMember(any(), any(), any())).thenReturn(addProjectMemberResponseDto);
 
         //then
-        mockMvc.perform(post("/companies/projects/{project_id}/members", 1L)
+        mockMvc.perform(post("/api/companies/projects/{project_id}/members", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addProjectMemberRequestDto)))
@@ -181,7 +181,7 @@ public class memberProjectControllerTest {
         when(memberProjectService.findProjectMemberList(project.getId())).thenReturn(findMemberListByProjectId);
 
         //then
-        mockMvc.perform(get("/companies/projects/{project_id}/members", 1L)
+        mockMvc.perform(get("/api/companies/projects/{project_id}/members", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -202,7 +202,7 @@ public class memberProjectControllerTest {
         MemberProject memberProject = buildMemberProject(1L, project, member);
 
         //when & then
-        mockMvc.perform(delete("/companies/projects/{project_id}/members", 1L)
+        mockMvc.perform(delete("/api/companies/projects/{project_id}/members", 1L)
                         .header("email", "test1@naver.com")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))

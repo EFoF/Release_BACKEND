@@ -145,7 +145,7 @@ public class AuthControllerTest {
         s = substring + ",\"password\":" + "\"" + password + "\"" + "}";
 
         //then
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(s))
@@ -167,7 +167,7 @@ public class AuthControllerTest {
         //when
 
         //then
-        mockMvc.perform(post("/auth/signin")
+        mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(s))
@@ -183,7 +183,7 @@ public class AuthControllerTest {
         //when
 
         //then
-        mockMvc.perform(post("/auth/logout")
+        mockMvc.perform(post("/api/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -199,7 +199,7 @@ public class AuthControllerTest {
         //when
 
         //then
-        mockMvc.perform(post("/auth/reissue")
+        mockMvc.perform(post("/api/auth/reissue")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         )
@@ -217,7 +217,7 @@ public class AuthControllerTest {
         //when
 
         //then
-        mockMvc.perform(patch("/auth/withdrawal")
+        mockMvc.perform(patch("/api/auth/withdrawal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(withDrawalDTO))
@@ -236,7 +236,7 @@ public class AuthControllerTest {
         //when
 
         //then
-        mockMvc.perform(patch("/auth/update/password")
+        mockMvc.perform(patch("/api/auth/update/password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatePasswordRequest))
@@ -254,7 +254,7 @@ public class AuthControllerTest {
         //when
 
         //then
-        mockMvc.perform(patch("/auth/update/password/anonymous")
+        mockMvc.perform(patch("/api/auth/update/password/anonymous")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatePasswordRequest))
@@ -272,7 +272,7 @@ public class AuthControllerTest {
         //when
 
         //then
-        mockMvc.perform(post("/auth/mail/sending")
+        mockMvc.perform(post("/api/auth/mail/sending")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(emailCodeRequestDTO))
@@ -291,7 +291,7 @@ public class AuthControllerTest {
         when(emailVerificationService.verifyEmailVerificationCode(any())).thenReturn(true);
 
         //then
-        mockMvc.perform(post("/auth/mail/verification")
+        mockMvc.perform(post("/api/auth/mail/verification")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(emailVerificationRequestDTO))
@@ -309,7 +309,7 @@ public class AuthControllerTest {
         //when
 
         //then
-        mockMvc.perform(get("/auth/member/info")
+        mockMvc.perform(get("/api/auth/member/info")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                 )
