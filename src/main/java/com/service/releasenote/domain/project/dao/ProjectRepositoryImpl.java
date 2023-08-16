@@ -63,6 +63,7 @@ public class ProjectRepositoryImpl implements ProjectCustomRepository{
                 .join(memberProject.project, project).fetchJoin()
                 .join(project.company, company).fetchJoin()
                 .join(memberProject.member, member)
+                .where(company.id.eq(companyId))
                 .where(memberProject.member.id.eq(memberId))
                 .fetch();
         return result;
