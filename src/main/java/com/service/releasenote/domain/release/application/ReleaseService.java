@@ -64,12 +64,12 @@ public class ReleaseService {
         Releases save = releaseRepository.save(releases);
         alarmService.produceMessage(projectId, releases.getId(), "새 릴리즈를 게시하셨습니다.", AlarmDomain.RELEASE, currentMemberId);
         return ReleaseDtoEach.builder()
-                .lastModifiedTime(releases.getModifiedDate())
-                .releaseDate(releases.getReleaseDate())
-                .version(releases.getVersion())
-                .content(releases.getMessage())
-                .tag(releases.getTag())
-                .id(releases.getId())
+                .lastModifiedTime(save.getModifiedDate())
+                .releaseDate(save.getReleaseDate())
+                .version(save.getVersion())
+                .content(save.getMessage())
+                .tag(save.getTag())
+                .id(save.getId())
                 .build();
     }
 
