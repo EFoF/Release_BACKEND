@@ -34,7 +34,7 @@ public class ReleaseController {
             @ApiResponse(code=409, message = "프로젝트에 속하지 않은 사용자")
     })
     @PostMapping("/api/companies/projects/{projectId}/categories/{categoryId}/releases")
-    public Long releaseAdd(
+    public ReleaseDtoEach releaseAdd(
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "categoryId") Long categoryId,
             @RequestBody SaveReleaseRequest saveReleaseRequest

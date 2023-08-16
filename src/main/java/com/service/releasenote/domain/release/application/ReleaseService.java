@@ -51,7 +51,7 @@ public class ReleaseService {
      * @return Long
      */
     @Transactional
-    public Long saveRelease(SaveReleaseRequest saveReleaseRequest, Long projectId, Long categoryId, Long currentMemberId) {
+    public ReleaseDtoEach saveRelease(SaveReleaseRequest saveReleaseRequest, Long projectId, Long categoryId, Long currentMemberId) {
         if(!projectRepository.existsById(projectId)) {
             throw new ProjectNotFoundException();
         }
@@ -63,7 +63,14 @@ public class ReleaseService {
         Releases releases = saveReleaseRequest.toEntity(category);
         Releases save = releaseRepository.save(releases);
         alarmService.produceMessage(projectId, releases.getId(), "새 릴리즈를 게시하셨습니다.", AlarmDomain.RELEASE, currentMemberId);
-        return save.getId();
+        return ReleaseDtoEach.builder()
+                .lastModifiedTime(releases.getModifiedDate())
+                .releaseDate(releases.getReleaseDate())
+                .version(releases.getVersion())
+                .content(releases.getMessage())
+                .tag(releases.getTag())
+                .id(releases.getId())
+                .build();
     }
 
     /**
