@@ -10,13 +10,18 @@ import static com.service.releasenote.global.alarm.dto.RabbitmqAdminDto.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/queue")
+@RequestMapping("/api/admin")
 @Api(tags = {"amqp-rabbitmq"})
 public class RabbitmqAdminController {
 
     private final RabbitmqAdminService rabbitmqAdminService;
 
-    @PostMapping
+    @PostMapping("/exchange")
+    public String exchangeCreate() {
+        return rabbitmqAdminService.saveExchange();
+    }
+
+    @PostMapping("/queue")
     public String queueCreate(@RequestBody SaveQueueRequest saveQueueRequest) {
         return rabbitmqAdminService.saveQueue(saveQueueRequest);
     }

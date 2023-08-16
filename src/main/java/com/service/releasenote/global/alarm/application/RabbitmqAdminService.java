@@ -3,10 +3,7 @@ package com.service.releasenote.global.alarm.application;
 import com.service.releasenote.global.alarm.exception.QueueNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueInformation;
+import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +21,15 @@ public class RabbitmqAdminService {
 
     // queueName 컨벤션 : project-{projectName}-queue
     // bindingKey 컨벤션 : {projectName} (다이렉트 전략이라 queue이름과 일치시킴)
+
+    public String saveExchange() {
+//        Exchange exchange = ExchangeBuilder.directExchange(saveExchangeRequest.getName()).build();
+        Exchange exchange = ExchangeBuilder.directExchange(exchangeName).build();
+        amqpAdmin.declareExchange(exchange);
+        return exchangeName + " created";
+
+    }
+
     public String saveQueue(SaveQueueRequest saveQueueRequest) {
         Queue queue = new Queue(saveQueueRequest.getQueueName(), true, false, false);
         Binding binding = new Binding(saveQueueRequest.getQueueName(), Binding.DestinationType.QUEUE,
