@@ -65,9 +65,9 @@ public class ProjectController {
     }
 
     @GetMapping("/api/companies/{companyId}/myProjects")
-    public ProjectPaginationDtoWrapper myProjectListInCompany(@PathVariable(name = "companyId") Long companyId, Pageable pageable) {
+    public FindProjectListByCompanyIdResponseDto myProjectListInCompany(@PathVariable(name = "companyId") Long companyId, Pageable pageable) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        return projectService.getMyProjectPageWithCompany(pageable, companyId, currentMemberId);
+        return projectService.getMyProjectPageWithCompany(companyId, currentMemberId);
     }
 
     /**
