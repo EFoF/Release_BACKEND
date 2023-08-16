@@ -161,8 +161,8 @@ public class ReleaseServiceTest {
         when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
 
         //then
-        Long savedId = releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId);
-        assertThat(savedId).isEqualTo(releases.getId());
+        ReleaseDtoEach releaseDtoEach = releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId);
+        assertThat(releaseDtoEach.getId()).isEqualTo(releases.getId());
 
     }
 

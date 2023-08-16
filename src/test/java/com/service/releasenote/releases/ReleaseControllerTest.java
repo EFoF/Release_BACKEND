@@ -202,8 +202,9 @@ public class ReleaseControllerTest {
         SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
 
         //when
+        ReleaseDtoEach releaseDtoEach = createReleaseDtoEach(1);
         when(releaseService.saveRelease(saveReleaseRequest, project.getId(), category.getId(), currentMemberId))
-                .thenReturn(1L);
+                .thenReturn(releaseDtoEach);
 
         //then
         mockMvc.perform(
