@@ -59,9 +59,15 @@ public class ProjectController {
      * 내가 속한 프로젝트 조회 Api
      * */
     @GetMapping("/api/companies/projects")
-    public ProjectPaginationDtoWrapper paginationTest(Pageable pageable) {
+    public ProjectPaginationDtoWrapper myProjectList(Pageable pageable) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         return projectService.getProjectPage(pageable, currentMemberId);
+    }
+
+    @GetMapping("/api/companies/{companyId}/myProjects")
+    public ProjectPaginationDtoWrapper myProjectListInCompany(@PathVariable(name = "companyId") Long companyId, Pageable pageable) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return projectService.getMyProjectPageWithCompany(pageable, companyId, currentMemberId);
     }
 
     /**

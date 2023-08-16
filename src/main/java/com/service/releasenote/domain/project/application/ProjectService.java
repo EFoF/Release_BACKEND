@@ -5,30 +5,22 @@ import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.company.dao.CompanyRepository;
 import com.service.releasenote.domain.company.model.Company;
-import com.service.releasenote.domain.member.dao.MemberCompanyRepository;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
 import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.model.Member;
-import com.service.releasenote.domain.member.model.MemberCompany;
 import com.service.releasenote.domain.member.model.MemberProject;
 import com.service.releasenote.domain.member.model.Role;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.*;
 import com.service.releasenote.domain.project.model.Project;
-import com.service.releasenote.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.service.releasenote.domain.project.dto.ProjectDto.*;
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
@@ -142,7 +134,12 @@ public class ProjectService {
      * 내가 속한 프로젝트 조회 서비스 로직
      * */
     public ProjectPaginationDtoWrapper getProjectPage(Pageable pageable, Long currentMemberId) {
-        Page<ProjectPaginationDtoEach> projects = projectRepository.paginationTest(currentMemberId, pageable);
+        Page<ProjectPaginationDtoEach> projects = projectRepository.findMyProjects(currentMemberId, pageable);
+        return ProjectPaginationDtoWrapper.builder().list(projects).build();
+    }
+
+    public ProjectPaginationDtoWrapper getMyProjectPageWithCompany(Pageable pageable, Long companyId, Long currentMemberId) {
+        Page<ProjectPaginationDtoEach> projects = projectRepository.findMyProjectsInCompany(companyId, currentMemberId, pageable);
         return ProjectPaginationDtoWrapper.builder().list(projects).build();
     }
 
