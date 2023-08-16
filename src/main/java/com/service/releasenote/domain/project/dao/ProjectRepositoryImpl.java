@@ -23,7 +23,7 @@ public class ProjectRepositoryImpl implements ProjectCustomRepository{
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Page<ProjectPaginationDtoEach> paginationTest(Long memberId, Pageable pageable) {
+    public Page<ProjectPaginationDtoEach> findMyProjects(Long memberId, Pageable pageable) {
         List<ProjectPaginationDtoEach> fetch = jpaQueryFactory
                 .select(new QProjectDto_ProjectPaginationDtoEach(
                         memberProject.project.title,
@@ -36,6 +36,35 @@ public class ProjectRepositoryImpl implements ProjectCustomRepository{
                 .from(memberProject)
                 .join(memberProject.project, project)
                 .where(memberProject.member.id.eq(memberId))
+                .orderBy(project.company.id.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> count = jpaQueryFactory
+                .select(project.count())
+                .from(memberProject)
+                .leftJoin(memberProject.project, project)
+                .where(memberProject.member.id.eq(memberId));
+
+        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
+    }
+
+    @Override
+    public Page<ProjectPaginationDtoEach> findMyProjectsInCompany(Long companyId, Long memberId, Pageable pageable) {
+        List<ProjectPaginationDtoEach> fetch = jpaQueryFactory
+                .select(new QProjectDto_ProjectPaginationDtoEach(
+                        memberProject.project.title,
+                        memberProject.project.description,
+                        memberProject.project.id,
+                        memberProject.project.company.id,
+                        memberProject.project.company.ImageURL,
+                        memberProject.project.company.name
+                ))
+                .from(memberProject)
+                .join(memberProject.project, project)
+                .where(memberProject.member.id.eq(memberId))
+                .where(project.company.id.eq(companyId))
                 .orderBy(project.company.id.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
