@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,6 +123,19 @@ public class AlarmService {
         List<AlarmInfoDtoEach> resultList = alarmList.stream().map(alarm -> convertToDto(alarm))
                 .collect(Collectors.toList());
         return AlarmInfoDto.builder().alarmInfoDtoList(resultList).build();
+    }
+
+    public Slice<AlarmInfoDtoEach> getMyAlarmDetail(Pageable pageable, Long currentMemberId) {
+        Slice<Alarm> alarmSlice = alarmRepository.findMyAlarmsAsSlice(pageable, currentMemberId);
+        Slice<AlarmInfoDtoEach> result = alarmSlice.map(a -> convertToDto(a));
+        return result;
+    }
+
+    public void readMyAlarm(Long currentMemberId) {
+        List<Alarm> alarmList = alarmRepository.findMyAlarm(currentMemberId);
+        for (Alarm alarm : alarmList) {
+            alarm.updateIsChecked(true);
+        }
     }
 
 

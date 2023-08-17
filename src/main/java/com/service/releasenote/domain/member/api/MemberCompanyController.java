@@ -1,6 +1,7 @@
 package com.service.releasenote.domain.member.api;
 
 import com.service.releasenote.domain.member.application.MemberCompanyService;
+import com.service.releasenote.domain.member.dto.MemberCompanyDTO;
 import com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberRequestDTO;
 import com.service.releasenote.domain.member.dto.MemberCompanyDTO.AddMemberResponseDTO;
 import com.service.releasenote.domain.member.dto.MemberDTO.MemberListDTO;
@@ -11,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.service.releasenote.domain.member.dto.MemberCompanyDTO.*;
 
 @Slf4j
 @RestController
@@ -37,9 +40,9 @@ public class MemberCompanyController {
     }
 
     @DeleteMapping(value = "/api/companies/{company_id}/members")
-    public Long deleteMemberCompany(@PathVariable Long company_id, @RequestHeader("email") String email) {
+    public Long deleteMemberCompany(@PathVariable Long company_id, @RequestBody DeleteMemberRequestDTO request) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        Long deleteMemberId = memberCompanyService.deleteMemberCompany(company_id, email, currentMemberId);
+        Long deleteMemberId = memberCompanyService.deleteMemberCompany(company_id, request.getEmail(), currentMemberId);
 
         // TODO: 반환 데이터
         return deleteMemberId;

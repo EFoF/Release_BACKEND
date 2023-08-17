@@ -30,6 +30,14 @@ public class MemberCompanyDTO {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class DeleteMemberRequestDTO {
+        private String email;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class AddMemberResponseDTO {
         private Long memberId;
         private Long companyId;
