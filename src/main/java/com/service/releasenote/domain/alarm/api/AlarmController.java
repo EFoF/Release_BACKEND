@@ -5,23 +5,25 @@ import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import static com.service.releasenote.domain.alarm.dto.AlarmDto.*;
+import static com.service.releasenote.domain.alarm.dto.AlarmDto.AlarmInfoDto;
+import static com.service.releasenote.domain.alarm.dto.AlarmDto.AlarmInfoDtoEach;
 
 @Slf4j
 @RestController
 @Api(tags = {"alarm"})
 @RequiredArgsConstructor
-@RequestMapping("/api/companies/projects")
 public class AlarmController {
 
     private final AlarmService alarmService;
     @ApiOperation("api for get alarm")
     @ApiImplicitParam(name = "onlyNew", value = "읽지 않은 알람만 표시", required = true, dataType = "Boolean", paramType = "query", defaultValue = "true")
     @ApiResponses({ @ApiResponse(code=200, message="요청 성공"), @ApiResponse(code=404, message="존재하지 않는 memberProject")})
-    @GetMapping("{projectId}/alarms")
+    @GetMapping("/api/companies/projects/{projectId}/alarms")
     public AlarmInfoDto alarmDetails(
             @PathVariable(name = "projectId") Long projectId,
             @RequestParam(value = "onlyNew", defaultValue = "true") Boolean onlyNew) {
@@ -32,9 +34,24 @@ public class AlarmController {
         return alarmService.getAlarmDetailByProjectId(projectId, currentMemberId);
     }
 
+    @ApiOperation("api for get my alarm")
+    @GetMapping("/api/alarms")
+    public Slice<AlarmInfoDtoEach> myAlarmDetails(Pageable pageable) {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        return alarmService.getMyAlarmDetail(pageable, currentMemberId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ApiOperation("api for read my alarm")
+    @PostMapping("/api/alarms")
+    public void myAlarmRead() {
+        Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        alarmService.readMyAlarm(currentMemberId);
+    }
+
     @ApiOperation("api for read alarm")
     @ApiResponses({ @ApiResponse(code=204, message="요청 성공"), @ApiResponse(code=404, message="존재하지 않는 memberProject")})
-    @PostMapping("{projectId}/alarms")
+    @PostMapping("/api/companies/projects/{projectId}/alarms")
     public void alarmRead(@PathVariable(name = "projectId") Long projectId) {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         alarmService.readAlarm(projectId, currentMemberId);
@@ -42,7 +59,7 @@ public class AlarmController {
 
     @ApiOperation("api for delete alarm")
     @ApiResponses({ @ApiResponse(code=204, message="요청 성공"), @ApiResponse(code=404, message="알람 자체가 존재하지 않거나 사용자에게 알람이 존재하지 않음")})
-    @DeleteMapping("{projectId}/alarms/{alarmId}")
+    @DeleteMapping("/api/companies/projects/{projectId}/alarms/{alarmId}")
     public void alarmDelete(
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "alarmId") Long alarmId) {
