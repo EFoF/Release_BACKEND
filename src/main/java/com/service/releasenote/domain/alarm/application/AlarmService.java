@@ -131,6 +131,7 @@ public class AlarmService {
         return result;
     }
 
+    @Transactional
     public void readMyAlarm(Long currentMemberId) {
         List<Alarm> alarmList = alarmRepository.findMyAlarm(currentMemberId);
         for (Alarm alarm : alarmList) {

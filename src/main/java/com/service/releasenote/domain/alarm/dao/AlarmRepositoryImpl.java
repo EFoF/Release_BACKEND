@@ -27,9 +27,9 @@ public class AlarmRepositoryImpl implements AlarmCustomRepository{
     public Slice<Alarm> findMyAlarmsAsSlice(Pageable pageable, Long currentMemberId) {
         List<Alarm> alarmList = jpaQueryFactory
                 .selectFrom(alarm)
-                .join(alarm.memberProject, memberProject)
-//                .join(memberProject.member, member)
+                .join(alarm.memberProject, memberProject).fetchJoin()
                 .where(memberProject.member.id.eq(currentMemberId))
+                .where(alarm.isChecked.eq(false))
                 .fetch();
         boolean hasNext = false;
         if(alarmList.size() > pageable.getPageSize()) {

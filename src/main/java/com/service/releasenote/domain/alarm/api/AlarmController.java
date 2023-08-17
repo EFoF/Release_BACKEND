@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import static com.service.releasenote.domain.alarm.dto.AlarmDto.AlarmInfoDto;
@@ -40,11 +41,12 @@ public class AlarmController {
         return alarmService.getMyAlarmDetail(pageable, currentMemberId);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiOperation("api for read my alarm")
     @PostMapping("/api/alarms")
     public void myAlarmRead() {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-
+        alarmService.readMyAlarm(currentMemberId);
     }
 
     @ApiOperation("api for read alarm")
