@@ -39,6 +39,14 @@ public class MemberProjectDTO {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class DeleteMemberProjectRequest {
+        private String email;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class AddProjectMemberResponseDto {
         // 프로젝트 멤버 추가 응답 dto
         private Long member_id;

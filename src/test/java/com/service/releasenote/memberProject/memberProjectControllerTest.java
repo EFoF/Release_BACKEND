@@ -200,12 +200,13 @@ public class memberProjectControllerTest {
         Project project = buildProject(company, 1L);
         Member member = buildMember(1L);
         MemberProject memberProject = buildMemberProject(1L, project, member);
+        DeleteMemberProjectRequest request = DeleteMemberProjectRequest.builder().email(member.getEmail()).build();
 
         //when & then
         mockMvc.perform(delete("/api/companies/projects/{project_id}/members", 1L)
-                        .header("email", "test1@naver.com")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andDo(print());
     }

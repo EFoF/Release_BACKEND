@@ -82,7 +82,7 @@ public class MemberProjectController {
     @DeleteMapping(value = "/api/companies/projects/{project_id}/members")
     public ResponseEntity deleteMemberProject(
             @PathVariable Long project_id,
-            @RequestHeader("email") String memberEmail) {
+            @RequestBody String memberEmail) {
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         memberProjectService.deleteProjectMember(project_id, memberEmail, currentMemberId);
