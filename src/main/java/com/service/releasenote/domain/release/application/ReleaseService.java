@@ -7,6 +7,7 @@ import com.service.releasenote.domain.category.exception.CategoryNotFoundExcepti
 import com.service.releasenote.domain.category.model.Category;
 import com.service.releasenote.domain.member.dao.MemberProjectRepository;
 import com.service.releasenote.domain.member.dao.MemberRepository;
+import com.service.releasenote.domain.member.error.exception.UserNotFoundException;
 import com.service.releasenote.domain.member.model.Member;
 import com.service.releasenote.domain.project.dao.ProjectRepository;
 import com.service.releasenote.domain.project.exception.exceptions.ProjectNotFoundException;
@@ -59,12 +60,15 @@ public class ReleaseService {
         if(!members.contains(currentMemberId)) {
             throw new ProjectPermissionDeniedException();
         }
+        Member member = memberRepository.findById(currentMemberId).orElseThrow(UserNotFoundException::new);
         Category category = categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
         Releases releases = saveReleaseRequest.toEntity(category);
         Releases save = releaseRepository.save(releases);
         alarmService.produceMessage(projectId, releases.getId(), "새 릴리즈를 게시하셨습니다.", AlarmDomain.RELEASE, currentMemberId);
         return ReleaseDtoEach.builder()
                 .lastModifiedTime(save.getModifiedDate())
+                .lastModifierName(member.getUserName())
+                .lastModifierEmail(member.getEmail())
                 .releaseDate(save.getReleaseDate())
                 .version(save.getVersion())
                 .content(save.getMessage())
