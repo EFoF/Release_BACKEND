@@ -67,11 +67,13 @@ public class MemberProjectController {
         return new ResponseEntity<>(projectMemberList, HttpStatus.OK);
     }
 
+
     /**
-     * 프로젝트 멤버 삭제 API
+     * 프로젝트 사용자 삭제 api
      * @param project_id
-     * @param memberEmail
-     * */
+     * @param deleteMemberProjectRequest
+     * @return
+     */
     @ApiOperation("api for delete member of project")
     @ApiResponses({
             @ApiResponse(code=200, message = "요청 성공"),
@@ -82,10 +84,10 @@ public class MemberProjectController {
     @DeleteMapping(value = "/api/companies/projects/{project_id}/members")
     public ResponseEntity deleteMemberProject(
             @PathVariable Long project_id,
-            @RequestBody String memberEmail) {
+            @RequestBody DeleteMemberProjectRequest deleteMemberProjectRequest) {
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
-        memberProjectService.deleteProjectMember(project_id, memberEmail, currentMemberId);
+        memberProjectService.deleteProjectMember(project_id, deleteMemberProjectRequest.getEmail(), currentMemberId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
