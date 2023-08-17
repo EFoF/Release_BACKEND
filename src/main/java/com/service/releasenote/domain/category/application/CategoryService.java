@@ -14,17 +14,20 @@ import com.service.releasenote.domain.project.exception.exceptions.ProjectPermis
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
 import com.service.releasenote.domain.release.model.Releases;
-import com.service.releasenote.global.util.SecurityUtil;
+import com.service.releasenote.global.config.KICConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.category.dto.CategoryDto.*;
+import static com.service.releasenote.global.constants.KICConstants.CATEGORY_DIRECTORY;
 
 @Slf4j
 @Service
@@ -38,6 +41,7 @@ public class CategoryService {
     private final ReleaseRepository releaseRepository;
     private final MemberRepository memberRepository;
     private final AlarmService alarmService;
+    private final KICConfig kicUploader;
 
     /**
      * 카테고리 저장 서비스 로직
@@ -186,5 +190,10 @@ public class CategoryService {
                 .title(category.getTitle())
                 .description(category.getDescription())
                 .build();
+    }
+
+    public String uploadImage(MultipartFile inputImage) throws IOException {
+        // TODO: 고도화
+        return kicUploader.uploadFile(inputImage, CATEGORY_DIRECTORY);
     }
 }

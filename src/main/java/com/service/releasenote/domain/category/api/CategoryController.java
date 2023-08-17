@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import static com.service.releasenote.domain.category.dto.CategoryDto.*;
 
@@ -129,5 +132,14 @@ public class CategoryController {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         categoryService.modifyCategory(modifyRequestDto, categoryId, projectId, currentMemberId);
         return categoryService.findCategoryAndConvert(categoryId);
+    }
+
+
+    @ApiOperation("api for update image")
+    @PostMapping("/api/categories")
+    public String uploadImage(@RequestPart(value="image", required=false)MultipartFile image) throws IOException {
+        String imageUrl = categoryService.uploadImage(image);
+        log.info(imageUrl);
+        return imageUrl;
     }
 }
