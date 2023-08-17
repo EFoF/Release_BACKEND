@@ -231,10 +231,12 @@ public class ReleaseServiceTest {
         Project project = buildProject(company, 1L);
         Category category = buildCategory(project, 1L);
         Releases releases = buildReleases(category, 1L);
+        Member member = buildMember(currentMemberId);
         SaveReleaseRequest saveReleaseRequest = createSaveReleaseRequest();
 
         //when
         when(projectRepository.existsById(project.getId())).thenReturn(true);
+        when(memberRepository.findById(currentMemberId)).thenReturn(Optional.ofNullable(member));
         when(memberProjectRepository.findMemberIdByProjectId(project.getId())).thenReturn(preparedMemberList);
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.empty());
         when(releaseRepository.save(any())).thenReturn(releases);
