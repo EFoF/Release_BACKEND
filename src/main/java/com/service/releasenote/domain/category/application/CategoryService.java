@@ -99,6 +99,7 @@ public class CategoryService {
         Optional<Member> memberOptional = memberRepository.findById(category.getModifierId());
         return CategoryResponseDto.builder()
                 .lastModifierName(memberOptional.isEmpty() ? "anonymous user" : memberOptional.get().getUserName())
+                .lastModifierEmail(memberOptional.isEmpty() ? "anonymous email" : memberOptional.get().getEmail())
                 .lastModifiedTime(category.getModifiedDate())
                 .description(category.getDescription())
                 .detail(category.getDetail())

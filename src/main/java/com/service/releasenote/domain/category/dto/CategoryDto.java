@@ -41,6 +41,7 @@ public class CategoryDto {
         private String title;
         private String description;
         private String lastModifierName;
+        private String lastModifierEmail;
         private LocalDateTime lastModifiedTime;
     }
 
