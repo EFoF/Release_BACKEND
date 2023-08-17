@@ -82,15 +82,17 @@ public class AlarmService {
         if(memberOptional.isPresent()) {
             List<MemberProject> memberProjectList = memberProjectRepository.findMemberProjectByProjectId(projectId);
             for (MemberProject memberProject : memberProjectList) {
-                Alarm alarm = Alarm.builder()
-                        .alarmDomain(message.getAlarmDomain())
-                        .domainId(message.getDomainId())
-                        .message(message.getContent())
-                        .memberProject(memberProject)
-                        .member(memberOptional.get())
-                        .isChecked(false)
-                        .build();
-                alarmRepository.save(alarm);
+                if(!memberProject.getMember().getId().equals(memberId)) {
+                    Alarm alarm = Alarm.builder()
+                            .alarmDomain(message.getAlarmDomain())
+                            .domainId(message.getDomainId())
+                            .message(message.getContent())
+                            .memberProject(memberProject)
+                            .member(memberOptional.get())
+                            .isChecked(false)
+                            .build();
+                    alarmRepository.save(alarm);
+                }
             }
         }
         // 이후에 필요하면 웹소켓을 열어서 푸시알람을 보낼 수도 있음
