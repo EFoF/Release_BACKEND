@@ -71,6 +71,7 @@ public class SecurityConfig {
 //                .antMatchers("/auth/getMemberId").permitAll() // getCurrentId 를 위한 api
                 .antMatchers("/api/auth/update/password/anonymous").permitAll() // 비로그인 유저를 위한 api
                 .antMatchers(HttpMethod.GET, "/api/companies/**").permitAll() // company로 시작하는 GET 방식만 허용
+                .antMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // categories로 시작하는 GET 방식만 허용
                 .antMatchers(HttpMethod.POST, "/api/companies/**").permitAll() // company로 시작하는 POST 방식만 허용
                 .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // swagger를 위한 주소
                 .antMatchers("/swagger-resources/**").permitAll() // swagger를 위한 주소
