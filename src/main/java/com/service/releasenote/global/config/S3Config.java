@@ -74,7 +74,8 @@ public class S3Config {
     public void delete(String fileUrl, String dirName) {
         if (!Objects.equals(fileUrl, getDefaultUrl())) {
             String fileName = fileUrl.replace(S3PREFIX, "");
-            fileName = fileName.replace(dirName, "");
+            fileName = fileName.replace(dirName + "/", "");
+            log.info(fileName);
             s3Client.deleteObject(bucket + "/" + dirName, fileName);
         }
     }
