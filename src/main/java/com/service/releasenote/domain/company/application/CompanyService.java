@@ -18,7 +18,7 @@ import com.service.releasenote.domain.project.exception.exceptions.CompanyNotFou
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
 import com.service.releasenote.domain.release.model.Releases;
-import com.service.releasenote.global.config.KICConfig;
+import com.service.releasenote.global.config.S3Config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.service.releasenote.domain.company.dto.CompanyDTO.*;
-import static com.service.releasenote.global.constants.KICConstants.COMPANY_DIRECTORY;
+import static com.service.releasenote.global.constants.S3Constants.COMPANY_DIRECTORY;
 
 @Slf4j
 @Service
@@ -55,11 +55,11 @@ public class CompanyService {
 
     private final MemberProjectRepository memberProjectRepository;
 
-    private final KICConfig kicUploader;
+    private final S3Config s3Uploader;
 
     @Transactional
     public Long createCompany(MultipartFile inputImage, String inputName, Long currentMemberId) throws IOException {
-        String imageUrl = kicUploader.uploadFile(inputImage, COMPANY_DIRECTORY);
+        String imageUrl = s3Uploader.upload(inputImage, COMPANY_DIRECTORY);
 
         // 로그인 되지 않은 경우
         // TODO: exception 추가 후 수정
@@ -132,8 +132,8 @@ public class CompanyService {
             throw new UserNotFoundException();
         }
 
-        kicUploader.deleteObject(company.getImageURL());
-        String imageUrl = kicUploader.uploadFile(inputImage, COMPANY_DIRECTORY);
+        s3Uploader.delete(company.getImageURL(), COMPANY_DIRECTORY);
+        String imageUrl = s3Uploader.upload(inputImage, COMPANY_DIRECTORY);
 
         company.setName(inputName);
         company.setImageUrl(imageUrl);
@@ -174,7 +174,7 @@ public class CompanyService {
         List<MemberCompany> memberCompanyList = memberCompanyRepository.findMemberCompanyByCompanyId(company_id);
         memberCompanyRepository.deleteAll(memberCompanyList);
 
-        kicUploader.deleteObject(company.getImageURL());
+        s3Uploader.delete(company.getImageURL(), COMPANY_DIRECTORY);
         companyRepository.delete(company);
 
         return company_id;

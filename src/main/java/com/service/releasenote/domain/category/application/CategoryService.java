@@ -14,7 +14,7 @@ import com.service.releasenote.domain.project.exception.exceptions.ProjectPermis
 import com.service.releasenote.domain.project.model.Project;
 import com.service.releasenote.domain.release.dao.ReleaseRepository;
 import com.service.releasenote.domain.release.model.Releases;
-import com.service.releasenote.global.config.KICConfig;
+import com.service.releasenote.global.config.S3Config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.service.releasenote.domain.category.dto.CategoryDto.*;
-import static com.service.releasenote.global.constants.KICConstants.CATEGORY_DIRECTORY;
+import static com.service.releasenote.global.constants.S3Constants.CATEGORY_DIRECTORY;
 
 @Slf4j
 @Service
@@ -41,7 +41,7 @@ public class CategoryService {
     private final ReleaseRepository releaseRepository;
     private final MemberRepository memberRepository;
     private final AlarmService alarmService;
-    private final KICConfig kicUploader;
+    private final S3Config s3Uploader;
 
     /**
      * 카테고리 저장 서비스 로직
@@ -195,6 +195,6 @@ public class CategoryService {
 
     public String uploadImage(MultipartFile inputImage) throws IOException {
         // TODO: 고도화
-        return kicUploader.uploadFile(inputImage, CATEGORY_DIRECTORY);
+        return s3Uploader.upload(inputImage, CATEGORY_DIRECTORY);
     }
 }
