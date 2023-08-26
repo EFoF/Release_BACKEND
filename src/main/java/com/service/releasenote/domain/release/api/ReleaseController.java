@@ -1,12 +1,20 @@
 package com.service.releasenote.domain.release.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.service.releasenote.domain.member.api.AuthController;
 import com.service.releasenote.domain.release.application.ReleaseService;
+import com.service.releasenote.global.log.CommonLog;
 import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
 
@@ -17,6 +25,8 @@ import static com.service.releasenote.domain.release.dto.ReleaseDto.*;
 public class ReleaseController {
 
     private final ReleaseService releaseService;
+    private final ObjectMapper objectMapper;
+    private static final Logger logger = LoggerFactory.getLogger(ReleaseController.class);
 
     /**
      * release 저장 api
@@ -38,8 +48,10 @@ public class ReleaseController {
             @PathVariable(name = "projectId") Long projectId,
             @PathVariable(name = "categoryId") Long categoryId,
             @RequestBody SaveReleaseRequest saveReleaseRequest
-    ) {
+    ) throws JsonProcessingException {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        CommonLog commonLog = new CommonLog(objectMapper.writeValueAsString(saveReleaseRequest), "Post", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return releaseService.saveRelease(saveReleaseRequest, projectId, categoryId, currentMemberId);
     }
 
@@ -54,7 +66,15 @@ public class ReleaseController {
     @ApiResponses({ @ApiResponse(code=200, message="요청 성공")})
     public ReleaseInfoDto releaseListByCategory(
             @PathVariable(name = "id") Long categoryId,
-            @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) {
+            @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) throws JsonProcessingException{
+        String msg;
+        if(isDeveloper) {
+            msg = "개발자 -" + categoryId + "번 카테고리로 릴리즈 조회";
+        } else {
+            msg = "일반인 - " + categoryId + "번 카테고리로 릴리즈 조회";
+        }
+        CommonLog commonLog = new CommonLog(msg, "Get", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return releaseService.findReleasesByCategoryId(categoryId, isDeveloper);
     }
 
@@ -69,7 +89,15 @@ public class ReleaseController {
     @GetMapping("/api/companies/projects/{project_id}/categories/releases")
     public ProjectReleasesDto releaseListByProject(
             @PathVariable(name = "project_id") Long projectId,
-            @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) {
+            @RequestParam(value = "developer", required = true, defaultValue = "false") Boolean isDeveloper) throws JsonProcessingException{
+        String msg;
+        if(isDeveloper) {
+            msg = "개발자 -" + projectId + "번 프로젝트로 릴리즈 조회";
+        } else {
+            msg = "일반인 - " + projectId + "번 프로젝트로 릴리즈 조회";
+        }
+        CommonLog commonLog = new CommonLog(msg, "Get", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return releaseService.findReleasesByProjectId(projectId, isDeveloper);
     }
 
@@ -94,9 +122,11 @@ public class ReleaseController {
             @PathVariable(name = "category_id") Long categoryId,
             @PathVariable(name = "release_id") Long releaseId,
             @RequestBody ReleaseModifyRequestDto releaseModifyRequestDto
-    ) {
+    ) throws JsonProcessingException{
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         releaseService.modifyReleases(releaseModifyRequestDto, projectId, categoryId, releaseId, currentMemberId);
+        CommonLog commonLog = new CommonLog(objectMapper.writeValueAsString(releaseModifyRequestDto), "Put", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return releaseService.findReleaseAndConvert(releaseId);
     }
 
@@ -119,8 +149,10 @@ public class ReleaseController {
             @PathVariable(name = "project_id") Long projectId,
             @PathVariable(name = "category_id") Long categoryId,
             @PathVariable(name = "release_id") Long releaseId
-    ) {
+    ) throws JsonProcessingException{
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
+        CommonLog commonLog = new CommonLog(releaseId + " 번 릴리즈 삭제", "Delete", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return releaseService.deleteRelease(projectId, categoryId, releaseId, currentMemberId);
     }
 }
