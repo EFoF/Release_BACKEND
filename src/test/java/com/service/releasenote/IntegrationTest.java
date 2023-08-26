@@ -1084,8 +1084,16 @@ public class IntegrationTest {
 
         //then
 //        assertThat(AP1Categories.size()).isEqualTo()
+    }
 
+    @Test
+    @DisplayName("통합 테스트 - 알람 통합 테스트")
+    public void verifyAlarmTest() throws Exception {
+        //given
 
+        //when
+
+        //then
 
     }
 

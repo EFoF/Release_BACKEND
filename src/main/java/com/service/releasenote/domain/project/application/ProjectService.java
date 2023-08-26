@@ -1,5 +1,6 @@
 package com.service.releasenote.domain.project.application;
 
+import com.service.releasenote.domain.alarm.dao.AlarmRepository;
 import com.service.releasenote.domain.category.application.CategoryService;
 import com.service.releasenote.domain.category.dao.CategoryRepository;
 import com.service.releasenote.domain.category.model.Category;
@@ -38,6 +39,7 @@ public class ProjectService {
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final CategoryService categoryService;
+    private final AlarmRepository alarmRepository;
 
     /**
      * 프로젝트 저장 서비스 로직

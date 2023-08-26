@@ -126,8 +126,6 @@ public class AuthService {
         Long expiration = tokenProvider.getExpiration(accessToken);
         stringRedisTemplate.opsForValue()
                 .set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
-
-        log.info("로그아웃");
     }
 
     @Transactional
