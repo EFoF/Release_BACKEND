@@ -1,11 +1,17 @@
 package com.service.releasenote.domain.project.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.service.releasenote.domain.company.dto.CompanyDTO;
 import com.service.releasenote.domain.project.application.ProjectService;
+import com.service.releasenote.domain.release.api.ReleaseController;
+import com.service.releasenote.global.log.CommonLog;
 import com.service.releasenote.global.util.SecurityUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -13,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.service.releasenote.domain.project.dto.ProjectDto.*;
 import com.service.releasenote.domain.company.dto.CompanyDTO.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -21,6 +29,8 @@ import java.util.List;
 @Api(tags = {"project"})
 public class ProjectController {
     private final ProjectService projectService;
+    private final ObjectMapper objectMapper;
+    private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
     /**
      * 프로젝트 생성 Api
@@ -31,10 +41,12 @@ public class ProjectController {
     @PostMapping("/api/companies/{company_id}/projects")
     public ResponseEntity<Long> createProject(
             @RequestBody CreateProjectRequestDto createProjectRequestDto,
-            @PathVariable Long company_id) {
+            @PathVariable Long company_id) throws JsonProcessingException {
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         Long project = projectService.createProject(createProjectRequestDto, company_id, currentMemberId);
+        CommonLog commonLog = new CommonLog(objectMapper.writeValueAsString(createProjectRequestDto), "Post", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return new ResponseEntity<>(project, HttpStatus.CREATED);
     }
 
@@ -45,8 +57,10 @@ public class ProjectController {
      * */
     @ApiOperation("API for project inquiry of specific company")
     @GetMapping(value = "/api/companies/{company_id}/projects")
-    public ResponseEntity<FindProjectListByCompanyIdResponseDto> projectList(@PathVariable Long company_id) {
+    public ResponseEntity<FindProjectListByCompanyIdResponseDto> projectList(@PathVariable Long company_id) throws JsonProcessingException {
         FindProjectListByCompanyIdResponseDto projectListByCompany = projectService.findProjectListByCompanyId(company_id);
+        CommonLog commonLog = new CommonLog(projectListByCompany.getName() + " 회사의 프로젝트 리스트 조회", "Get", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return new ResponseEntity<>(projectListByCompany, HttpStatus.OK);
     }
 //    public ResponseEntity<FindProjectListByCompanyResponseDto> projectListByCompany(@PathVariable Long company_id, Pageable pageable) {
@@ -79,9 +93,11 @@ public class ProjectController {
     @PutMapping(value = "/api/companies/projects/{project_id}")
     public ResponseEntity updateProject(
             @PathVariable Long project_id,
-            @RequestBody UpdateProjectRequestDto updateProjectRequestDto) {
+            @RequestBody UpdateProjectRequestDto updateProjectRequestDto) throws JsonProcessingException {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         projectService.updateProject(updateProjectRequestDto, project_id, currentMemberId);
+        CommonLog commonLog = new CommonLog(objectMapper.writeValueAsString(updateProjectRequestDto), "Put", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -94,9 +110,11 @@ public class ProjectController {
     @ApiOperation("API for deleting projects")
     @DeleteMapping(value = "/api/companies/{company_id}/projects/{project_id}")
     public ResponseEntity deleteProject(
-            @PathVariable Long company_id, @PathVariable Long project_id) {
+            @PathVariable Long company_id, @PathVariable Long project_id) throws JsonProcessingException {
         Long currentMemberId = SecurityUtil.getCurrentMemberId();
         projectService.deleteProject(company_id, project_id, currentMemberId);
+        CommonLog commonLog = new CommonLog(company_id + "번 회사의 " + project_id + " 번 프로젝트 삭제", "Get", LocalDateTime.now());
+        logger.info(objectMapper.writeValueAsString(commonLog));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
